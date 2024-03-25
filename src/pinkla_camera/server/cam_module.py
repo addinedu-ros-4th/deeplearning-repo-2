@@ -58,6 +58,7 @@ class CAM_SERVER():
             undist = self.undistorted_frame(frame)
             return undist
         except Exception as e:
+            print(e)
             return None
 
     def record_video(self, conn, width=640, height=480, fps=30):

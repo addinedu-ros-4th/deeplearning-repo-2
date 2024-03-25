@@ -68,7 +68,7 @@ class Socket(QThread):
             pass
 
 class Camera_Th(QThread):
-    update = pyqtSignal()
+    update = pyqtSignal(QPixmap)
 
     def __init__(self, sec=0, parent=None):
         super().__init__()
@@ -77,13 +77,30 @@ class Camera_Th(QThread):
 
         self.cam_server = CAM_SERVER()
         self.conn = None
+        self.source, self.pixmap = None, None
 
     def run(self):
         print("camera start")
-        while self.running == True:
-            self.update.emit() 
+
+        while self.conn is None:
             QThread.msleep(10)
+
+        self.cam_server.conn = self.conn
+
+        while self.running == True:
+            self.source = self.cam_server.show_video()
+
+            if self.source is not None:
+                image = cv2.cvtColor(self.source, cv2.COLOR_BGR2RGB) # ui 출력용 데이터
+                h,w,c = image.shape
+                qformat_type = QImage.Format_RGB888
+                qimage = QImage(image.data, w, h, w*c, qformat_type)
+                self.pixmap = QPixmap.fromImage(qimage)
+                self.update.emit(self.pixmap)
+
+            QThread.msleep(8)
         
+
     def stop(self):
         print("camera stop")
         self.running = False
@@ -177,6 +194,8 @@ class WindowClass(QMainWindow, from_class):
             try:
                 self.socket.running = False
                 self.socket.stop()
+                self.show_logo()
+
             except Exception as e:
                 print(e)
                 pass
@@ -191,13 +210,12 @@ class WindowClass(QMainWindow, from_class):
             self.btn_camera.setText('CAMERA\nOPEN')
             self.btn_record.hide()
             # self.record.stop()
-
             self.camera_connection()
-            self.show_logo()
 
     def camera_connection(self):
         if not self.isCameraOn:
             self.isCameraOn = True
+            self.camera_th.conn = self.conn
             self.camera_th.running = True 
             self.camera_th.start()
         else:
@@ -205,30 +223,15 @@ class WindowClass(QMainWindow, from_class):
             self.camera_th.running = False
             self.camera_th.stop()
 
-    def update_image(self): 
+    def update_image(self, pixmap): 
         try:
-            if self.conn and self.isCameraOn:
-                self.camera_server.conn = self.conn
-                self.source = self.camera_server.show_video()
-                if self.source is not None:
-                    image = cv2.cvtColor(self.source, cv2.COLOR_BGR2RGB) # ui 출력용 데이터
-                    h,w,c = image.shape
-                    qformat_type = QImage.Format_RGB888
-                    qimage = QImage(image.data, w, h, w*c, qformat_type)
-
-                    self.pixmap = self.pixmap.fromImage(qimage)
-                    self.pixmap = self.pixmap.scaled(self.label_pixmap.width(), self.label_pixmap.height())
-
-                    self.label_pixmap.setPixmap(self.pixmap)
-                else:
-                    # self.show_logo()
-                    pass
+            self.pixmap = pixmap.scaled(self.label_pixmap.width(), self.label_pixmap.height())
+            self.label_pixmap.setPixmap(self.pixmap)
+            self.label_pixmap.setAlignment(Qt.AlignCenter)
 
         except Exception as e:
             print(e)
-            self.show_logo()
             pass
-
 
     def record(self):
         pass
