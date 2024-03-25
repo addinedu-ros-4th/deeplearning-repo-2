@@ -292,8 +292,8 @@
   <widget class="QPushButton" name="btn_camera">
    <property name="geometry">
     <rect>
-     <x>1000</x>
-     <y>60</y>
+     <x>820</x>
+     <y>10</y>
      <width>121</width>
      <height>51</height>
     </rect>
@@ -306,8 +306,8 @@ OPEN</string>
   <widget class="QPushButton" name="btn_record">
    <property name="geometry">
     <rect>
-     <x>1000</x>
-     <y>110</y>
+     <x>940</x>
+     <y>10</y>
      <width>121</width>
      <height>51</height>
     </rect>
@@ -317,17 +317,31 @@ OPEN</string>
 START</string>
    </property>
   </widget>
-  <widget class="QPushButton" name="btn_raspi">
+  <widget class="QPushButton" name="btn_cam_socket">
    <property name="geometry">
     <rect>
-     <x>1000</x>
+     <x>700</x>
      <y>10</y>
      <width>121</width>
      <height>51</height>
     </rect>
    </property>
    <property name="text">
-    <string>RasPi5
+    <string>CAMERA
+CONNECT</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="btn_pinkla_socket">
+   <property name="geometry">
+    <rect>
+     <x>700</x>
+     <y>70</y>
+     <width>151</width>
+     <height>51</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>PINKLA
 CONNECT</string>
    </property>
   </widget>

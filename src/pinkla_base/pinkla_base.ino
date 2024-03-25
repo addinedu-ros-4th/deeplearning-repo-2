@@ -26,22 +26,16 @@ const int echoPinBack = 7;
 const int trigPinLeft = 8;  // 좌
 const int echoPinLeft = 9;
 
-static float angle[3] = {
-  0,
-},
-             vec;
 // 회피할 거리 (센티미터)
 const int avoidanceDistance = 20;
 
 void setup() {
   Serial.begin(9600);
-
   if (!pinkla.begin()) {
     Serial.println("모터 쉴드 연결을 다시 확인해주세요.");
     while (1)
       ;
   }
-
   speed = 100;
   pinkla.setSpeed(speed);
   pinkla.moveTo(5);
@@ -54,54 +48,42 @@ int value0, value1;
 int valuesArray[4];
 int w1, w2, w3, w4;
 
-void parseData(char* buffer) {
-  char* token;
-  char* tokens[NUM_ITEMS];
-  token = strtok(buffer, ",");
-  int index = 0;
+void parseData(String data_str) {
+  int data_arr[NUM_ITEMS];
+  int i = 0;
+  char* ptr = strtok((char*)data_str.c_str(), ",");
 
-  while (token != NULL && index < NUM_ITEMS) {
-    tokens[index] = token;
-    token = strtok(NULL, ",");
-    index++;
+  while (ptr != NULL && i < NUM_ITEMS) {
+    data_arr[i] = atoi(ptr);
+    ptr = strtok(NULL, ",");
+    i++;
   }
 
-  value0 = atoi(tokens[0]);
-  value1 = atoi(tokens[1]);
+  value0 = data_arr[0];
+  value1 = data_arr[1];
+  
+  Serial.print(data_arr[0]);
+  Serial.print(", ");
+  Serial.print(data_arr[1]);
+  Serial.print(", ");
+  Serial.print(data_arr[2]);
+  Serial.print(", ");
+  Serial.print(data_arr[3]);
+  Serial.print(", ");
+  Serial.print(data_arr[4]);
+  Serial.print(", ");
+  Serial.println(data_arr[5]);
 
   for (int i = 0; i < NUM_ITEMS - 2; i++) {
-    valuesArray[i] = atoi(tokens[i + 2]);
+    valuesArray[i] = data_arr[i + 2];
   }
 }
 
 void loop() {
-  uint8_t buffer[256] = { 0 };
-
-  char char_z_val[10];
-  char char_humi[20];
-  char char_temp[20];
-  char char_sv[10];
-  char char_dust[20];
-  char merge_data[100];
-
-  // sprintf(char_sv, "%d", sv);
-  // dtostrf(dustDensity, 6, 2, char_dust);
-  // sprintf(char_z_val, "%d", z_val);
-
-  // sprintf(merge_data, "%s,%s,%s,%s,%s", char_temp, char_humi, char_sv, char_dust, char_z_val);
-  // sprintf(merge_data, "%s,%s,%s", char_sv, char_dust, char_z_val);
-
-  tcp_on();
-  if (tcp_status) {
-    // wifi.send((const uint8_t*)&merge_data, strlen(merge_data));
-    uint32_t len = wifi.recv(buffer, sizeof(buffer), 10000);
-    if (len > 0) {
-      String receivedData = String((char*)buffer);
-      parseData(buffer);
-    }
+  if (Serial.available() > 0) {
+    String data_str = Serial.readStringUntil('\n');
+    parseData(data_str);
   }
-  tcp_off();
-
 
   int cmd_type = value0;
   if (cmd_type == 0) {
@@ -162,9 +144,6 @@ float getDistance(int trigPin, int echoPin) {
 int16_t offset[3] = { 32, 15, -12 };
 
 void init_sensors_pinmode() {
-  pinMode(A4, INPUT);
-  pinMode(V_LED, OUTPUT);
-  pinMode(Vo, INPUT);
   pinMode(trigPinFront, OUTPUT);
   pinMode(echoPinFront, INPUT);
   pinMode(trigPinBack, OUTPUT);
