@@ -14,6 +14,7 @@ class CAM_SERVER():
         self.host = host
         self.port = port
         self.conn, self.addr = None, None
+        self.writer = None
 
     def connect(self):
         try:
@@ -23,7 +24,6 @@ class CAM_SERVER():
             print('Socket bind complete')
             self.s.listen(2)
             print('Socket now listening')
-            # conn, addr = self.s.accept()
         except Exception as e:
             pass
 
@@ -61,39 +61,22 @@ class CAM_SERVER():
             print(e)
             return None
 
-    def record_video(self, conn, width=640, height=480, fps=30):
-        recording = False
-        out = None
+    def record_start(self, width=640, height=480, fps=30):
+        try:
+            current_time = datetime.now().strftime("%Y%m%d_%H%M%S")
+            video_filename = f'../../data/{current_time}.avi'
+            fourcc = cv2.VideoWriter_fourcc(*'XVID')
+            self.writer = cv2.VideoWriter(video_filename, fourcc, fps, (width, height))
+        except Exception as e:
+            print(e)
+            return None
 
-        while True:
-            length = self.recvall(conn, 16)
-            stringData = self.recvall(conn, int(length))
-            data = np.fromstring(stringData, dtype = 'uint8')
-            frame = cv2.imdecode(data, cv2.IMREAD_COLOR)
-
-            undist = self.undistorted_frame(frame)
-            cv2.imshow('ImageWindow',undist)
-
-            key = cv2.waitKey(1) & 0xFF
-            if key == ord('r'):  # 'r' 키를 누르면 녹화 시작
-                recording = True
-                current_time = datetime.now().strftime("%Y%m%d_%H%M%S")
-                video_filename = f'../../data/{current_time}.mp4'
-                fourcc = cv2.VideoWriter_fourcc(*'DIVX')
-                out = cv2.VideoWriter(video_filename, fourcc, fps, (width, height))
-
-            elif key == ord('s'):  # 's' 키를 누르면 녹화 종료
-                recording = False
-                out.release()
-                
-            elif key == ord('q'):  # 'q' 키를 누르면 종료
-                break
-
-            if recording == True:
-                out.write(undist)
-            
-        conn.close()
-        cv2.destroyAllWindows()  # 창 닫기
+    def record_stop(self):
+        try:
+            self.writer.release()
+        except Exception as e:
+            print(e)
+            pass
 
     def test(self):
         print("Hello, It's Camera.")

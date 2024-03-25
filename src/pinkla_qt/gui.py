@@ -13,7 +13,7 @@ import rclpy
 current_dir = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(current_dir + "/..")
 print(f'current_dir : {current_dir}')
-from pinkla_camera.server.cam_module import *
+from pinkla_camera.cam_module import *
 # from th_socket import *
 
 ui_path = "./gui.ui"
@@ -80,16 +80,12 @@ class Camera_Th(QThread):
         self.source, self.pixmap = None, None
 
     def run(self):
-        print("camera start")
-
         while self.conn is None:
             QThread.msleep(10)
-
         self.cam_server.conn = self.conn
 
         while self.running == True:
             self.source = self.cam_server.show_video()
-
             if self.source is not None:
                 image = cv2.cvtColor(self.source, cv2.COLOR_BGR2RGB) # ui 출력용 데이터
                 h,w,c = image.shape
@@ -97,12 +93,9 @@ class Camera_Th(QThread):
                 qimage = QImage(image.data, w, h, w*c, qformat_type)
                 self.pixmap = QPixmap.fromImage(qimage)
                 self.update.emit(self.pixmap)
-
             QThread.msleep(8)
-        
 
     def stop(self):
-        print("camera stop")
         self.running = False
 
 
@@ -112,8 +105,6 @@ class Control_pinkla(QThread):
     def __init__(self):
         super().__init__()
 
-
-
 class WindowClass(QMainWindow, from_class):
     def __init__(self):
         super().__init__()
@@ -122,18 +113,15 @@ class WindowClass(QMainWindow, from_class):
         self.ui_init()
         self.socket_module()
         self.camera_module()
-
         self.source = None
-
         self.show_logo()
-
-    
 
     def ui_init(self):
         self.btn_record.hide()
         self.btn_camera.hide()
-        self.btn_camera.clicked.connect(self.click_camera)
         self.btn_raspi.clicked.connect(self.click_raspi)
+        self.btn_camera.clicked.connect(self.click_camera)
+        self.btn_record.clicked.connect(self.click_record)
 
         self.pixmap = QPixmap(self.label_pixmap.width(), self.label_pixmap.height())
         self.pixmap.fill(Qt.white)
@@ -154,12 +142,13 @@ class WindowClass(QMainWindow, from_class):
         
     def camera_module(self):
         self.isCameraOn = False
+        self.isRecOn = False
 
         self.camera_server = CAM_SERVER(HOST, PORT)
         self.camera_th = Camera_Th(self)
         self.camera_th.daemon = True
         self.camera_th.update.connect(self.update_image)
-
+        self.camera_th.update.connect(self.update_record)
 
     def check_connect(self, conn):
         if conn:
@@ -174,6 +163,7 @@ class WindowClass(QMainWindow, from_class):
 
     def click_raspi(self):
         self.isCameraOn = False
+        self.isRecOn = False
         if not self.isSocketOpened:
             self.btn_raspi.setText('RasPi5\nDISCONNECT')
             self.btn_camera.setText('CAMERA\nOPEN')
@@ -204,13 +194,13 @@ class WindowClass(QMainWindow, from_class):
         if self.isCameraOn == False:
             self.btn_camera.setText('CAMERA\nCLOSE')
             self.btn_record.show()
-            # self.record.stop()
             self.camera_connection()
+            self.isRecOn = False
         else:
             self.btn_camera.setText('CAMERA\nOPEN')
             self.btn_record.hide()
-            # self.record.stop()
             self.camera_connection()
+            self.isRecOn = False
 
     def camera_connection(self):
         if not self.isCameraOn:
@@ -228,13 +218,37 @@ class WindowClass(QMainWindow, from_class):
             self.pixmap = pixmap.scaled(self.label_pixmap.width(), self.label_pixmap.height())
             self.label_pixmap.setPixmap(self.pixmap)
             self.label_pixmap.setAlignment(Qt.AlignCenter)
-
         except Exception as e:
             print(e)
             pass
 
-    def record(self):
-        pass
+    def click_record(self):
+        if not self.isRecOn:
+            self.isRecOn = True
+            self.camera_server.record_start(width=640, height=480, fps=30)
+            print(self.camera_server.writer)
+            self.btn_record.setText('RECORD\nSTOP')
+
+        else:
+            self.isRecOn = False
+            self.camera_server.record_stop()
+            self.btn_record.setText('RECORD\nSTART')
+
+    def update_record(self, pixmap):
+        try:
+            if self.camera_server is not None:
+                image = pixmap.toImage()
+                width, height = image.width(), image.height()
+                ptr = image.bits()
+                ptr.setsize(image.byteCount())
+                arr = np.array(ptr).reshape(height, width, 4)
+                rgb_image = cv2.cvtColor(arr, cv2.COLOR_RGBA2RGB)
+                if self.camera_server.writer is not None:
+                    self.camera_server.writer.write(rgb_image)
+        except Exception as e:
+            print(e)
+            pass
+    
 
     def show_logo(self):
         self.logo_img = cv2.imread("./design/pinkla_logo.png")
