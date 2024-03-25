@@ -26,10 +26,6 @@ const int echoPinBack = 7;
 const int trigPinLeft = 8;  // 좌
 const int echoPinLeft = 9;
 
-static float angle[3] = {
-  0,
-},
-             vec;
 // 회피할 거리 (센티미터)
 const int avoidanceDistance = 20;
 
@@ -65,6 +61,19 @@ void parseData(String data_str) {
 
   value0 = data_arr[0];
   value1 = data_arr[1];
+  
+  Serial.print(data_arr[0]);
+  Serial.print(", ");
+  Serial.print(data_arr[1]);
+  Serial.print(", ");
+  Serial.print(data_arr[2]);
+  Serial.print(", ");
+  Serial.print(data_arr[3]);
+  Serial.print(", ");
+  Serial.print(data_arr[4]);
+  Serial.print(", ");
+  Serial.println(data_arr[5]);
+
   for (int i = 0; i < NUM_ITEMS - 2; i++) {
     valuesArray[i] = data_arr[i + 2];
   }
