@@ -2,12 +2,15 @@
 <ui version="4.0">
  <class>Dialog</class>
  <widget class="QDialog" name="Dialog">
+  <property name="enabled">
+   <bool>true</bool>
+  </property>
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1128</width>
-    <height>640</height>
+    <width>1045</width>
+    <height>910</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -18,8 +21,8 @@
     <rect>
      <x>10</x>
      <y>10</y>
-     <width>681</width>
-     <height>621</height>
+     <width>600</width>
+     <height>440</height>
     </rect>
    </property>
    <property name="styleSheet">
@@ -35,14 +38,14 @@
   <widget class="QGroupBox" name="groupBox">
    <property name="geometry">
     <rect>
-     <x>700</x>
-     <y>170</y>
+     <x>620</x>
+     <y>440</y>
      <width>411</width>
      <height>271</height>
     </rect>
    </property>
    <property name="title">
-    <string>GroupBox</string>
+    <string>Control</string>
    </property>
    <widget class="QPushButton" name="btn_rot_r">
     <property name="geometry">
@@ -243,21 +246,21 @@
   <widget class="QPushButton" name="btn_ems">
    <property name="geometry">
     <rect>
-     <x>700</x>
-     <y>450</y>
-     <width>421</width>
+     <x>620</x>
+     <y>720</y>
+     <width>411</width>
      <height>181</height>
     </rect>
    </property>
    <property name="text">
-    <string>STOP</string>
+    <string>E-STOP</string>
    </property>
   </widget>
   <widget class="QSpinBox" name="spin_speed">
    <property name="geometry">
     <rect>
-     <x>700</x>
-     <y>140</y>
+     <x>670</x>
+     <y>400</y>
      <width>81</width>
      <height>31</height>
     </rect>
@@ -266,21 +269,21 @@
   <widget class="QLabel" name="label">
    <property name="geometry">
     <rect>
-     <x>700</x>
-     <y>120</y>
+     <x>620</x>
+     <y>410</y>
      <width>67</width>
      <height>17</height>
     </rect>
    </property>
    <property name="text">
-    <string>speed</string>
+    <string>Speed</string>
    </property>
   </widget>
   <widget class="QPushButton" name="btn_setspeed">
    <property name="geometry">
     <rect>
-     <x>790</x>
-     <y>140</y>
+     <x>760</x>
+     <y>400</y>
      <width>101</width>
      <height>31</height>
     </rect>
@@ -292,7 +295,7 @@
   <widget class="QPushButton" name="btn_camera">
    <property name="geometry">
     <rect>
-     <x>820</x>
+     <x>750</x>
      <y>10</y>
      <width>121</width>
      <height>51</height>
@@ -306,7 +309,7 @@ OPEN</string>
   <widget class="QPushButton" name="btn_record">
    <property name="geometry">
     <rect>
-     <x>940</x>
+     <x>880</x>
      <y>10</y>
      <width>121</width>
      <height>51</height>
@@ -320,7 +323,7 @@ START</string>
   <widget class="QPushButton" name="btn_cam_socket">
    <property name="geometry">
     <rect>
-     <x>700</x>
+     <x>620</x>
      <y>10</y>
      <width>121</width>
      <height>51</height>
@@ -334,15 +337,34 @@ CONNECT</string>
   <widget class="QPushButton" name="btn_pinkla_socket">
    <property name="geometry">
     <rect>
-     <x>700</x>
-     <y>70</y>
+     <x>880</x>
+     <y>350</y>
      <width>151</width>
-     <height>51</height>
+     <height>81</height>
     </rect>
    </property>
    <property name="text">
     <string>PINKLA
 CONNECT</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_pixmap_2">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>460</y>
+     <width>600</width>
+     <height>440</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">background-color: rgb(255, 255, 255);</string>
+   </property>
+   <property name="frameShape">
+    <enum>QFrame::StyledPanel</enum>
+   </property>
+   <property name="text">
+    <string/>
    </property>
   </widget>
  </widget>

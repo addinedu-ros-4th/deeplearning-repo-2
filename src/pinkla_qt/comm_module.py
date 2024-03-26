@@ -77,9 +77,6 @@ class SERVER():
             # print(e)
             pass
 
-    def test(self):
-        print("Hello, It's Camera.")
-
 
 class CLIENT():
     def __init__(self, host='0.0.0.0', port=0000):

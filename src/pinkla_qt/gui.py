@@ -21,6 +21,8 @@ from_class = uic.loadUiType(ui_path)[0]
 
 HOST = '192.168.0.23'
 CAM_PORT = 8485
+
+PINK_HOST = '192.168.0.100'
 PINK_PORT = 8090
 
 class Socket(QThread):
@@ -107,7 +109,6 @@ class Socket_Pinkla(QThread):
         self.host = host
         self.port = port
         self.conn, self.addr = None, None
-        self.server = SERVER(self.host, self.port)
         self.client = CLIENT(self.host, self.port)
         self.s = None
 
@@ -218,7 +219,7 @@ class WindowClass(QMainWindow, from_class):
         self.cam_socket.daemon = True
         self.cam_socket.update.connect(self.check_connect_cam)
 
-        self.pinkla_socket = Socket_Pinkla(HOST, PINK_PORT)
+        self.pinkla_socket = Socket_Pinkla(PINK_HOST, PINK_PORT)
         self.pinkla_socket.daemon = True
         self.pinkla_socket.update.connect(self.check_connect_pink)
 
@@ -232,7 +233,7 @@ class WindowClass(QMainWindow, from_class):
         self.camera_th.update.connect(self.update_record)
 
     def control(self, flag):
-        self.sender.cmd = [0, 5, 0, 0, 0, 0]
+        self.sender.cmd = [0, 8, 0, 0, 0, 0]
         if not flag:
             print("server's disconnect ")
             self.btn_pinkla_socket.setText('PINKLA\nCONNECT')
@@ -260,10 +261,12 @@ class WindowClass(QMainWindow, from_class):
             QMessageBox.warning(self, "PINKLA Connection Status", "PINKLA Disconnected!")
             self.btn_pinkla_socket.setText('PINKLA\nCONNECT')
             self.isPinkSocketOpened = False
-            
-            self.sender.running = False
-            self.sender.stop()
-            del self.sender
+            try:
+                self.sender.running = False
+                self.sender.stop()
+                del self.sender
+            except Exception as e:
+                pass
 
     def check_connect_cam(self, conn):
         if conn:
