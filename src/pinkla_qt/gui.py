@@ -21,6 +21,8 @@ from_class = uic.loadUiType(ui_path)[0]
 
 HOST = '192.168.0.23'
 CAM_PORT = 8485
+
+PINK_HOST = '192.168.0.100'
 PINK_PORT = 8090
 
 class Socket(QThread):
@@ -107,7 +109,6 @@ class Socket_Pinkla(QThread):
         self.host = host
         self.port = port
         self.conn, self.addr = None, None
-        self.server = SERVER(self.host, self.port)
         self.client = CLIENT(self.host, self.port)
         self.s = None
 
@@ -202,6 +203,10 @@ class WindowClass(QMainWindow, from_class):
         self.btn_camera.clicked.connect(self.click_camera)
         self.btn_record.clicked.connect(self.click_record)
 
+        self.btn_for.clicked.connect(self.click_forward)
+        self.btn_st.clicked.connect(self.click_stop)
+
+
         self.pixmap = QPixmap(self.label_pixmap.width(), self.label_pixmap.height())
         self.pixmap.fill(Qt.white)
         self.label_pixmap.setAlignment(Qt.AlignCenter)
@@ -209,6 +214,11 @@ class WindowClass(QMainWindow, from_class):
 
         self.conn, self.addr = None, None
         self.pinkla_conn, self.pinkla_addr = None, None
+
+    def click_forward(self):
+        self.sender.cmd = [0,8,0,0,0,0]
+    def click_stop(self):
+        self.sender.cmd = [0,5,0,0,0,0]
 
     def socket_module(self):
         self.isCamSocketOpened = False
@@ -218,7 +228,7 @@ class WindowClass(QMainWindow, from_class):
         self.cam_socket.daemon = True
         self.cam_socket.update.connect(self.check_connect_cam)
 
-        self.pinkla_socket = Socket_Pinkla(HOST, PINK_PORT)
+        self.pinkla_socket = Socket_Pinkla(PINK_HOST, PINK_PORT)
         self.pinkla_socket.daemon = True
         self.pinkla_socket.update.connect(self.check_connect_pink)
 
@@ -232,7 +242,6 @@ class WindowClass(QMainWindow, from_class):
         self.camera_th.update.connect(self.update_record)
 
     def control(self, flag):
-        self.sender.cmd = [0, 5, 0, 0, 0, 0]
         if not flag:
             print("server's disconnect ")
             self.btn_pinkla_socket.setText('PINKLA\nCONNECT')
@@ -260,10 +269,12 @@ class WindowClass(QMainWindow, from_class):
             QMessageBox.warning(self, "PINKLA Connection Status", "PINKLA Disconnected!")
             self.btn_pinkla_socket.setText('PINKLA\nCONNECT')
             self.isPinkSocketOpened = False
-            
-            self.sender.running = False
-            self.sender.stop()
-            del self.sender
+            try:
+                self.sender.running = False
+                self.sender.stop()
+                del self.sender
+            except Exception as e:
+                pass
 
     def check_connect_cam(self, conn):
         if conn:
@@ -382,7 +393,7 @@ class WindowClass(QMainWindow, from_class):
         h,w,c = self.logo_img.shape 
         qimage = QImage(self.logo_img.data, w, h, w*c, QImage.Format_RGB888)
         self.pixmap = self.pixmap.fromImage(qimage)
-        # self.pixmap = self.pixmap.scaled(self.label_pixmap.width(), self.label_pixmap.height())
+        self.pixmap = self.pixmap.scaled(self.label_pixmap.width(), self.label_pixmap.height())
         self.label_pixmap.setPixmap(self.pixmap)
 
 
