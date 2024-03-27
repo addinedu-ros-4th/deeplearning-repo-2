@@ -35,6 +35,8 @@ class WindowClass(QMainWindow, from_class):
         self.show_logo(self.label_pixmap, self.pixmap)
         self.show_logo(self.label_pixmap_2, self.pixmap2)
 
+        self.cal_cmd = Cal_Cmd()
+
     def flag_init(self):
         self.isCamSocketOpened, self.isCamSocketOpened2 = [False], [False]
         self.isCameraOn, self.isCameraOn2 = [False], [False]
@@ -42,6 +44,8 @@ class WindowClass(QMainWindow, from_class):
         self.isPinkSocketOpened = False
 
     def ui_init(self):
+        self.setFocusPolicy(Qt.StrongFocus)
+
         self.btn_record.hide()
         self.btn_camera.hide()
         self.btn_record_2.hide()
@@ -142,21 +146,20 @@ class WindowClass(QMainWindow, from_class):
             btn_cam.setText('CAMERA\nOPEN')
             btn_cam.show()
             btn_rec.hide()
-            self.cam_socket_connection(flag_soc, socket, label, pix)
-            flag_soc[0] = True
         else:
             btn_soc.setText('CAMERA\nCONNECT')
             btn_cam.hide()
             btn_rec.hide()
-            self.cam_socket_connection(flag_soc, socket, label, pix)
-            flag_soc[0] = False
+        self.cam_socket_connection(flag_soc, socket, label, pix)
 
     def cam_socket_connection(self, flag, socket, label, pix):
         if not flag[0]:
+            flag[0] = True
             socket.running = True
             socket.start()
         else:
             try:
+                flag[0] = False
                 socket.running = False
                 socket.stop()
                 self.show_logo(label, pix)
@@ -178,13 +181,12 @@ class WindowClass(QMainWindow, from_class):
         if flag_cam[0] == False:
             btn_cam.setText('CAMERA\nCLOSE')
             btn_rec.show()
-            self.camera_connection(flag_cam, thread, conn)
             flag_rec[0] = False
         else:
             btn_cam.setText('CAMERA\nOPEN')
             btn_rec.hide()
-            self.camera_connection(flag_cam, thread, conn)
             flag_rec[0] = False
+        self.camera_connection(flag_cam, thread, conn)
 
     def camera_connection(self, flag, thread, conn):
         if not flag[0]:
@@ -199,7 +201,7 @@ class WindowClass(QMainWindow, from_class):
         
 
     def control(self, flag):
-        # self.sender.cmd = [0, 5, 0, 0, 0, 0]
+        # self.sender.cmd = [0, 100, 5, 0, 0, 0, 0]
         if not flag:
             print("server's disconnect ")
             self.btn_pinkla_socket.setText('PINKLA\nCONNECT')
@@ -207,10 +209,11 @@ class WindowClass(QMainWindow, from_class):
             self.sender.running = False
             self.isPinkSocketOpened = False
 
+
     def click_forward(self):
-        self.sender.cmd = [0,8,0,0,0,0]
+        self.sender.cmd = [0,100,8,0,0,0,0]
     def click_stop(self):
-        self.sender.cmd = [0,5,0,0,0,0]
+        self.sender.cmd = [0,100,5,0,0,0,0]
 
 
     def check_connect_pink(self, conn):
@@ -294,6 +297,57 @@ class WindowClass(QMainWindow, from_class):
         pix = pix.scaled(label.width(), label.height())
         label.setPixmap(pix)
 
+
+    def keyPressEvent(self, event):
+        if event.key() == Qt.Key_I:
+            print("Move forward")
+            self.cal_cmd.lx = 2.0
+            self.cal_cmd.ly = 0.0
+            self.cal_cmd.az = 0.0
+        elif event.key() == Qt.Key_Comma:
+            print("Move backward")
+            self.cal_cmd.lx = -2.0
+            self.cal_cmd.ly = 0.0
+            self.cal_cmd.az = 0.0
+        elif event.key() == Qt.Key_J:
+            print("Turn left")
+            self.cal_cmd.lx = 0.0
+            self.cal_cmd.ly = 0.0
+            self.cal_cmd.az = 18.5
+        elif event.key() == Qt.Key_L:
+            print("Turn right")
+            self.cal_cmd.lx = 0.0
+            self.cal_cmd.ly = 0.0
+            self.cal_cmd.az = -18.5
+        elif event.key() == Qt.Key_K:
+            print("Turn right")
+            self.cal_cmd.lx = 0.0
+            self.cal_cmd.ly = 0.0
+            self.cal_cmd.az = 0.0
+        elif event.key() == Qt.Key_K:
+            print("Turn right")
+            self.cal_cmd.lx = 0.0
+            self.cal_cmd.ly = 0.0
+            self.cal_cmd.az = 0.0
+        elif event.key() == Qt.Key_K:
+            print("Turn right")
+            self.cal_cmd.lx = 0.0
+            self.cal_cmd.ly = 0.0
+            self.cal_cmd.az = 0.0
+        elif event.key() == Qt.Key_K:
+            print("Turn right")
+            self.cal_cmd.lx = 0.0
+            self.cal_cmd.ly = 0.0
+            self.cal_cmd.az = 0.0
+        elif event.key() == Qt.Key_K:
+            print("Turn right")
+            self.cal_cmd.lx = 0.0
+            self.cal_cmd.ly = 0.0
+            self.cal_cmd.az = 0.0
+
+        value = self.cal_cmd.cal()
+        self.sender.cmd = [1, 100, 5, int(value[0]), int(value[1]), int(value[2]), int(value[3])]
+        print(value)
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

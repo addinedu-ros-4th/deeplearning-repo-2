@@ -250,7 +250,7 @@ class Control_Pinkla(QThread):
     def __init__(self, s=None):
         super().__init__()
         self.running = True
-        self.cmd = [0, 5, 0, 0, 0, 0]
+        self.cmd = [0, 100, 5, 0, 0, 0, 0]
         self.s = s
 
     def run(self):
@@ -260,7 +260,7 @@ class Control_Pinkla(QThread):
                 self.s.sendall(data_str.encode())
 
                 self.update.emit(True)
-                QThread.msleep(20)
+                QThread.msleep(30)
             except Exception as e :
                 print(e)
                 self.s.close()
@@ -274,3 +274,29 @@ class Control_Pinkla(QThread):
             self.s.close()
         except Exception as e:
             pass
+
+
+class Cal_Cmd():
+    def __init__(self):
+        self.lx = 0.0
+        self.ly = 0.0
+        self.az = 0.0
+        self.r = 0.025
+        self.b = 0.11
+
+        self.w1, self.w2, self.w3, self.w4 = 0.0, 0.0, 0.0, 0.0
+
+    def cal(self):
+        # cal
+        
+        self.w1 = (1/self.r) * (self.lx-self.ly-self.b*self.az)
+        self.w2 = (1/self.r) * (self.lx+self.ly-self.b*self.az)
+        self.w3 = (1/self.r) * (self.lx-self.ly+self.b*self.az)
+        self.w4 = (1/self.r) * (self.lx+self.ly+self.b*self.az)
+
+        # value = [self.w1, self.w2, self.w3, self.w4]
+        value = [self.w4, self.w3, self.w2, self.w1]
+
+        # after 3 sec -> zero
+
+        return value
