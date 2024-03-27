@@ -8,7 +8,7 @@ from pinkla_qt.comm_module import *
 ui_path = "./gui.ui"
 from_class = uic.loadUiType(ui_path)[0]
 
-HOST = '192.168.0.23'
+HOST = '192.168.0.197'
 CAM_PORT = 8485
 CAM_PORT2 = 8584
 
@@ -324,26 +324,27 @@ class WindowClass(QMainWindow, from_class):
             self.cal_cmd.lx = 0.0
             self.cal_cmd.ly = 0.0
             self.cal_cmd.az = 0.0
-        elif event.key() == Qt.Key_K:
+
+        elif event.key() == Qt.Key_U:
             print("Turn right")
-            self.cal_cmd.lx = 0.0
+            self.cal_cmd.lx = 2.0
             self.cal_cmd.ly = 0.0
-            self.cal_cmd.az = 0.0
-        elif event.key() == Qt.Key_K:
+            self.cal_cmd.az = 4.0
+        elif event.key() == Qt.Key_O:
             print("Turn right")
-            self.cal_cmd.lx = 0.0
+            self.cal_cmd.lx = 2.0
             self.cal_cmd.ly = 0.0
-            self.cal_cmd.az = 0.0
-        elif event.key() == Qt.Key_K:
+            self.cal_cmd.az = -4.0
+        elif event.key() == Qt.Key_M:
             print("Turn right")
-            self.cal_cmd.lx = 0.0
+            self.cal_cmd.lx = -2.0
             self.cal_cmd.ly = 0.0
-            self.cal_cmd.az = 0.0
-        elif event.key() == Qt.Key_K:
+            self.cal_cmd.az = -4.0
+        elif event.key() == Qt.Key_Period:
             print("Turn right")
-            self.cal_cmd.lx = 0.0
+            self.cal_cmd.lx = -2.0
             self.cal_cmd.ly = 0.0
-            self.cal_cmd.az = 0.0
+            self.cal_cmd.az = 4.0
 
         value = self.cal_cmd.cal()
         self.sender.cmd = [1, 100, 5, int(value[0]), int(value[1]), int(value[2]), int(value[3])]
