@@ -142,21 +142,20 @@ class WindowClass(QMainWindow, from_class):
             btn_cam.setText('CAMERA\nOPEN')
             btn_cam.show()
             btn_rec.hide()
-            self.cam_socket_connection(flag_soc, socket, label, pix)
-            flag_soc[0] = True
         else:
             btn_soc.setText('CAMERA\nCONNECT')
             btn_cam.hide()
             btn_rec.hide()
-            self.cam_socket_connection(flag_soc, socket, label, pix)
-            flag_soc[0] = False
+        self.cam_socket_connection(flag_soc, socket, label, pix)
 
     def cam_socket_connection(self, flag, socket, label, pix):
         if not flag[0]:
+            flag[0] = True
             socket.running = True
             socket.start()
         else:
             try:
+                flag[0] = False
                 socket.running = False
                 socket.stop()
                 self.show_logo(label, pix)
@@ -178,13 +177,12 @@ class WindowClass(QMainWindow, from_class):
         if flag_cam[0] == False:
             btn_cam.setText('CAMERA\nCLOSE')
             btn_rec.show()
-            self.camera_connection(flag_cam, thread, conn)
             flag_rec[0] = False
         else:
             btn_cam.setText('CAMERA\nOPEN')
             btn_rec.hide()
-            self.camera_connection(flag_cam, thread, conn)
             flag_rec[0] = False
+        self.camera_connection(flag_cam, thread, conn)
 
     def camera_connection(self, flag, thread, conn):
         if not flag[0]:
