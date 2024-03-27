@@ -27,7 +27,7 @@ def get_socket_send_serial(conn, ser):
 
         except Exception as e:
             # print("Exception: ", e)
-            data_list = [0,5,0,0,0,0,'\n']
+            data_list = [0, 0, 5, 0, 0, 0, 0,'\n']
             data_str = ','.join(map(str, data_list))
             ser.write(data_str.encode())
             conn.close()

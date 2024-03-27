@@ -63,19 +63,19 @@ void parseData(String data_str) {
   value1 = data_arr[1];  // manual speed
   value2 = data_arr[2];  // manual control
 
-  Serial.print(data_arr[0]);
-  Serial.print(", ");
-  Serial.print(data_arr[1]);
-  Serial.print(", ");
-  Serial.print(data_arr[2]);
-  Serial.print(", ");
-  Serial.print(data_arr[3]);
-  Serial.print(", ");
-  Serial.print(data_arr[4]);
-  Serial.print(", ");
-  Serial.print(data_arr[5]);
-  Serial.print(", ");
-  Serial.println(data_arr[6]);
+  // Serial.print(data_arr[0]);
+  // Serial.print(", ");
+  // Serial.print(data_arr[1]);
+  // Serial.print(", ");
+  // Serial.print(data_arr[2]);
+  // Serial.print(", ");
+  // Serial.print(data_arr[3]);
+  // Serial.print(", ");
+  // Serial.print(data_arr[4]);
+  // Serial.print(", ");
+  // Serial.print(data_arr[5]);
+  // Serial.print(", ");
+  // Serial.println(data_arr[6]);
 
   for (int i = 0; i < NUM_ITEMS - 3; i++) {
     valuesArray[i] = data_arr[i + 3];
