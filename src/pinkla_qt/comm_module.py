@@ -250,7 +250,7 @@ class Control_Pinkla(QThread):
     def __init__(self, s=None):
         super().__init__()
         self.running = True
-        self.cmd = [0, 5, 0, 0, 0, 0]
+        self.cmd = [0, 100, 5, 0, 0, 0, 0]
         self.s = s
 
     def run(self):
