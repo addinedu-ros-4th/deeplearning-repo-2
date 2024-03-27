@@ -42,9 +42,9 @@ void setup() {
 }
 
 
-#define NUM_ITEMS 6
+#define NUM_ITEMS 7
 
-int value0, value1;
+int value0, value1, value2;
 int valuesArray[4];
 int w1, w2, w3, w4;
 
@@ -59,9 +59,10 @@ void parseData(String data_str) {
     i++;
   }
 
-  value0 = data_arr[0];
-  value1 = data_arr[1];
-  
+  value0 = data_arr[0];  // manual, cmd
+  value1 = data_arr[1];  // manual speed
+  value2 = data_arr[2];  // manual control
+
   Serial.print(data_arr[0]);
   Serial.print(", ");
   Serial.print(data_arr[1]);
@@ -72,10 +73,12 @@ void parseData(String data_str) {
   Serial.print(", ");
   Serial.print(data_arr[4]);
   Serial.print(", ");
-  Serial.println(data_arr[5]);
+  Serial.print(data_arr[5]);
+  Serial.print(", ");
+  Serial.println(data_arr[6]);
 
-  for (int i = 0; i < NUM_ITEMS - 2; i++) {
-    valuesArray[i] = data_arr[i + 2];
+  for (int i = 0; i < NUM_ITEMS - 3; i++) {
+    valuesArray[i] = data_arr[i + 3];
   }
 }
 
@@ -85,9 +88,15 @@ void loop() {
     parseData(data_str);
   }
 
-  int cmd_type = value0;
-  if (cmd_type == 0) {
-    cmd = value1;
+
+  int ctl_type = value0;
+  if (ctl_type == 0) {
+    if (speed != value1) {
+      speed = value1;
+      pinkla.setSpeed(speed);
+    }
+
+    cmd = value2;
     if (cmd <= 9) {
       pinkla.moveTo(cmd);
     }
@@ -96,7 +105,7 @@ void loop() {
     } else if (cmd == 60) {
       pinkla.rotate(2);
     }
-  } else if (cmd_type == 1) {
+  } else if (ctl_type == 1) {
     w1 = valuesArray[0];
     w2 = valuesArray[1];
     w3 = valuesArray[2];
