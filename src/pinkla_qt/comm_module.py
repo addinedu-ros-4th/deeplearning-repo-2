@@ -13,6 +13,8 @@ import time
 from datetime import datetime
 import psutil
 
+from pinkla_lane.lane_detection import *
+
 cmtx1 = np.array([[474.9308089, 0., 313.10372736],
                 [0., 474.24684641, 254.94399015],
                 [0.,0.,1.]])
@@ -168,7 +170,7 @@ class Camera_Th(QThread):
         super().__init__()
         self.main = parent
         self.running = True
-
+        self.generator = find_load_center()
         self.cam_server = SERVER()
         self.conn = None
         self.source, self.pixmap = None, None
@@ -182,7 +184,8 @@ class Camera_Th(QThread):
         while self.running == True:
             self.source = self.cam_server.show_video()
             if self.source is not None:
-                image = cv2.cvtColor(self.source, cv2.COLOR_BGR2RGB) 
+                image, error = self.generator.get_load_center(self.source)
+                image = cv2.cvtColor(self.source, cv2.COLOR_BGR2RGB)
                 h,w,c = image.shape
                 qformat_type = QImage.Format_RGB888
                 qimage = QImage(image.data, w, h, w*c, qformat_type)

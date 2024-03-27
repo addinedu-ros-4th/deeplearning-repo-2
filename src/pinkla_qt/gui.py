@@ -8,11 +8,11 @@ from pinkla_qt.comm_module import *
 ui_path = "./gui.ui"
 from_class = uic.loadUiType(ui_path)[0]
 
-HOST = '192.168.0.23'
+HOST = '192.168.0.37'
 CAM_PORT = 8485
 CAM_PORT2 = 8584
 
-PINK_HOST = '192.168.0.100'
+PINK_HOST = '192.168.0.37'
 PINK_PORT = 8090
 
 class WindowClass(QMainWindow, from_class):

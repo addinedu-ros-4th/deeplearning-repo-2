@@ -55,7 +55,7 @@ class CameraStreamer:
         print("release and close ")
 
 def main():
-    server_address = '192.168.0.23'
+    server_address = '192.168.0.37'
     port1 = 8485
     port2 = 8584
 
