@@ -9,7 +9,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1045</width>
+    <width>1039</width>
     <height>910</height>
    </rect>
   </property>
@@ -20,7 +20,7 @@
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>10</y>
+     <y>460</y>
      <width>600</width>
      <height>440</height>
     </rect>
@@ -39,9 +39,9 @@
    <property name="geometry">
     <rect>
      <x>620</x>
-     <y>440</y>
+     <y>220</y>
      <width>411</width>
-     <height>271</height>
+     <height>491</height>
     </rect>
    </property>
    <property name="title">
@@ -51,7 +51,7 @@
     <property name="geometry">
      <rect>
       <x>250</x>
-      <y>110</y>
+      <y>330</y>
       <width>71</width>
       <height>71</height>
      </rect>
@@ -64,7 +64,7 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>30</y>
+      <y>250</y>
       <width>71</width>
       <height>71</height>
      </rect>
@@ -77,7 +77,7 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>190</y>
+      <y>410</y>
       <width>71</width>
       <height>71</height>
      </rect>
@@ -90,7 +90,7 @@
     <property name="geometry">
      <rect>
       <x>170</x>
-      <y>190</y>
+      <y>410</y>
       <width>71</width>
       <height>71</height>
      </rect>
@@ -103,7 +103,7 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>110</y>
+      <y>330</y>
       <width>71</width>
       <height>71</height>
      </rect>
@@ -116,7 +116,7 @@
     <property name="geometry">
      <rect>
       <x>170</x>
-      <y>30</y>
+      <y>250</y>
       <width>71</width>
       <height>71</height>
      </rect>
@@ -129,7 +129,7 @@
     <property name="geometry">
      <rect>
       <x>250</x>
-      <y>190</y>
+      <y>410</y>
       <width>71</width>
       <height>71</height>
      </rect>
@@ -142,7 +142,7 @@
     <property name="geometry">
      <rect>
       <x>330</x>
-      <y>110</y>
+      <y>330</y>
       <width>71</width>
       <height>71</height>
      </rect>
@@ -155,7 +155,7 @@
     <property name="geometry">
      <rect>
       <x>250</x>
-      <y>30</y>
+      <y>250</y>
       <width>71</width>
       <height>71</height>
      </rect>
@@ -168,7 +168,7 @@
     <property name="geometry">
      <rect>
       <x>90</x>
-      <y>190</y>
+      <y>410</y>
       <width>71</width>
       <height>71</height>
      </rect>
@@ -181,7 +181,7 @@
     <property name="geometry">
      <rect>
       <x>330</x>
-      <y>30</y>
+      <y>250</y>
       <width>71</width>
       <height>71</height>
      </rect>
@@ -194,7 +194,7 @@
     <property name="geometry">
      <rect>
       <x>330</x>
-      <y>190</y>
+      <y>410</y>
       <width>71</width>
       <height>71</height>
      </rect>
@@ -207,7 +207,7 @@
     <property name="geometry">
      <rect>
       <x>170</x>
-      <y>110</y>
+      <y>330</y>
       <width>71</width>
       <height>71</height>
      </rect>
@@ -220,7 +220,7 @@
     <property name="geometry">
      <rect>
       <x>90</x>
-      <y>30</y>
+      <y>250</y>
       <width>71</width>
       <height>71</height>
      </rect>
@@ -233,13 +233,130 @@
     <property name="geometry">
      <rect>
       <x>90</x>
-      <y>110</y>
+      <y>330</y>
       <width>71</width>
       <height>71</height>
      </rect>
     </property>
     <property name="text">
      <string>⟲</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="btn_w4">
+    <property name="geometry">
+     <rect>
+      <x>310</x>
+      <y>160</y>
+      <width>89</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>w4</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="btn_setspeed">
+    <property name="geometry">
+     <rect>
+      <x>160</x>
+      <y>120</y>
+      <width>101</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>SET SPEED</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="btn_auto">
+    <property name="geometry">
+     <rect>
+      <x>170</x>
+      <y>30</y>
+      <width>231</width>
+      <height>81</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Autonoumous
+Driving
+START</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="btn_w1">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>160</y>
+      <width>89</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>w1</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>120</y>
+      <width>51</width>
+      <height>17</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Speed</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="btn_pinkla_socket">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>30</y>
+      <width>151</width>
+      <height>81</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>PINKLA
+CONNECT</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="btn_w2">
+    <property name="geometry">
+     <rect>
+      <x>110</x>
+      <y>160</y>
+      <width>89</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>w2</string>
+    </property>
+   </widget>
+   <widget class="QSpinBox" name="spin_speed">
+    <property name="geometry">
+     <rect>
+      <x>70</x>
+      <y>120</y>
+      <width>81</width>
+      <height>31</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="btn_w3">
+    <property name="geometry">
+     <rect>
+      <x>210</x>
+      <y>160</y>
+      <width>89</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>w3</string>
     </property>
    </widget>
   </widget>
@@ -256,103 +373,11 @@
     <string>E-STOP</string>
    </property>
   </widget>
-  <widget class="QSpinBox" name="spin_speed">
-   <property name="geometry">
-    <rect>
-     <x>670</x>
-     <y>400</y>
-     <width>81</width>
-     <height>31</height>
-    </rect>
-   </property>
-  </widget>
-  <widget class="QLabel" name="label">
-   <property name="geometry">
-    <rect>
-     <x>620</x>
-     <y>410</y>
-     <width>67</width>
-     <height>17</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Speed</string>
-   </property>
-  </widget>
-  <widget class="QPushButton" name="btn_setspeed">
-   <property name="geometry">
-    <rect>
-     <x>760</x>
-     <y>400</y>
-     <width>101</width>
-     <height>31</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>SET SPEED</string>
-   </property>
-  </widget>
-  <widget class="QPushButton" name="btn_camera">
-   <property name="geometry">
-    <rect>
-     <x>750</x>
-     <y>10</y>
-     <width>121</width>
-     <height>51</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>CAMERA
-OPEN</string>
-   </property>
-  </widget>
-  <widget class="QPushButton" name="btn_record">
-   <property name="geometry">
-    <rect>
-     <x>880</x>
-     <y>10</y>
-     <width>121</width>
-     <height>51</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>RECORD
-START</string>
-   </property>
-  </widget>
-  <widget class="QPushButton" name="btn_cam_socket">
-   <property name="geometry">
-    <rect>
-     <x>620</x>
-     <y>10</y>
-     <width>121</width>
-     <height>51</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>CAMERA
-CONNECT</string>
-   </property>
-  </widget>
-  <widget class="QPushButton" name="btn_pinkla_socket">
-   <property name="geometry">
-    <rect>
-     <x>880</x>
-     <y>350</y>
-     <width>151</width>
-     <height>81</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>PINKLA
-CONNECT</string>
-   </property>
-  </widget>
   <widget class="QLabel" name="label_pixmap_2">
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>460</y>
+     <y>10</y>
      <width>600</width>
      <height>440</height>
     </rect>
@@ -366,6 +391,116 @@ CONNECT</string>
    <property name="text">
     <string/>
    </property>
+  </widget>
+  <widget class="QGroupBox" name="groupBox_2">
+   <property name="geometry">
+    <rect>
+     <x>620</x>
+     <y>10</y>
+     <width>401</width>
+     <height>101</height>
+    </rect>
+   </property>
+   <property name="title">
+    <string>Object Detection (Front)</string>
+   </property>
+   <widget class="QPushButton" name="btn_cam_socket_2">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>30</y>
+      <width>121</width>
+      <height>61</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>CAMERA
+CONNECT</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="btn_camera_2">
+    <property name="geometry">
+     <rect>
+      <x>140</x>
+      <y>30</y>
+      <width>121</width>
+      <height>61</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>CAMERA
+OPEN</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="btn_record_2">
+    <property name="geometry">
+     <rect>
+      <x>270</x>
+      <y>30</y>
+      <width>121</width>
+      <height>61</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>RECORD
+START</string>
+    </property>
+   </widget>
+  </widget>
+  <widget class="QGroupBox" name="groupBox_3">
+   <property name="geometry">
+    <rect>
+     <x>620</x>
+     <y>120</y>
+     <width>401</width>
+     <height>101</height>
+    </rect>
+   </property>
+   <property name="title">
+    <string>Lane Segmentation (Bottom)</string>
+   </property>
+   <widget class="QPushButton" name="btn_cam_socket">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>30</y>
+      <width>121</width>
+      <height>61</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>CAMERA
+CONNECT</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="btn_camera">
+    <property name="geometry">
+     <rect>
+      <x>140</x>
+      <y>30</y>
+      <width>121</width>
+      <height>61</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>CAMERA
+OPEN</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="btn_record">
+    <property name="geometry">
+     <rect>
+      <x>270</x>
+      <y>30</y>
+      <width>121</width>
+      <height>61</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>RECORD
+START</string>
+    </property>
+   </widget>
   </widget>
  </widget>
  <resources/>

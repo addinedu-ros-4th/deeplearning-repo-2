@@ -1,19 +1,8 @@
-from PyQt5.QtWidgets import *
-from PyQt5.QtGui import *
-from PyQt5 import uic
-from PyQt5.QtCore import *
-
 import sys, os
-import cv2, imutils
-import time
-import datetime
-import numpy as np
-import rclpy
-import psutil
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(current_dir + "/..")
-print(f'current_dir : {current_dir}')
+# print(f'current_dir : {current_dir}')
 from pinkla_qt.comm_module import *
 
 ui_path = "./gui.ui"
@@ -21,233 +10,208 @@ from_class = uic.loadUiType(ui_path)[0]
 
 HOST = '192.168.0.23'
 CAM_PORT = 8485
+CAM_PORT2 = 8584
 
 PINK_HOST = '192.168.0.100'
 PINK_PORT = 8090
-
-class Socket(QThread):
-    update = pyqtSignal(object)
-
-    def __init__(self, host, port):
-        super().__init__()
-        self.running = True
-        self.host = host
-        self.port = port
-        self.conn, self.addr = None, None
-        self.server = SERVER(self.host, self.port)
-
-    def run(self):
-        self.server.connect()
-        self.server.s.settimeout(0.1)
-        while self.running:
-            try:
-                self.conn, self.addr = self.server.s.accept()
-                if self.conn:
-                    self.update.emit(self.conn)
-                    self.running = False
-            except socket.timeout:
-                pass
-            except Exception as e:
-                pass
-    
-    def disconnect(self):
-        try:
-            self.conn.close()
-            self.server.s.close()
-            self.update.emit(False)
-            # del self.conn
-            # del self.server.s
-            QThread.msleep(100)
-        except Exception as e:
-            pass
-
-    def stop(self):
-        print("stop connection.")
-        self.running = False
-        try:
-            self.disconnect()
-        except Exception as e:
-            pass
-
-class Camera_Th(QThread):
-    update = pyqtSignal(QPixmap)
-
-    def __init__(self, sec=0, parent=None):
-        super().__init__()
-        self.main = parent
-        self.running = True
-
-        self.cam_server = SERVER()
-        self.conn = None
-        self.source, self.pixmap = None, None
-
-    def run(self):
-        while self.conn is None:
-            QThread.msleep(10)
-        self.cam_server.conn = self.conn
-
-        while self.running == True:
-            self.source = self.cam_server.show_video()
-            if self.source is not None:
-                image = cv2.cvtColor(self.source, cv2.COLOR_BGR2RGB) 
-                h,w,c = image.shape
-                qformat_type = QImage.Format_RGB888
-                qimage = QImage(image.data, w, h, w*c, qformat_type)
-                self.pixmap = QPixmap.fromImage(qimage)
-                self.update.emit(self.pixmap)
-            QThread.msleep(8)
-
-    def stop(self):
-        self.running = False
-
-
-class Socket_Pinkla(QThread):
-    update = pyqtSignal(object)
-    def __init__(self, host, port):
-        super().__init__()
-        self.running = True
-        self.host = host
-        self.port = port
-        self.conn, self.addr = None, None
-        self.client = CLIENT(self.host, self.port)
-        self.s = None
-
-    def run(self):
-        self.client.connect()
-        connected = False
-        self.s = self.client.s
-        while self.running:
-            try:
-                self.s.connect((self.host, self.port))
-                connected = True
-                if connected:
-                    self.running = False
-                    self.update.emit(self.s)
-            except ConnectionRefusedError:
-                print("Waiting for server...")
-                connected = False
-                QThread.msleep(1000)
-                pass
-            except Exception as e:
-                connected = False
-                print(e)
-                pass
-    
-    def disconnect(self):
-        try:
-            self.s.close()
-            self.update.emit(False)
-            del self.s
-            QThread.msleep(100)
-        except Exception as e:
-            pass
-
-    def stop(self):
-        print("stop connection.")
-        self.running = False
-        try:
-            self.disconnect()
-        except Exception as e:
-            pass
-
-
-class Control_Pinkla(QThread):
-    update = pyqtSignal(bool)
-
-    def __init__(self, s=None):
-        super().__init__()
-        self.running = True
-        self.cmd = [0, 5, 0, 0, 0, 0]
-        self.s = s
-
-    def run(self):
-        while self.running:
-            try:
-                data_str = ','.join(map(str, self.cmd))
-                self.s.sendall(data_str.encode())
-
-                self.update.emit(True)
-                QThread.msleep(20)
-            except Exception as e :
-                print(e)
-                self.s.close()
-                self.update.emit(False)
-                self.running = False
-                pass
-
-    def stop(self):
-        self.running = False
-        try:
-            self.s.close()
-        except Exception as e:
-            pass
-        
 
 class WindowClass(QMainWindow, from_class):
     def __init__(self):
         super().__init__()
         self.setupUi(self)
         self.setWindowTitle('pinkla.b')
-        self.ui_init()
-        self.socket_module()
-        self.camera_module()
+
+        self.conn, self.addr = [None], [None]
+        self.conn2, self.addr2 = [None], [None]
+        self.pinkla_conn, self.pinkla_addr = None, None
         self.source = None
-        self.show_logo()
+
+        self.flag_init()
+        self.ui_init()
+        self.socket_module_init()
+        self.camera_module_init()
+        self.btn_init()
+
+        self.show_logo(self.label_pixmap, self.pixmap)
+        self.show_logo(self.label_pixmap_2, self.pixmap2)
+
+    def flag_init(self):
+        self.isCamSocketOpened, self.isCamSocketOpened2 = [False], [False]
+        self.isCameraOn, self.isCameraOn2 = [False], [False]
+        self.isRecOn, self.isRecOn2 = [False], [False]
+        self.isPinkSocketOpened = False
 
     def ui_init(self):
         self.btn_record.hide()
         self.btn_camera.hide()
-        self.btn_pinkla_socket.clicked.connect(self.click_pinkla_socket)
-        self.btn_cam_socket.clicked.connect(self.click_cam_socket)
+        self.btn_record_2.hide()
+        self.btn_camera_2.hide()
         
-        self.btn_camera.clicked.connect(self.click_camera)
-        self.btn_record.clicked.connect(self.click_record)
-
-        self.btn_for.clicked.connect(self.click_forward)
-        self.btn_st.clicked.connect(self.click_stop)
-
-
         self.pixmap = QPixmap(self.label_pixmap.width(), self.label_pixmap.height())
         self.pixmap.fill(Qt.white)
+        self.pixmap2 = QPixmap(self.label_pixmap_2.width(), self.label_pixmap_2.height())
+        self.pixmap2.fill(Qt.white)
+
         self.label_pixmap.setAlignment(Qt.AlignCenter)
         self.label_pixmap.setPixmap(self.pixmap)
+        self.label_pixmap_2.setAlignment(Qt.AlignCenter)
+        self.label_pixmap_2.setPixmap(self.pixmap2)
 
-        self.conn, self.addr = None, None
-        self.pinkla_conn, self.pinkla_addr = None, None
-
-    def click_forward(self):
-        self.sender.cmd = [0,8,0,0,0,0]
-    def click_stop(self):
-        self.sender.cmd = [0,5,0,0,0,0]
-
-    def socket_module(self):
-        self.isCamSocketOpened = False
-        self.isPinkSocketOpened = False
-
+    def socket_module_init(self):
         self.cam_socket = Socket(HOST, CAM_PORT)
         self.cam_socket.daemon = True
-        self.cam_socket.update.connect(self.check_connect_cam)
+        self.cam_socket.update.connect(lambda conn: self.check_connect_cam(conn, 
+                                                                           self.conn, 
+                                                                           self.cam_socket, 
+                                                                           self.isCamSocketOpened))
+
+        self.cam_socket2 = Socket(HOST, CAM_PORT2)
+        self.cam_socket2.daemon = True
+        self.cam_socket2.update.connect(lambda conn: self.check_connect_cam(conn, 
+                                                                           self.conn2, 
+                                                                           self.cam_socket2, 
+                                                                           self.isCamSocketOpened2))
+
 
         self.pinkla_socket = Socket_Pinkla(PINK_HOST, PINK_PORT)
         self.pinkla_socket.daemon = True
         self.pinkla_socket.update.connect(self.check_connect_pink)
 
-    def camera_module(self):
-        self.isCameraOn = False
-        self.isRecOn = False
+    def camera_module_init(self):
         self.camera_server = SERVER(HOST, CAM_PORT)
         self.camera_th = Camera_Th(self)
         self.camera_th.daemon = True
-        self.camera_th.update.connect(self.update_image)
-        self.camera_th.update.connect(self.update_record)
+        self.camera_th.update.connect(lambda pixmap : self.update_image(pixmap,
+                                                                        self.label_pixmap,
+                                                                        self.pixmap))
+        self.camera_th.update.connect(lambda pixmap : self.update_record(pixmap,
+                                                                        self.camera_server))
+
+        self.camera_server2 = SERVER(HOST, CAM_PORT2)
+        self.camera_th2 = Camera_Th(self)
+        self.camera_th2.daemon = True
+        self.camera_th2.update.connect(lambda pixmap : self.update_image(pixmap,
+                                                                        self.label_pixmap_2,
+                                                                        self.pixmap2))
+        self.camera_th2.update.connect(lambda pixmap : self.update_record(pixmap,
+                                                                        self.camera_server2))
+
+    def btn_init(self):
+        self.btn_cam_socket.clicked.connect(lambda: self.click_cam_socket(self.isCamSocketOpened, self.isCameraOn, self.isRecOn,
+                                                                          self.cam_socket,
+                                                                          self.btn_cam_socket,
+                                                                          self.btn_camera,
+                                                                          self.btn_record,
+                                                                          self.label_pixmap,
+                                                                          self.pixmap,
+                                                                          self.camera_th))
+        self.btn_camera.clicked.connect(lambda: self.click_camera(self.isCameraOn, self.isRecOn,
+                                                                  self.btn_camera,
+                                                                  self.btn_record,
+                                                                  self.camera_th,
+                                                                  self.conn))
+        self.btn_record.clicked.connect(lambda: self.click_record(self.isRecOn, self.camera_server, self.btn_record))
+
+
+        self.btn_cam_socket_2.clicked.connect(lambda: self.click_cam_socket(self.isCamSocketOpened2, self.isCameraOn2, self.isRecOn2,
+                                                                          self.cam_socket2,
+                                                                          self.btn_cam_socket_2,
+                                                                          self.btn_camera_2,
+                                                                          self.btn_record_2,
+                                                                          self.label_pixmap_2,
+                                                                          self.pixmap2,
+                                                                          self.camera_th2))
+        self.btn_camera_2.clicked.connect(lambda: self.click_camera(self.isCameraOn2, self.isRecOn2,
+                                                                  self.btn_camera_2,
+                                                                  self.btn_record_2,
+                                                                  self.camera_th2,
+                                                                  self.conn2))
+        self.btn_record_2.clicked.connect(lambda: self.click_record(self.isRecOn2, self.camera_server2, self.btn_record_2))
+
+
+        self.btn_pinkla_socket.clicked.connect(self.click_pinkla_socket)
+        self.btn_for.clicked.connect(self.click_forward)
+        self.btn_st.clicked.connect(self.click_stop)
+
+    def click_cam_socket(self, flag_soc, flag_cam, flag_rec, socket, btn_soc, btn_cam, btn_rec, label, pix, thread):
+        flag_cam[0] = False
+        flag_rec[0] = False
+        thread.stop()
+        if not flag_soc[0]:
+            btn_soc.setText('CAMERA\nDISCONNECT')
+            btn_cam.setText('CAMERA\nOPEN')
+            btn_cam.show()
+            btn_rec.hide()
+            self.cam_socket_connection(flag_soc, socket, label, pix)
+            flag_soc[0] = True
+        else:
+            btn_soc.setText('CAMERA\nCONNECT')
+            btn_cam.hide()
+            btn_rec.hide()
+            self.cam_socket_connection(flag_soc, socket, label, pix)
+            flag_soc[0] = False
+
+    def cam_socket_connection(self, flag, socket, label, pix):
+        if not flag[0]:
+            socket.running = True
+            socket.start()
+        else:
+            try:
+                socket.running = False
+                socket.stop()
+                self.show_logo(label, pix)
+            except Exception as e:
+                # print(e)
+                pass
+
+    def check_connect_cam(self, conn, self_conn, self_cam_soc, self_cam_flag):
+        if conn:
+            self_conn[0] = conn
+            self_cam_soc.running = False
+            QMessageBox.information(self, "CAMERA Connection Status", "CAMERA Connected!")
+            self_cam_flag[0] = True
+        else:
+            QMessageBox.warning(self, "CAMERA Connection Status", "CAMERA Disconnected!")
+            self_cam_flag[0] = False
+
+    def click_camera(self, flag_cam, flag_rec, btn_cam, btn_rec, thread, conn):
+        if flag_cam[0] == False:
+            btn_cam.setText('CAMERA\nCLOSE')
+            btn_rec.show()
+            self.camera_connection(flag_cam, thread, conn)
+            flag_rec[0] = False
+        else:
+            btn_cam.setText('CAMERA\nOPEN')
+            btn_rec.hide()
+            self.camera_connection(flag_cam, thread, conn)
+            flag_rec[0] = False
+
+    def camera_connection(self, flag, thread, conn):
+        if not flag[0]:
+            flag[0] = True
+            thread.conn = conn[0]
+            thread.running = True 
+            thread.start()
+        else:
+            flag[0] = False
+            thread.running = False
+            thread.stop()
+        
 
     def control(self, flag):
+        # self.sender.cmd = [0, 5, 0, 0, 0, 0]
         if not flag:
             print("server's disconnect ")
             self.btn_pinkla_socket.setText('PINKLA\nCONNECT')
             self.sender.s.close()
             self.sender.running = False
             self.isPinkSocketOpened = False
+
+    def click_forward(self):
+        self.sender.cmd = [0,8,0,0,0,0]
+    def click_stop(self):
+        self.sender.cmd = [0,5,0,0,0,0]
+
 
     def check_connect_pink(self, conn):
         if conn:
@@ -256,7 +220,6 @@ class WindowClass(QMainWindow, from_class):
             self.pinkla_socket.running = False
             QMessageBox.information(self, "PINKLA Connection Status", "PINKLA Connected!")
             self.btn_pinkla_socket.setText('PINKLA\nDISCONNECT')
-            print(self.pinkla_conn)
 
             self.sender = Control_Pinkla(self.pinkla_socket.s)
             self.sender.daemon = True
@@ -276,32 +239,6 @@ class WindowClass(QMainWindow, from_class):
             except Exception as e:
                 pass
 
-    def check_connect_cam(self, conn):
-        if conn:
-            self.conn = conn
-            self.cam_socket.running = False
-            QMessageBox.information(self, "CAMERA Connection Status", "CAMERA Connected!")
-            print(self.conn)
-            self.isCamSocketOpened = True
-        else:
-            QMessageBox.warning(self, "CAMERA Connection Status", "CAMERA Disconnected!")
-            self.isCamSocketOpened = False
-
-    def click_cam_socket(self):
-        self.isCameraOn = False
-        self.isRecOn = False
-        if not self.isCamSocketOpened:
-            self.btn_cam_socket.setText('CAMERA\nDISCONNECT')
-            self.btn_camera.setText('CAMERA\nOPEN')
-            self.btn_camera.show()
-            self.btn_record.hide()
-            self.cam_socket_connection()
-        else:
-            self.btn_cam_socket.setText('CAMERA\nCONNECT')
-            self.btn_camera.hide()
-            self.btn_record.hide()
-            self.cam_socket_connection()
-
     def click_pinkla_socket(self):
         if not self.isPinkSocketOpened:
             self.isPinkSocketOpened = True
@@ -314,87 +251,48 @@ class WindowClass(QMainWindow, from_class):
             self.pinkla_socket.running = False
             self.pinkla_socket.stop()
 
-    def cam_socket_connection(self):
-        if not self.isCamSocketOpened:
-            self.cam_socket.running = True
-            self.cam_socket.start()
-        else:
-            try:
-                self.cam_socket.running = False
-                self.cam_socket.stop()
-                self.show_logo()
-            except Exception as e:
-                # print(e)
-                pass
-
-    def click_camera(self):
-        if self.isCameraOn == False:
-            self.btn_camera.setText('CAMERA\nCLOSE')
-            self.btn_record.show()
-            self.camera_connection()
-            self.isRecOn = False
-        else:
-            self.btn_camera.setText('CAMERA\nOPEN')
-            self.btn_record.hide()
-            self.camera_connection()
-            self.isRecOn = False
-
-    def camera_connection(self):
-        if not self.isCameraOn:
-            self.isCameraOn = True
-            self.camera_th.conn = self.conn
-            self.camera_th.running = True 
-            self.camera_th.start()
-        else:
-            self.isCameraOn = False
-            self.camera_th.running = False
-            self.camera_th.stop()
-
-    def update_image(self, pixmap): 
+    def update_image(self, pixmap, label, pix): 
         try:
-            self.pixmap = pixmap.scaled(self.label_pixmap.width(), self.label_pixmap.height())
-            self.label_pixmap.setPixmap(self.pixmap)
-            self.label_pixmap.setAlignment(Qt.AlignCenter)
+            pix = pixmap.scaled(label.width(), label.height())
+            label.setPixmap(pix)
+            label.setAlignment(Qt.AlignCenter)
         except Exception as e:
-            # print(e)
-            self.show_logo()
+            self.show_logo(label, pix)
             pass
 
-    def click_record(self):
-        if not self.isRecOn:
-            self.isRecOn = True
-            self.camera_server.record_start(width=640, height=480, fps=30)
-            print(self.camera_server.writer)
-            self.btn_record.setText('RECORD\nSTOP')
-
+    def click_record(self, flag_rec, recorder, btn):
+        if not flag_rec[0]:
+            flag_rec[0] = True
+            recorder.record_start(width=640, height=480, fps=30)
+            btn.setText('RECORD\nSTOP')
         else:
-            self.isRecOn = False
-            self.camera_server.record_stop()
-            self.btn_record.setText('RECORD\nSTART')
+            flag_rec[0] = False
+            recorder.record_stop()
+            btn.setText('RECORD\nSTART')
 
-    def update_record(self, pixmap):
+    def update_record(self, pixmap, recorder):
         try:
-            if self.camera_server is not None:
+            if recorder is not None:
                 image = pixmap.toImage()
                 width, height = image.width(), image.height()
                 ptr = image.bits()
                 ptr.setsize(image.byteCount())
                 arr = np.array(ptr).reshape(height, width, 4)
                 rgb_image = cv2.cvtColor(arr, cv2.COLOR_RGBA2RGB)
-                if self.camera_server.writer is not None:
-                    self.camera_server.writer.write(rgb_image)
+                if recorder.writer is not None:
+                    recorder.writer.write(rgb_image)
         except Exception as e:
             # print(e)
             pass
     
-    def show_logo(self):
+    def show_logo(self, label, pix):
         self.logo_img = cv2.imread("./design/pinkla_logo.png")
         self.logo_img = cv2.cvtColor(self.logo_img, cv2.COLOR_BGR2RGB)
         h,w,c = self.logo_img.shape 
         qimage = QImage(self.logo_img.data, w, h, w*c, QImage.Format_RGB888)
-        self.pixmap = self.pixmap.fromImage(qimage)
-        self.pixmap = self.pixmap.scaled(self.label_pixmap.width(), self.label_pixmap.height())
-        self.label_pixmap.setPixmap(self.pixmap)
+        pix = pix.fromImage(qimage)
+        pix = pix.scaled(label.width(), label.height())
+        label.setPixmap(pix)
 
 
 if __name__ == "__main__":
