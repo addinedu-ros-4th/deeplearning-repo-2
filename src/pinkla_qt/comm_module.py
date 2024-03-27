@@ -13,11 +13,17 @@ import time
 from datetime import datetime
 import psutil
 
-cmtx = np.array([[474.9308089, 0, 313.10372736],
-                [0, 474.24684641, 254.94399015],
-                [0,           0,            1]])
-dist = np.array([[0.0268074362, -0.178310961, -0.000144841081, -0.00103575477, 0.183767484]])
+cmtx1 = np.array([[474.9308089, 0., 313.10372736],
+                [0., 474.24684641, 254.94399015],
+                [0.,0.,1.]])
+dist1 = np.array([[0.0268074362, -0.178310961, -0.000144841081, -0.00103575477, 0.183767484]])
 
+
+
+cmtx2 = np.array([[470.86256773,0.,322.79554974]
+                  [0.,470.89842857,236.76274254]
+                  [0.,0.,1.]])
+dist2 = np.array([[0.00727918, -0.09059939, -0.00224102, -0.00040328, 0.06114216]])
 
 class SERVER():
     def __init__(self, host='0.0.0.0', port=0000):
@@ -46,6 +52,13 @@ class SERVER():
             pass
 
     def undistorted_frame(self, frame):
+        if self.port == 8485:
+            cmtx = cmtx1
+            dist = dist1
+        else:
+            cmtx = cmtx2
+            dist = dist2
+
         undist = cv2.undistort(frame, cmtx, dist)
         return undist
 
@@ -64,8 +77,9 @@ class SERVER():
             stringData = self.recvall(self.conn, int(length))
             data = np.fromstring(stringData, dtype = 'uint8')
             frame = cv2.imdecode(data, cv2.IMREAD_COLOR)
-            undist = self.undistorted_frame(frame)
-            return undist
+            # undist = self.undistorted_frame(frame)
+            # return undist
+            return frame
         except Exception as e:
             # print(e)
             return None
