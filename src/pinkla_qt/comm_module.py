@@ -77,9 +77,9 @@ class SERVER():
             stringData = self.recvall(self.conn, int(length))
             data = np.fromstring(stringData, dtype = 'uint8')
             frame = cv2.imdecode(data, cv2.IMREAD_COLOR)
-            # undist = self.undistorted_frame(frame)
-            # return undist
-            return frame
+            undist = self.undistorted_frame(frame)
+            return undist
+            # return frame
         except Exception as e:
             # print(e)
             return None
