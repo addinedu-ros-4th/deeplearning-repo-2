@@ -8,11 +8,11 @@
 - torchaudio : 2.2.1
 - torchvision : 0.15.2
 
-'''
+```
 python -m venv yolov8_seg
 source ~/venv/yolov8_seg/bin/activate
 pip install -r requirements.txt
-'''
+```
 
 ## 2. description
 
