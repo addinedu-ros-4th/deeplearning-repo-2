@@ -8,27 +8,26 @@ from binarization_utils import binarize
 from perspective_utils import birdeye
 from globals import ym_per_pix, xm_per_pix
 
-
+# 차선 모델링 클래스
 class Line:
-    """
-    Class to model a lane-line.
-    """
+
     def __init__(self, buffer_len=10):
 
-        # flag to mark if the line was detected the last iteration
+        # 마지막 iteration에서 차선이 검출되었는지 여부(flag)
         self.detected = False
 
-        # polynomial coefficients fitted on the last iteration
+        # 마지막 iteration에서의 다항식 계수(픽셀, 미터 단위)
         self.last_fit_pixel = None
         self.last_fit_meter = None
 
-        # list of polynomial coefficients of the last N iterations
+        # 마지막 N iteration에서의 다항식 계수(픽셀, 미터 단위)
         self.recent_fits_pixel = collections.deque(maxlen=buffer_len)
         self.recent_fits_meter = collections.deque(maxlen=2 * buffer_len)
 
+        # 차선의 곡률 반지름
         self.radius_of_curvature = None
 
-        # store all pixels coords (x, y) of line detected
+        # 감지된 차선의 모든 픽셀 좌표
         self.all_x = []
         self.all_y = []
 
@@ -40,16 +39,11 @@ class Line:
         print("X values:", self.all_x)
         print("Y values:", self.all_y)
 
+    # 새로운 픽셀/미터 단위 계수 -> 라인 재설정
+    # detected : 차선이 감지되었는지 여부
+    # clear_buffer : True이;면 line 객체 상태를 reset
     def update_line(self, new_fit_pixel, new_fit_meter, detected, clear_buffer=False):
-        """
-        Update Line with new fitted coefficients.
-
-        :param new_fit_pixel: new polynomial coefficients (pixel)
-        :param new_fit_meter: new polynomial coefficients (meter)
-        :param detected: if the Line was detected or inferred
-        :param clear_buffer: if True, reset state
-        :return: None
-        """
+        
         self.detected = detected
 
         if clear_buffer:
@@ -62,95 +56,96 @@ class Line:
         self.recent_fits_pixel.append(self.last_fit_pixel)
         self.recent_fits_meter.append(self.last_fit_meter)
 
+    # mask image에 차선 그리기
     def draw(self, mask, color=(255, 0, 0), line_width=50, average=False):
-        """
-        Draw the line on a color mask image.
-        """
+
+        # h, w, c : mask image의 높이, 너비, 채널 수
         h, w, c = mask.shape
 
         plot_y = np.linspace(0, h - 1, h)
+
+        # 차선을 정의하기 위한 계수
+        # average : True이면 차선의 평균에 의해 결정, False 이면 가장 최근에 감지된 차선에 의해 결정
         coeffs = self.average_fit if average else self.last_fit_pixel
 
+        # 차선의 중심 계산
         line_center = coeffs[0] * plot_y ** 2 + coeffs[1] * plot_y + coeffs[2]
+
+        # 차선 경계 정의(양옆으로 line width의 절반 만큼)
         line_left_side = line_center - line_width // 2
         line_right_side = line_center + line_width // 2
 
-        # Some magic here to recast the x and y points into usable format for cv2.fillPoly()
+        # cv2.fillPoly()에 적용 가능한 형식으로 recast
         pts_left = np.array(list(zip(line_left_side, plot_y)))
         pts_right = np.array(np.flipud(list(zip(line_right_side, plot_y))))
         pts = np.vstack([pts_left, pts_right])
 
-        # Draw the lane onto the warped blank image
+        # mask image 정의된 차선의 영역을 채우고, 이미지 반환
         return cv2.fillPoly(mask, [np.int32(pts)], color)
 
     @property
-    # average of polynomial coefficients of the last N iterations
+    # 최근 N번의 다항식 계수의 평균으로 선의 평균적인 형태 파악
     def average_fit(self):
         return np.mean(self.recent_fits_pixel, axis=0)
 
     @property
-    # radius of curvature of the line (averaged)
+    # 평균 다항식 계수를 이용하여 선의 곡률 계산
+    # 곡률은 y좌표에 대해 곡률 반지름을 나타냄
     def curvature(self):
         y_eval = 0
         coeffs = self.average_fit
         return ((1 + (2 * coeffs[0] * y_eval + coeffs[1]) ** 2) ** 1.5) / np.absolute(2 * coeffs[0])
 
     @property
-    # radius of curvature of the line (averaged)
-    def curvature_meter(self):
+    def curvature_pixel(self):
         y_eval = 0
-        coeffs = np.mean(self.recent_fits_meter, axis=0)
+        coeffs = np.mean(self.recent_fits_pixel, axis=0)
         return ((1 + (2 * coeffs[0] * y_eval + coeffs[1]) ** 2) ** 1.5) / np.absolute(2 * coeffs[0])
 
-
+# sliding window 차선 검출
+# binary image에서 라인 검출을 위한 다항식 계수 추출
+# birdeye_binary: input bird's eye view binary image
+# line_lt: 이전에 감지된 왼쪽 차선
+# line_rt: 이전에 감지된 오른쪽 차선
+# n_windows: sliding window의 개수(default : 9)
 def get_fits_by_sliding_windows(birdeye_binary, line_lt, line_rt, n_windows=9, verbose=False):
-    """
-    Get polynomial coefficients for lane-lines detected in an binary image.
 
-    :param birdeye_binary: input bird's eye view binary image
-    :param line_lt: left lane-line previously detected
-    :param line_rt: left lane-line previously detected
-    :param n_windows: number of sliding windows used to search for the lines
-    :param verbose: if True, display intermediate output
-    :return: updated lane lines and output image
-    """
     height, width = birdeye_binary.shape
 
-    # Assuming you have created a warped binary image called "binary_warped"
-    # Take a histogram of the bottom half of the image
+    # BEV 이미지의 하단 절반에서 픽셀 값에 대한 히스토그램 계산 -> 차선의 초기위치 추정
     histogram = np.sum(birdeye_binary[height//2:-30, :], axis=0)
 
-    # Create an output image to draw on and  visualize the result
+    # output image 생성
     out_img = np.dstack((birdeye_binary, birdeye_binary, birdeye_binary)) * 255
 
-    # Find the peak of the left and right halves of the histogram
-    # These will be the starting point for the left and right lines
+    # 히스토그램에서 왼쪽, 오른쪽 차선의 시작점 찾기
     midpoint = len(histogram) // 2
     leftx_base = np.argmax(histogram[:midpoint])
     rightx_base = np.argmax(histogram[midpoint:]) + midpoint
 
-    # Set height of windows
+    # sliding window 높이 계산
     window_height = int(height / n_windows)
 
-    # Identify the x and y positions of all nonzero pixels in the image
     nonzero = birdeye_binary.nonzero()
     nonzero_y = np.array(nonzero[0])
     nonzero_x = np.array(nonzero[1])
 
-    # Current positions to be updated for each window
+    # 현재 sliding window의 왼쪽 및 오른쪽 차선의 x좌표를 시작위치로 초기화
+    # 초기에는 차선을 찾을 위치가 이미지 하단에 있다고 예측하고,
+    # 이 위치를 기준으로 sliding window를 이동하면서 차선을 찾아감
     leftx_current = leftx_base
     rightx_current = rightx_base
 
-    margin = 100  # width of the windows +/- margin
-    minpix = 50   # minimum number of pixels found to recenter window
+    margin = 100  # sliding window의 너비(현재 위치에서 얼마나 멀리 차선을 탐색할지)
+    minpix = 50   # 윈도우를 재설정할 최소 픽셀 수(각 윈도우에서 찾은 픽셀 수가 기준보다 작으면 다음 위도우 위치 조정 X)
 
-    # Create empty lists to receive left and right lane pixel indices
+    # 왼쪽 차선과 오른쪽 차선에 해당하는 픽셀들의 인덱스 리스트
     left_lane_inds = []
     right_lane_inds = []
 
-    # Step through the windows one by one
+
     for window in range(n_windows):
-        # Identify window boundaries in x and y (and right and left)
+        # 슬라이딩 윈도우 경계 지정
         win_y_low = height - (window + 1) * window_height
         win_y_high = height - window * window_height
         win_xleft_low = leftx_current - margin
@@ -158,35 +153,46 @@ def get_fits_by_sliding_windows(birdeye_binary, line_lt, line_rt, n_windows=9, v
         win_xright_low = rightx_current - margin
         win_xright_high = rightx_current + margin
 
-        # Draw the windows on the visualization image
+        # 윈도우 시각화
         cv2.rectangle(out_img, (win_xleft_low, win_y_low), (win_xleft_high, win_y_high), (0, 255, 0), 2)
         cv2.rectangle(out_img, (win_xright_low, win_y_low), (win_xright_high, win_y_high), (0, 255, 0), 2)
 
-        # Identify the nonzero pixels in x and y within the window
+        # 윈도우 내의 차선에 해당하는 픽셀(nonzero) 식별
         good_left_inds = ((nonzero_y >= win_y_low) & (nonzero_y < win_y_high) & (nonzero_x >= win_xleft_low)
                           & (nonzero_x < win_xleft_high)).nonzero()[0]
         good_right_inds = ((nonzero_y >= win_y_low) & (nonzero_y < win_y_high) & (nonzero_x >= win_xright_low)
                            & (nonzero_x < win_xright_high)).nonzero()[0]
 
-        # Append these indices to the lists
+        # 차선 인덱스 업데이트
         left_lane_inds.append(good_left_inds)
         right_lane_inds.append(good_right_inds)
 
-        # If you found > minpix pixels, recenter next window on their mean position
+        # 윈도우 내 픽셀 수 > minpix이면 다음 윈도우 위치 조정
         if len(good_left_inds) > minpix:
             leftx_current = int(np.mean(nonzero_x[good_left_inds]))
+        elif len(good_left_inds) < minpix:
+            left_fit_pixel = line_lt.last_fit_pixel
+            left_fit_meter = line_lt.last_fit_meter
+            detected = False
+
         if len(good_right_inds) > minpix:
             rightx_current = int(np.mean(nonzero_x[good_right_inds]))
+        elif len(good_right_inds) < minpix:
+            right_fit_pixel = line_rt.last_fit_pixel
+            right_fit_meter = line_rt.last_fit_meter
+            detected = False
 
-    # Concatenate the arrays of indices
+    # 차선 인덱스 업데이트
     left_lane_inds = np.concatenate(left_lane_inds)
     right_lane_inds = np.concatenate(right_lane_inds)
 
-    # Extract left and right line pixel positions
+    # 왼쪽 / 오른쪽 차선을 나타내는 객체(line_lt / line_rt)에 검출된 모든 차선 픽셀을 설정
     line_lt.all_x, line_lt.all_y = nonzero_x[left_lane_inds], nonzero_y[left_lane_inds]
     line_rt.all_x, line_rt.all_y = nonzero_x[right_lane_inds], nonzero_y[right_lane_inds]
 
     detected = True
+
+    # 왼쪽 / 오른쪽 차선에 해당하는 픽셀이 검출되지 않은 경우
     if not list(line_lt.all_x) or not list(line_lt.all_y):
         left_fit_pixel = line_lt.last_fit_pixel
         left_fit_meter = line_lt.last_fit_meter
@@ -206,12 +212,7 @@ def get_fits_by_sliding_windows(birdeye_binary, line_lt, line_rt, n_windows=9, v
     line_lt.update_line(left_fit_pixel, left_fit_meter, detected=detected)
     line_rt.update_line(right_fit_pixel, right_fit_meter, detected=detected)
 
-    # midpoint_x = (leftx_base + rightx_base) // 2
-    # midpoint_y = height // 2
-
-    # cv2.circle(out_img, (midpoint_x, midpoint_y), 5, (255, 255, 0), -1)
-
-    # Generate x and y values for plotting
+    # 적합한 다항식을 이용하여 차선의 x, y 좌표 생성
     ploty = np.linspace(0, height - 1, height)
     left_fitx = left_fit_pixel[0] * ploty ** 2 + left_fit_pixel[1] * ploty + left_fit_pixel[2]
     right_fitx = right_fit_pixel[0] * ploty ** 2 + right_fit_pixel[1] * ploty + right_fit_pixel[2]
@@ -226,26 +227,17 @@ def get_fits_by_sliding_windows(birdeye_binary, line_lt, line_rt, n_windows=9, v
         ax[1].imshow(out_img)
         ax[1].plot(left_fitx, ploty, color='yellow')
         ax[1].plot(right_fitx, ploty, color='yellow')
-        ax[1].set_xlim(0, 1280)
-        ax[1].set_ylim(720, 0)
+        ax[1].set_xlim(0, 640)
+        ax[1].set_ylim(480, 0)
         # plt.imshow(out_img)
 
         plt.show()
 
     return line_lt, line_rt, out_img
 
-
+# 이전에 감지된 차선 정보를 사용 -> 현재 프레임에서 차선을 감지(속도 향상)
+# 양쪽 차선 사이 주행 영역을 표시
 def get_fits_by_previous_fits(birdeye_binary, line_lt, line_rt, verbose=False):
-    """
-    Get polynomial coefficients for lane-lines detected in an binary image.
-    This function starts from previously detected lane-lines to speed-up the search of lane-lines in the current frame.
-
-    :param birdeye_binary: input bird's eye view binary image
-    :param line_lt: left lane-line previously detected
-    :param line_rt: left lane-line previously detected
-    :param verbose: if True, display intermediate output
-    :return: updated lane lines and output image
-    """
 
     height, width = birdeye_binary.shape
 
@@ -263,11 +255,11 @@ def get_fits_by_previous_fits(birdeye_binary, line_lt, line_rt, verbose=False):
     (nonzero_x > (right_fit_pixel[0] * (nonzero_y ** 2) + right_fit_pixel[1] * nonzero_y + right_fit_pixel[2] - margin)) & (
     nonzero_x < (right_fit_pixel[0] * (nonzero_y ** 2) + right_fit_pixel[1] * nonzero_y + right_fit_pixel[2] + margin)))
 
-    # Extract left and right line pixel positions
     line_lt.all_x, line_lt.all_y = nonzero_x[left_lane_inds], nonzero_y[left_lane_inds]
     line_rt.all_x, line_rt.all_y = nonzero_x[right_lane_inds], nonzero_y[right_lane_inds]
 
     detected = True
+
     if not list(line_lt.all_x) or not list(line_lt.all_y):
         left_fit_pixel = line_lt.last_fit_pixel
         left_fit_meter = line_lt.last_fit_meter
@@ -287,21 +279,17 @@ def get_fits_by_previous_fits(birdeye_binary, line_lt, line_rt, verbose=False):
     line_lt.update_line(left_fit_pixel, left_fit_meter, detected=detected)
     line_rt.update_line(right_fit_pixel, right_fit_meter, detected=detected)
 
-    # Generate x and y values for plotting
     ploty = np.linspace(0, height - 1, height)
     left_fitx = left_fit_pixel[0] * ploty ** 2 + left_fit_pixel[1] * ploty + left_fit_pixel[2]
     right_fitx = right_fit_pixel[0] * ploty ** 2 + right_fit_pixel[1] * ploty + right_fit_pixel[2]
 
-    # Create an image to draw on and an image to show the selection window
+    # img_fit : 검정 배경, 흰색 차선 픽셀 표시
     img_fit = np.dstack((birdeye_binary, birdeye_binary, birdeye_binary)) * 255
     window_img = np.zeros_like(img_fit)
-
-    # Color in left and right line pixels
     img_fit[nonzero_y[left_lane_inds], nonzero_x[left_lane_inds]] = [255, 0, 0]
     img_fit[nonzero_y[right_lane_inds], nonzero_x[right_lane_inds]] = [0, 0, 255]
 
-    # Generate a polygon to illustrate the search window area
-    # And recast the x and y points into usable format for cv2.fillPoly()
+    # search window 영역을 polygon으로 형성
     left_line_window1 = np.array([np.transpose(np.vstack([left_fitx - margin, ploty]))])
     left_line_window2 = np.array([np.flipud(np.transpose(np.vstack([left_fitx + margin, ploty])))])
     left_line_pts = np.hstack((left_line_window1, left_line_window2))
@@ -309,9 +297,7 @@ def get_fits_by_previous_fits(birdeye_binary, line_lt, line_rt, verbose=False):
     right_line_window2 = np.array([np.flipud(np.transpose(np.vstack([right_fitx + margin, ploty])))])
     right_line_pts = np.hstack((right_line_window1, right_line_window2))
 
-    # Draw the lane onto the warped blank image
-    # cv2.fillPoly(window_img, int([left_line_pts]), (0, 255, 0))
-    # cv2.fillPoly(window_img, int([right_line_pts]), (0, 255, 0))
+    # 왼쪽 차선과 오른쪽 차선 사이를 초록색 경로로 표시
     cv2.fillPoly(window_img, [left_line_pts.astype(int)], (0, 255, 0))
     cv2.fillPoly(window_img, [right_line_pts.astype(int)], (0, 255, 0)) 
     result = cv2.addWeighted(img_fit, 1, window_img, 0.3, 0)
@@ -327,38 +313,31 @@ def get_fits_by_previous_fits(birdeye_binary, line_lt, line_rt, verbose=False):
 
     return line_lt, line_rt, img_fit
 
-
+# 주행 가능 경로와 양쪽 차선을 입력된 프레임에 그려줌
+# keep_state: True이면, line state 유지
 def draw_back_onto_the_road(img_undistorted, Minv, line_lt, line_rt, keep_state):
-    """
-    Draw both the drivable lane area and the detected lane-lines onto the original (undistorted) frame.
-    :param img_undistorted: original undistorted color frame
-    :param Minv: (inverse) perspective transform matrix used to re-project on original frame
-    :param line_lt: left lane-line previously detected
-    :param line_rt: right lane-line previously detected
-    :param keep_state: if True, line state is maintained
-    :return: color blend
-    """
+    
     height, width, _ = img_undistorted.shape
 
     left_fit = line_lt.average_fit if keep_state else line_lt.last_fit_pixel
     right_fit = line_rt.average_fit if keep_state else line_rt.last_fit_pixel
 
-    # Generate x and y values for plotting
+    # 다각형 꼭짓점 생성
     ploty = np.linspace(0, height - 1, height)
     left_fitx = left_fit[0] * ploty ** 2 + left_fit[1] * ploty + left_fit[2]
     right_fitx = right_fit[0] * ploty ** 2 + right_fit[1] * ploty + right_fit[2]
 
-    # draw road as green polygon on original frame
+    # 경로를 녹색으로 표시
     road_warp = np.zeros_like(img_undistorted, dtype=np.uint8)
     pts_left = np.array([np.transpose(np.vstack([left_fitx, ploty]))])
     pts_right = np.array([np.flipud(np.transpose(np.vstack([right_fitx, ploty])))])
     pts = np.hstack((pts_left, pts_right))
     cv2.fillPoly(road_warp, [np.int32(pts)], (0, 255, 0))
-    road_dewarped = cv2.warpPerspective(road_warp, Minv, (width, height))  # Warp back to original image space
 
+    # 다각형 영역을 원본 이미지 공간으로 변환
+    road_dewarped = cv2.warpPerspective(road_warp, Minv, (width, height))  
     blend_onto_road = cv2.addWeighted(img_undistorted, 1., road_dewarped, 0.3, 0)
 
-    # now separately draw solid lines to highlight them
     line_warp = np.zeros_like(img_undistorted)
     line_warp = line_lt.draw(line_warp, color=(255, 0, 0), average=keep_state)
     line_warp = line_rt.draw(line_warp, color=(0, 0, 255), average=keep_state)
@@ -379,8 +358,7 @@ if __name__ == '__main__':
 
     ret, mtx, dist, rvecs, tvecs = calibrate_camera(calib_images_dir='camera_cal')
 
-    # show result on test images
-    for test_img in glob.glob('test_images/*.jpg'):
+    for test_img in glob.glob('test_images/frame707.jpg'):
 
         img = cv2.imread(test_img)
 
