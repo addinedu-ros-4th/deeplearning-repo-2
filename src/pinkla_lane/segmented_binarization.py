@@ -2,7 +2,8 @@ import cv2
 import numpy as np
 import glob
 import matplotlib.pyplot as plt
-
+from ultralytics import YOLO
+from line_segmentation3 import extract_pixels
 
 # 노란선 구분하기 위한 임계값 설정
 yellow_HSV_th_min = np.array([0, 70, 70])
@@ -101,12 +102,13 @@ def binarize(img, verbose=False):
 
     # Sobel binary mask (thresholded gradients)
     sobel_mask = thresh_frame_sobel(img, kernel_size=9)
-    binary = np.logical_or(binary, sobel_mask)
+    scaled_sobel_mask = sobel_mask.copy().astype(np.uint8)*255
+    binary = np.logical_or(binary, scaled_sobel_mask)
 
     # 모폴로지 연산을 적용하여 binary 이미지로 변환
     kernel = np.ones((5, 5), np.uint8)
     closing = cv2.morphologyEx(binary.astype(np.uint8), cv2.MORPH_CLOSE, kernel)
-
+    scaled_closing = closing.copy().astype(np.uint8)*255
     # # 현재 프레임에서 라인을 감지하고 추적
     # detected_lines = detect_lines(img)
     
@@ -150,7 +152,7 @@ def binarize(img, verbose=False):
         # ax[1, 2].set_axis_off()
         plt.show()
 
-    return closing
+    return scaled_closing
 
 # def detect_lines(img):
 #     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
@@ -187,7 +189,39 @@ def binarize(img, verbose=False):
 
 if __name__ == '__main__':
 
-    test_images = glob.glob('test_images/20240321_211649.jpg')
-    for test_image in test_images:
-        img = cv2.imread(test_image)
-        binarize(img=img, verbose=True)
+    # test_images = glob.glob('test_images/20240321_211649.jpg')
+    # for test_image in test_images:
+    #     img = cv2.imread(test_image)
+    #     binarize(img=img, verbose=True)
+
+    model = YOLO("best.pt")
+
+    video_path = "mobility4_video.mp4"
+    cap = cv2.VideoCapture(video_path)
+
+    if not cap.isOpened():
+        print("Video is unavailable :", video_path)
+        exit(0) 
+
+    while (cap.isOpened()):
+        ret, image = cap.read()
+    
+        if not ret:
+            break
+        result = model.predict(source = image, conf=0.5)[0]
+        classes = result.boxes
+        segmentation = result.masks
+
+        border_line_pix, middle_line_pix, filled_image = extract_pixels(image, segmentation, classes)
+
+        np_binarized = binarize(filled_image)
+        # image_bgr = cv2.cvtColor(np_binarized, cv2.COLOR_RGB2BGR)
+        # np_to_img = cv2.bitwise_and(np_binarized, np_binarized, mask=np_binarized.astype(np.uint8))
+        # image = cv2.bitwise_and(image, image2, mask=image2.astype(np.uint8))
+        cv2.imshow("Video", np_binarized)
+
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
+
+    cap.release()
+    cv2.destroyAllWindows()
