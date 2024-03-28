@@ -16,8 +16,9 @@ PINK_HOST = '192.168.0.37'
 PINK_PORT = 8090
 
 class WindowClass(QMainWindow, from_class):
-    def __init__(self):
+    def __init__(self, ip="192.168.0.197", port=8485):
         super().__init__()
+        print(ip, port)
         self.setupUi(self)
         self.setWindowTitle('pinkla.b')
 
@@ -299,56 +300,45 @@ class WindowClass(QMainWindow, from_class):
 
 
     def keyPressEvent(self, event):
+        x, y, z = (0.0, 0.0, 0.0)
         if event.key() == Qt.Key_I:
             print("Move forward")
-            self.cal_cmd.lx = 2.0
-            self.cal_cmd.ly = 0.0
-            self.cal_cmd.az = 0.0
+            x, y, z = (2.0, 0.0, 0.0)
         elif event.key() == Qt.Key_Comma:
             print("Move backward")
-            self.cal_cmd.lx = -2.0
-            self.cal_cmd.ly = 0.0
-            self.cal_cmd.az = 0.0
+            x, y, z = (-2.0, 0.0, 0.0)
         elif event.key() == Qt.Key_J:
-            print("Turn left")
-            self.cal_cmd.lx = 0.0
-            self.cal_cmd.ly = 0.0
-            self.cal_cmd.az = 18.5
+            print("Rotae left")
+            x, y, z = (0.0, 0.0, 18.0)
         elif event.key() == Qt.Key_L:
-            print("Turn right")
-            self.cal_cmd.lx = 0.0
-            self.cal_cmd.ly = 0.0
-            self.cal_cmd.az = -18.5
+            print("Rotate right")
+            x, y, z = (0.0, 0.0, -18.0)
         elif event.key() == Qt.Key_K:
-            print("Turn right")
-            self.cal_cmd.lx = 0.0
-            self.cal_cmd.ly = 0.0
-            self.cal_cmd.az = 0.0
-
+            print("Stop")
+            x, y, z = (0.0, 0.0, 0.0)
         elif event.key() == Qt.Key_U:
-            print("Turn right")
-            self.cal_cmd.lx = 2.0
-            self.cal_cmd.ly = 0.0
-            self.cal_cmd.az = 4.0
+            print("Forward Turn left")
+            x, y, z = (2.0, 0.0, 4.0)
         elif event.key() == Qt.Key_O:
-            print("Turn right")
-            self.cal_cmd.lx = 2.0
-            self.cal_cmd.ly = 0.0
-            self.cal_cmd.az = -4.0
+            print("Forward Turn Right")
+            x, y, z = (2.0, 0.0, -4.0)
         elif event.key() == Qt.Key_M:
-            print("Turn right")
-            self.cal_cmd.lx = -2.0
-            self.cal_cmd.ly = 0.0
-            self.cal_cmd.az = -4.0
+            print("Backward Turn left")
+            x, y, z = (-2.0, 0.0, -4.0)
         elif event.key() == Qt.Key_Period:
             print("Turn right")
-            self.cal_cmd.lx = -2.0
-            self.cal_cmd.ly = 0.0
-            self.cal_cmd.az = 4.0
+            x, y, z = (-2.0, 0.0, 4.0)
 
+        self.cal_cmd.lx = x
+        self.cal_cmd.ly = y
+        self.cal_cmd.az = z
         value = self.cal_cmd.cal()
-        self.sender.cmd = [1, 100, 5, int(value[0]), int(value[1]), int(value[2]), int(value[3])]
         print(value)
+        try:
+            self.sender.cmd = [1, 100, 5, int(value[0]), int(value[1]), int(value[2]), int(value[3])]
+        except Exception as e:
+            print(e)
+            pass
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
