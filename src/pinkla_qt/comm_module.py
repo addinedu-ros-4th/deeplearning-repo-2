@@ -20,8 +20,6 @@ cmtx1 = np.array([[474.9308089, 0., 313.10372736],
                 [0.,0.,1.]])
 dist1 = np.array([[0.0268074362, -0.178310961, -0.000144841081, -0.00103575477, 0.183767484]])
 
-
-
 cmtx2 = np.array([[470.86256773,0.,322.79554974],
                   [0.,470.89842857,236.76274254],
                   [0.,0.,1.]])
@@ -34,6 +32,7 @@ class SERVER():
         self.port = port
         self.conn, self.addr = None, None
         self.writer = None
+        self.show = False
 
     def connect(self):
         try:
@@ -54,12 +53,23 @@ class SERVER():
             pass
 
     def undistorted_frame(self, frame):
+        cam = ""
+        cmtx = None
+        dist = None
         if self.port == 8485:
             cmtx = cmtx1
             dist = dist1
+            cam = "Lane"
         else:
             cmtx = cmtx2
             dist = dist2
+            cam = "Object"
+
+        if not self.show:
+            self.show =True
+            print(f"Connected {cam} Camera.")
+            print(cmtx)
+            print(dist)
 
         undist = cv2.undistort(frame, cmtx, dist)
         return undist
@@ -166,12 +176,12 @@ class Socket(QThread):
 class Camera_Th(QThread):
     update = pyqtSignal(QPixmap)
 
-    def __init__(self, sec=0, parent=None):
+    def __init__(self, sec=0, parent=None, port=0000):
         super().__init__()
         self.main = parent
         self.running = True
         self.generator = find_load_center()
-        self.cam_server = SERVER()
+        self.cam_server = SERVER(port=port)
         self.conn = None
         self.source, self.pixmap = None, None
 
@@ -184,7 +194,7 @@ class Camera_Th(QThread):
         while self.running == True:
             self.source = self.cam_server.show_video()
             if self.source is not None:
-                image, error = self.generator.get_load_center(self.source)
+                # image, error = self.generator.get_load_center(self.source)
                 image = cv2.cvtColor(self.source, cv2.COLOR_BGR2RGB)
                 h,w,c = image.shape
                 qformat_type = QImage.Format_RGB888
@@ -303,3 +313,10 @@ class Cal_Cmd():
         # after 3 sec -> zero
 
         return value
+
+
+def center_ui(object):
+        screen_geometry = QApplication.desktop().screenGeometry()
+        x = (screen_geometry.width() - object.width()) // 2
+        y = (screen_geometry.height() - object.height()) // 2
+        object.move(x, y)
