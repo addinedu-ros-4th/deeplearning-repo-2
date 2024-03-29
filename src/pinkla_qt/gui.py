@@ -12,16 +12,22 @@ HOST = '192.168.0.197'
 CAM_PORT = 8485
 CAM_PORT2 = 8584
 
-PINK_HOST = '192.168.0.37'
+PINK_HOST = '192.168.0.100'
 PINK_PORT = 8090
 
 class WindowClass(QMainWindow, from_class):
-    def __init__(self, ip="192.168.0.197", port=8485):
+    def __init__(self, server_ip="192.168.0.197", client_ip="192.168.0.100", port1="8485", port2="8584", port3="8090"):
         super().__init__()
-        print(ip, port)
         self.setupUi(self)
-        self.setWindowTitle('pinkla.b')
+        self.setWindowTitle('Pinkla.b')
+        center_ui(self)
 
+        self.server_ip = server_ip
+        self.client_ip = client_ip
+        self.cam_port1 = int(port1)
+        self.cam_port2 = int(port2)
+        self.serial_port3 = int(port3)
+        
         self.conn, self.addr = [None], [None]
         self.conn2, self.addr2 = [None], [None]
         self.pinkla_conn, self.pinkla_addr = None, None
@@ -63,14 +69,14 @@ class WindowClass(QMainWindow, from_class):
         self.label_pixmap_2.setPixmap(self.pixmap2)
 
     def socket_module_init(self):
-        self.cam_socket = Socket(HOST, CAM_PORT)
+        self.cam_socket = Socket(self.server_ip, self.cam_port1)
         self.cam_socket.daemon = True
         self.cam_socket.update.connect(lambda conn: self.check_connect_cam(conn, 
                                                                            self.conn, 
                                                                            self.cam_socket, 
                                                                            self.isCamSocketOpened))
 
-        self.cam_socket2 = Socket(HOST, CAM_PORT2)
+        self.cam_socket2 = Socket(self.server_ip, self.cam_port2)
         self.cam_socket2.daemon = True
         self.cam_socket2.update.connect(lambda conn: self.check_connect_cam(conn, 
                                                                            self.conn2, 
@@ -78,13 +84,13 @@ class WindowClass(QMainWindow, from_class):
                                                                            self.isCamSocketOpened2))
 
 
-        self.pinkla_socket = Socket_Pinkla(PINK_HOST, PINK_PORT)
+        self.pinkla_socket = Socket_Pinkla(self.client_ip, self.serial_port3)
         self.pinkla_socket.daemon = True
         self.pinkla_socket.update.connect(self.check_connect_pink)
 
     def camera_module_init(self):
-        self.camera_server = SERVER(HOST, CAM_PORT)
-        self.camera_th = Camera_Th(self)
+        self.camera_server = SERVER(self.server_ip, self.cam_port1)
+        self.camera_th = Camera_Th(self, port=self.cam_port1)
         self.camera_th.daemon = True
         self.camera_th.update.connect(lambda pixmap : self.update_image(pixmap,
                                                                         self.label_pixmap,
@@ -92,8 +98,8 @@ class WindowClass(QMainWindow, from_class):
         self.camera_th.update.connect(lambda pixmap : self.update_record(pixmap,
                                                                         self.camera_server))
 
-        self.camera_server2 = SERVER(HOST, CAM_PORT2)
-        self.camera_th2 = Camera_Th(self)
+        self.camera_server2 = SERVER(self.server_ip, self.cam_port2)
+        self.camera_th2 = Camera_Th(self, port=self.cam_port2)
         self.camera_th2.daemon = True
         self.camera_th2.update.connect(lambda pixmap : self.update_image(pixmap,
                                                                         self.label_pixmap_2,
