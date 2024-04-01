@@ -1,9 +1,8 @@
 import cv2
 import numpy as np
-import glob
 import matplotlib.pyplot as plt
 from ultralytics import YOLO
-from line_segmentation3 import extract_pixels
+from extract_pixels import extract_pixels
 
 # 노란선 구분하기 위한 임계값 설정
 yellow_HSV_th_min = np.array([0, 70, 70])
@@ -51,7 +50,7 @@ def get_binary_from_equalized_grayscale(frame):
     eq_global = cv2.equalizeHist(gray)
 
     # 임계값이 250 이상인 픽셀을 255, 아닌 경우를 0으로 binarize
-    _, th = cv2.threshold(eq_global, thresh=250, maxval=255, type=cv2.THRESH_BINARY)
+    _, th = cv2.threshold(eq_global, thresh=240, maxval=255, type=cv2.THRESH_BINARY)
 
     return th
 
@@ -103,7 +102,7 @@ def binarize(img, verbose=False):
     # Sobel binary mask (thresholded gradients)
     sobel_mask = thresh_frame_sobel(img, kernel_size=9)
     scaled_sobel_mask = sobel_mask.copy().astype(np.uint8)*255
-    binary = np.logical_or(binary, scaled_sobel_mask)
+    binary = np.logical_and(binary, scaled_sobel_mask)
 
     # 모폴로지 연산을 적용하여 binary 이미지로 변환
     kernel = np.ones((5, 5), np.uint8)
@@ -194,9 +193,11 @@ if __name__ == '__main__':
     #     img = cv2.imread(test_image)
     #     binarize(img=img, verbose=True)
 
-    model = YOLO("best.pt")
+    model = YOLO("best2.pt")
 
-    video_path = "mobility4_video.mp4"
+    video_path = "mobility6_video.avi"
+    # video_path = "mobility4_video.mp4"
+
     cap = cv2.VideoCapture(video_path)
 
     if not cap.isOpened():
@@ -214,11 +215,12 @@ if __name__ == '__main__':
 
         border_line_pix, middle_line_pix, filled_image = extract_pixels(image, segmentation, classes)
 
-        np_binarized = binarize(filled_image)
-        # image_bgr = cv2.cvtColor(np_binarized, cv2.COLOR_RGB2BGR)
-        # np_to_img = cv2.bitwise_and(np_binarized, np_binarized, mask=np_binarized.astype(np.uint8))
-        # image = cv2.bitwise_and(image, image2, mask=image2.astype(np.uint8))
-        cv2.imshow("Video", np_binarized)
+        segmented_binarized = binarize(filled_image)
+        cv2.imshow("Video", segmented_binarized)
+
+        # existing_binarized = binarize(image)
+        # binarized = cv2.bitwise_and(existing_binarized, segmented_binarized)
+        # cv2.imshow("Video", binarized)
 
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break

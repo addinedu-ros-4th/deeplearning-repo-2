@@ -13,10 +13,9 @@ def birdeye(img, verbose=False):
     # 원근 변환 시 사용할 점(우측하단, 좌측하단, 좌측상단, 우측상단 좌표) 지정
     src = np.float32([[w, h],    # br
                       [0, h],    # bl
-                    #   [w/20, h/3],   # tl
-                    #   [w*19/20, h/3]])  # tr
                       [0, h*1/3],   # tl video 4
                       [w, h*1/3]])  # tr video 4
+
     
     # 변환된 이미지의 네 모서리 좌표
     dst = np.float32([[w, h],       # br
@@ -54,7 +53,7 @@ if __name__ == '__main__':
 
     ret, mtx, dist, rvecs, tvecs = calibrate_camera(calib_images_dir='camera_cal')
 
-    for test_img in glob.glob('test_images/frame707.jpg'):
+    for test_img in glob.glob('test_images/frame1.png'):
     # for test_img in glob.glob('test_images/test1.jpg'):
 
         img = cv2.imread(test_img)

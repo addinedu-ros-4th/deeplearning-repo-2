@@ -1,13 +1,9 @@
 from ultralytics import YOLO
 import cv2
 import numpy as np
-import glob
-from calibration_utils import calibrate_camera, undistort
 import time
 
-model = YOLO("best.pt")
-
-
+model = YOLO("best2.pt")
 
 # def extract_pixels(image, box_cords):
 #     x, y, w, h = box_cords
@@ -27,7 +23,7 @@ def extract_pixels(image, segmentation, classes):
         
         xy = mask.xy[0].astype("int") 
 
-        if box.cls.item()==3:
+        if box.cls.item()==2:
             middle_line_pix.append(xy)
             cv2.fillPoly(filled_image,[xy],color=(0,255,255))
 
@@ -50,7 +46,7 @@ def extract_pixels(image, segmentation, classes):
 
 if __name__ == '__main__':
 
-    video_path = "mobility4_video.mp4"
+    video_path = "mobility6_video.avi"
     cap = cv2.VideoCapture(video_path)
 
     if not cap.isOpened():
@@ -104,6 +100,10 @@ if __name__ == '__main__':
         # image = cv2.addWeighted(image, 1, polygon_area2, 0.5, 0)
 
         cv2.imshow("Video", filled_image)
+        # dst1 = cv2.inRange(filled_image, (0, 100, 100), (0, 255, 255))
+        # dst2 = cv2.inRange(filled_image, (100, 100, 100), (255, 255, 255))
+        # print("dst1: ",dst1)
+        # print("dst2: ",dst2)
         time.sleep(0.01)
 
         # border_line_pix.clear()
