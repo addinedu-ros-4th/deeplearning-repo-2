@@ -159,7 +159,7 @@ if __name__ == '__main__':
 
     ret, mtx, dist, rvecs, tvecs = calibrate_camera(calib_images_dir='video')
 
-    video_path = 'mobility4_video.mp4'
+    video_path = 'mobility6_video.avi'
 
     cap = cv2.VideoCapture(video_path)
 
