@@ -324,40 +324,57 @@ class WindowClass(QMainWindow, from_class):
 
 
     def keyPressEvent(self, event):
-        x, y, z = (0.0, 0.0, 0.0)
-        if event.key() == Qt.Key_I:
-            print("Move forward")
-            x, y, z = (2.0, 0.0, 0.0)
-        elif event.key() == Qt.Key_Comma:
-            print("Move backward")
-            x, y, z = (-2.0, 0.0, 0.0)
-        elif event.key() == Qt.Key_J:
-            print("Rotae left")
-            x, y, z = (0.0, 0.0, 18.0)
-        elif event.key() == Qt.Key_L:
-            print("Rotate right")
-            x, y, z = (0.0, 0.0, -18.0)
-        elif event.key() == Qt.Key_K:
-            print("Stop")
-            x, y, z = (0.0, 0.0, 0.0)
-        elif event.key() == Qt.Key_U:
-            print("Forward Turn left")
-            x, y, z = (2.0, 0.0, 4.0)
-        elif event.key() == Qt.Key_O:
-            print("Forward Turn Right")
-            x, y, z = (2.0, 0.0, -4.0)
-        elif event.key() == Qt.Key_M:
-            print("Backward Turn left")
-            x, y, z = (-2.0, 0.0, -4.0)
-        elif event.key() == Qt.Key_Period:
-            print("Turn right")
-            x, y, z = (-2.0, 0.0, 4.0)
+        LIN_VEL_STEP_SIZE = 0.2
+        ANG_VEL_STEP_SIZE = 2.5
 
-        self.cal_cmd.lx = x
-        self.cal_cmd.ly = y
-        self.cal_cmd.az = z
+        if event.key() == Qt.Key_W:
+            if self.cal_cmd.lx == 0.0:
+                self.cal_cmd.lx = 2.5
+            # 선속도 직진 2.5 보다 빠르거나 후진 -2.5보다 빠르면 직진속도 추가
+            elif (self.cal_cmd.lx >= 2.5) or (-2.5 >= self.cal_cmd.lx):
+                self.cal_cmd.lx = self.cal_cmd.lx + LIN_VEL_STEP_SIZE
+            # 후진속도 -2.5 아래로 감속 시키면 선속도 초기화
+            elif self.cal_cmd.lx > -2.5:
+                self.cal_cmd.lx = 0.0
+            # 각속도 초기화
+            if self.cal_cmd.az != 0.0:
+                self.cal_cmd.az = 0.0
+            self.print_vels(self.cal_cmd.lx, self.cal_cmd.az)
+        elif event.key() == Qt.Key_X:
+            if self.cal_cmd.lx == 0.0:
+                self.cal_cmd.lx = -2.5         
+            # 선속도 후진 -2.5 보다 빠르거나 직진 2.5보다 빠르면 후진속도 추가                
+            elif (-2.5 >= self.cal_cmd.lx) or (self.cal_cmd.lx >= 2.5):
+                self.cal_cmd.lx = self.cal_cmd.lx - LIN_VEL_STEP_SIZE
+            # 선속도 직진 2.5아래로 감속 시키면 선속도 초기화
+            elif 2.5 > self.cal_cmd.lx:
+                self.cal_cmd.lx = 0.0
+            # 각속도 초기화
+            if self.cal_cmd.az != 0.0:
+                self.cal_cmd.az = 0.0                               
+            self.print_vels(self.cal_cmd.lx, self.cal_cmd.az)
+        elif event.key() == Qt.Key_A:
+            if self.cal_cmd.az == 0.0:
+                self.cal_cmd.az = 5.0
+            elif (self.cal_cmd.az >= 5.0):
+                self.cal_cmd.az = self.cal_cmd.az + ANG_VEL_STEP_SIZE
+            elif 0.0 > self.cal_cmd.az:
+                self.cal_cmd.az = 0.0       
+            self.print_vels(self.cal_cmd.lx, self.cal_cmd.az)            
+        elif event.key() == Qt.Key_D:
+            if self.cal_cmd.az == 0.0:
+                self.cal_cmd.az = -5.0
+            elif (-5.0 >= self.cal_cmd.az):                
+                self.cal_cmd.az = self.cal_cmd.az - ANG_VEL_STEP_SIZE
+            elif self.cal_cmd.az > 0.0:
+                self.cal_cmd.az = 0.0  
+            self.print_vels(self.cal_cmd.lx, self.cal_cmd.az)            
+        elif event.key() == Qt.Key_S:
+            self.cal_cmd.lx = 0.0
+            self.cal_cmd.az = 0.0          
+            self.print_vels(self.cal_cmd.lx, self.cal_cmd.az)
         value = self.cal_cmd.cal()
-        print(value)
+        # print(value)
         try:
             self.sender.cmd = [1, 100, 5, int(value[0]), int(value[1]), int(value[2]), int(value[3])]
         except Exception as e:
