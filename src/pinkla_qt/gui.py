@@ -4,6 +4,7 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(current_dir + "/..")
 # print(f'current_dir : {current_dir}')
 from pinkla_qt.comm_module import *
+from pinkla_database.pinkla_db import *
 
 ui_path = "./gui.ui"
 from_class = uic.loadUiType(ui_path)[0]
@@ -43,6 +44,12 @@ class WindowClass(QMainWindow, from_class):
         self.show_logo(self.label_pixmap_2, self.pixmap2)
 
         self.cal_cmd = Cal_Cmd()
+        
+        self.mysql_info = ["localhost", "joe", "0000", "pinkla_base"]
+        
+        self.db = pinkla_mysql()
+        
+        self.db.init_db(self.mysql_info)
 
     def flag_init(self):
         self.isCamSocketOpened, self.isCamSocketOpened2 = [False], [False]
