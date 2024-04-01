@@ -194,7 +194,7 @@ class Camera_Th(QThread):
         while self.running == True:
             self.source = self.cam_server.show_video()
             if self.source is not None:
-                # image, error = self.generator.get_load_center(self.source)
+                image, error = self.generator.get_load_center(self.source)
                 image = cv2.cvtColor(self.source, cv2.COLOR_BGR2RGB)
                 h,w,c = image.shape
                 qformat_type = QImage.Format_RGB888

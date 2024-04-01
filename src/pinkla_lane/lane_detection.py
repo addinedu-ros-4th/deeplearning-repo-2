@@ -45,49 +45,66 @@ class find_load_center():
         self.img_center_y = int(480/2)
         self.seg_center1_list = []
         self.seg_center2_list = []
+        self.alpha = 0.3
+        self.error = 0
         
  
     def get_load_center(self, image):
         self.seg_center1_list = []
         self.seg_center2_list = []
         self.image = image
-        self.result = self.model.predict(source = self.image, conf=0.5)[0]
+        
+        roi_rect_start = (0, int(self.img_center_y))
+        roi_rect_end = (self.img_center_x * 2, int(self.img_center_y * 1.75))
+        
+        ROI = self.image[roi_rect_start[1]:roi_rect_end[1], roi_rect_start[0]:roi_rect_end[0]]
+        
+        
+        self.result = self.model.predict(source = ROI, conf=0.5)[0]
         self.classes = self.result.boxes
         self.segmentation = self.result.masks
         
-        for mask, box in zip(self.segmentation,self.classes):
-            if box.cls.item()==3:
-                
-                xy = mask.xy[0].astype("int") 
-                cv2.polylines(self.image,[xy],isClosed=True,color=(255,0,0),thickness=2)
-                self.seg_center1 = get_centroid(xy)
-                self.seg_center1_list.append(self.seg_center1)
+        try: 
+            for mask, box in zip(self.segmentation,self.classes):
+                if box.cls.item()==3:
+                    
+                    xy = mask.xy[0].astype("int") 
+                    cv2.polylines(ROI,[xy],isClosed=True,color=(255,0,0),thickness=2)
+                    self.seg_center1 = get_centroid(xy)
+                    self.seg_center1_list.append(self.seg_center1)
 
-            elif box.cls.item()==0:
-                
-                xy = mask.xy[0].astype("int")
-                if check_right_lane(xy):
-                    cv2.polylines(self.image,[xy],isClosed=True,color=(0,0,255),thickness=2)
-                    self.seg_center2 = get_centroid(xy)
-                    self.seg_center2_list.append(self.seg_center2)
-            else:
-                pass
+                elif box.cls.item()==0:
+                    
+                    xy = mask.xy[0].astype("int")
+                    if check_right_lane(xy):
+                        cv2.polylines(ROI,[xy],isClosed=True,color=(0,0,255),thickness=2)
+                        self.seg_center2 = get_centroid(xy)
+                        self.seg_center2_list.append(self.seg_center2)
+                else:
+                    pass
+        
+        except TypeError:
+            pass
         
         
-        if len(self.seg_center1_list) > 2:
-            line_center = get_centroid(self.seg_center1_list)
+        if len(self.seg_center1_list) > 1:
+            self.line_center = get_centroid(self.seg_center1_list)
         else:
-            line_center = self.seg_center1
+            self.line_center = self.seg_center1
             
         
-        load_center = (int((line_center[0] + self.seg_center2[0])/2), self.img_center_y)
+        load_center = (int((self.line_center[0] + self.seg_center2[0])/2), int(self.img_center_y*1.5))        
         
-        error = load_center[0]-(self.img_center_x)
+        overlay = self.image.copy()
+        cv2.rectangle(self.image, roi_rect_start, roi_rect_end, color = (255, 0, 0), thickness = 2)
         
-        print(self.seg_center1, self.seg_center2)
-        
-        cv2.line(self.image, (self.seg_center1[0], self.img_center_y), (self.seg_center2[0], self.img_center_y), color = (0, 255, 0), thickness=2)
+        self.error = load_center[0]-(self.img_center_x)
+                
+        cv2.line(self.image, (self.line_center[0], int(self.img_center_y*1.5)), (self.seg_center2[0], int(self.img_center_y*1.5)), color = (0, 255, 0), thickness=2)
         cv2.circle(self.image, load_center, radius = 3, color = (0, 0, 255), thickness = -1)
-        cv2.circle(self.image, (self.img_center_x, self.img_center_y), radius = 5, color = (255, 255, 255), thickness = -1)
+        cv2.circle(self.image, (self.img_center_x, int(self.img_center_y*1.5)), radius = 5, color = (255, 255, 255), thickness = -1)
         
-        return self.image, error
+        overlay = cv2.addWeighted(overlay, self.alpha, self.image, 1-self.alpha, 0)
+
+        
+        return overlay, self.error
