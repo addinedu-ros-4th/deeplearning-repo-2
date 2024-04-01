@@ -40,6 +40,18 @@ def check_right_lane(arr):
         
     return result
 
+def check_left_lane(arr):
+    x_values = arr[:, 0]
+    indices = []
+    indices = np.where(x_values < 200)[0]
+    
+    if len(indices) == 0:
+        result = False
+    else:
+        result = True
+        
+    return result
+
 
 class find_load_center():
     def __init__(self):
@@ -47,7 +59,7 @@ class find_load_center():
         # self.model = YOLO("../../data/bestyolov8m.pt")
         self.image = None
         self.img_center_x = int(640/2)
-        self.img_center_y = int(480/3)
+        self.img_center_y = int(480/2)
 
         self.seg_center_middle = (0,0)
         self.seg_center_border = (0,0)
@@ -73,8 +85,9 @@ class find_load_center():
 
         self.image = image
         
-        roi_rect_start = (0, int(self.img_center_y))
-        roi_rect_end = (self.img_center_x * 2, int(self.img_center_y * 2.65))
+        roi_rect_start = (0, int(self.img_center_y)-130)
+        roi_rect_end = (self.img_center_x * 2, int(self.img_center_y * 1.75))
+        roi_rect_center_y = (int(roi_rect_start[1]+roi_rect_end[1])/2)
         
         ROI = self.image[roi_rect_start[1]:roi_rect_end[1], roi_rect_start[0]:roi_rect_end[0]]
         
@@ -101,9 +114,10 @@ class find_load_center():
                 # middle_line
                 if box.cls.item()==2:
                     xy = mask.xy[0].astype("int")
-                    cv2.polylines(ROI,[xy],isClosed=True,color=(0,255,255),thickness=2)
-                    self.seg_center_middle = get_centroid(xy)
-                    self.seg_center_middle_list.append(self.seg_center_middle)
+                    if check_left_lane(xy):
+                        cv2.polylines(ROI,[xy],isClosed=True,color=(0,255,255),thickness=2)
+                        self.seg_center_middle = get_centroid(xy)
+                        self.seg_center_middle_list.append(self.seg_center_middle)
 
         except TypeError as e:
             print("for mask, box in zip(self.segmentation,self.classes) : ",e)
@@ -137,4 +151,5 @@ class find_load_center():
         cv2.circle(self.image, (self.img_center_x, int(self.img_center_y*1.5)), radius = 5, color = (255, 255, 255), thickness = -1)
         
         overlay = cv2.addWeighted(overlay, self.alpha, self.image, 1-self.alpha, 0)
+        
         return overlay, self.error
