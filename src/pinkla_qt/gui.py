@@ -4,7 +4,7 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(current_dir + "/..")
 # print(f'current_dir : {current_dir}')
 from pinkla_qt.comm_module import *
-from pinkla_database.pinkla_db import *
+# from pinkla_database.pinkla_db import *
 
 ui_path = "./gui.ui"
 from_class = uic.loadUiType(ui_path)[0]
