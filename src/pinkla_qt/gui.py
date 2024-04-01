@@ -49,6 +49,7 @@ class WindowClass(QMainWindow, from_class):
         self.isCameraOn, self.isCameraOn2 = [False], [False]
         self.isRecOn, self.isRecOn2 = [False], [False]
         self.isPinkSocketOpened = False
+        self.isLaneDetectionOn = False
 
     def ui_init(self):
         self.setFocusPolicy(Qt.StrongFocus)
@@ -141,8 +142,19 @@ class WindowClass(QMainWindow, from_class):
 
 
         self.btn_pinkla_socket.clicked.connect(self.click_pinkla_socket)
-        self.btn_for.clicked.connect(self.click_forward)
-        self.btn_st.clicked.connect(self.click_stop)
+        # self.btn_for.clicked.connect(self.click_forward)
+        # self.btn_st.clicked.connect(self.click_stop)
+        self.btn_auto.clicked.connect(lambda: self.seg_yolo_start(self.camera_th))
+
+    def seg_yolo_start(self, thread):
+        if not self.isLaneDetectionOn:
+            self.btn_auto.setText('Auto Driving\nSTOP')
+            self.isLaneDetectionOn = True
+            thread.yolo = True
+        else:
+            self.btn_auto.setText('Auto Driving\nSTART')
+            self.isLaneDetectionOn = False
+            thread.yolo = False
 
     def click_cam_socket(self, flag_soc, flag_cam, flag_rec, socket, btn_soc, btn_cam, btn_rec, label, pix, thread):
         flag_cam[0] = False
@@ -215,7 +227,6 @@ class WindowClass(QMainWindow, from_class):
             self.sender.s.close()
             self.sender.running = False
             self.isPinkSocketOpened = False
-
 
     def click_forward(self):
         self.sender.cmd = [0,100,8,0,0,0,0]
