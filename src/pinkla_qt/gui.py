@@ -9,13 +9,6 @@ from pinkla_qt.comm_module import *
 ui_path = "./gui.ui"
 from_class = uic.loadUiType(ui_path)[0]
 
-HOST = '192.168.0.197'
-CAM_PORT = 8485
-CAM_PORT2 = 8584
-
-PINK_HOST = '192.168.0.100'
-PINK_PORT = 8090
-
 class WindowClass(QMainWindow, from_class):
     def __init__(self, server_ip="192.168.0.197", client_ip="192.168.0.100", port1="8485", port2="8584", port3="8090"):
         super().__init__()
@@ -44,6 +37,7 @@ class WindowClass(QMainWindow, from_class):
         self.show_logo(self.label_pixmap_2, self.pixmap2)
 
         self.cal_cmd = Cal_Cmd()
+        self.sender = None
         
         # self.mysql_info = ["localhost", "joe", "0000", "pinkla_base"]
         
@@ -100,18 +94,18 @@ class WindowClass(QMainWindow, from_class):
         self.camera_server = SERVER(self.server_ip, self.cam_port1)
         self.camera_th = Camera_Th(self, port=self.cam_port1)
         self.camera_th.daemon = True
-        self.camera_th.update.connect(lambda pixmap : self.update_image(pixmap,
+        self.camera_th.update.connect(lambda pixmap, error : self.update_image(pixmap, error,
                                                                         self.label_pixmap,
-                                                                        self.pixmap))
+                                                                        self.pixmap, self.camera_th))
         self.camera_th.update.connect(lambda pixmap : self.update_record(pixmap,
                                                                         self.camera_server))
 
         self.camera_server2 = SERVER(self.server_ip, self.cam_port2)
         self.camera_th2 = Camera_Th(self, port=self.cam_port2)
         self.camera_th2.daemon = True
-        self.camera_th2.update.connect(lambda pixmap : self.update_image(pixmap,
+        self.camera_th2.update.connect(lambda pixmap, error : self.update_image(pixmap, error,
                                                                         self.label_pixmap_2,
-                                                                        self.pixmap2))
+                                                                        self.pixmap2, self.camera_th2))
         self.camera_th2.update.connect(lambda pixmap : self.update_record(pixmap,
                                                                         self.camera_server2))
 
@@ -151,17 +145,22 @@ class WindowClass(QMainWindow, from_class):
         self.btn_pinkla_socket.clicked.connect(self.click_pinkla_socket)
         # self.btn_for.clicked.connect(self.click_forward)
         # self.btn_st.clicked.connect(self.click_stop)
-        self.btn_auto.clicked.connect(lambda: self.seg_yolo_start(self.camera_th))
+        self.btn_auto.clicked.connect(lambda: self.yolo_seg_lane_start(self.camera_th))
 
-    def seg_yolo_start(self, thread):
+    def yolo_seg_lane_start(self, thread):
         if not self.isLaneDetectionOn:
             self.btn_auto.setText('Auto Driving\nSTOP')
             self.isLaneDetectionOn = True
-            thread.yolo = True
+            thread.yolo_lane = True
         else:
             self.btn_auto.setText('Auto Driving\nSTART')
             self.isLaneDetectionOn = False
-            thread.yolo = False
+            thread.yolo_lane = False
+            try:
+                if self.sender is not None:
+                    self.sender.cmd = [0, 100, 5, 0, 0, 0, 0]
+            except Exception as e:
+                pass
 
     def click_cam_socket(self, flag_soc, flag_cam, flag_rec, socket, btn_soc, btn_cam, btn_rec, label, pix, thread):
         flag_cam[0] = False
@@ -279,11 +278,21 @@ class WindowClass(QMainWindow, from_class):
             self.pinkla_socket.running = False
             self.pinkla_socket.stop()
 
-    def update_image(self, pixmap, label, pix): 
+    def update_image(self, pixmap, error, label, pix, thread): 
         try:
             pix = pixmap.scaled(label.width(), label.height())
             label.setPixmap(pix)
             label.setAlignment(Qt.AlignCenter)
+
+            if thread.yolo_lane:
+                value = self.cal_cmd.moveTo(error)
+                try:
+                    self.sender.cmd = [1, 100, 5, int(value[0]), int(value[1]), int(value[2]), int(value[3])]
+                except Exception as e:
+                    # print(e)
+                    pass
+
+                pass
         except Exception as e:
             self.show_logo(label, pix)
             pass
