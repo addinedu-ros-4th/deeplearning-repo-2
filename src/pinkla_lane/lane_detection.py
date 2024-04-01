@@ -55,7 +55,7 @@ def check_left_lane(arr):
 
 class find_load_center():
     def __init__(self):
-        self.model = YOLO("../../data/bestyolov8n.pt")
+        self.model = YOLO("../../data/0331data_n.pt")
         # self.model = YOLO("../../data/bestyolov8m.pt")
         self.image = None
         self.img_center_x = int(640/2)
