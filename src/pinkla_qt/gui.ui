@@ -39,209 +39,14 @@
    <property name="geometry">
     <rect>
      <x>620</x>
-     <y>220</y>
+     <y>230</y>
      <width>411</width>
-     <height>491</height>
+     <height>401</height>
     </rect>
    </property>
    <property name="title">
     <string>Control</string>
    </property>
-   <widget class="QPushButton" name="btn_rot_r">
-    <property name="geometry">
-     <rect>
-      <x>250</x>
-      <y>330</y>
-      <width>71</width>
-      <height>71</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>⟳</string>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="btn_dia_fl">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>250</y>
-      <width>71</width>
-      <height>71</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>⬉</string>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="btn_dig_rl">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>410</y>
-      <width>71</width>
-      <height>71</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>⬋</string>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="btn_back">
-    <property name="geometry">
-     <rect>
-      <x>170</x>
-      <y>410</y>
-      <width>71</width>
-      <height>71</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>⬇</string>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="btn_hor_l">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>330</y>
-      <width>71</width>
-      <height>71</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>⬅</string>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="btn_for">
-    <property name="geometry">
-     <rect>
-      <x>170</x>
-      <y>250</y>
-      <width>71</width>
-      <height>71</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>⬆️</string>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="btn_cur_rr">
-    <property name="geometry">
-     <rect>
-      <x>250</x>
-      <y>410</y>
-      <width>71</width>
-      <height>71</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>↳</string>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="btn_hor_r">
-    <property name="geometry">
-     <rect>
-      <x>330</x>
-      <y>330</y>
-      <width>71</width>
-      <height>71</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>⮕</string>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="btn_cur_fr">
-    <property name="geometry">
-     <rect>
-      <x>250</x>
-      <y>250</y>
-      <width>71</width>
-      <height>71</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>↱</string>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="btn_cur_rl">
-    <property name="geometry">
-     <rect>
-      <x>90</x>
-      <y>410</y>
-      <width>71</width>
-      <height>71</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>↲</string>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="btn_dig_fr">
-    <property name="geometry">
-     <rect>
-      <x>330</x>
-      <y>250</y>
-      <width>71</width>
-      <height>71</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>⬈</string>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="btn_dig_rr">
-    <property name="geometry">
-     <rect>
-      <x>330</x>
-      <y>410</y>
-      <width>71</width>
-      <height>71</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>⬊</string>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="btn_st">
-    <property name="geometry">
-     <rect>
-      <x>170</x>
-      <y>330</y>
-      <width>71</width>
-      <height>71</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>STOP</string>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="brn_cur_fl">
-    <property name="geometry">
-     <rect>
-      <x>90</x>
-      <y>250</y>
-      <width>71</width>
-      <height>71</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>↰</string>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="btn_rot_l">
-    <property name="geometry">
-     <rect>
-      <x>90</x>
-      <y>330</y>
-      <width>71</width>
-      <height>71</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>⟲</string>
-    </property>
-   </widget>
    <widget class="QPushButton" name="btn_w4">
     <property name="geometry">
      <rect>
@@ -255,19 +60,6 @@
      <string>w4</string>
     </property>
    </widget>
-   <widget class="QPushButton" name="btn_setspeed">
-    <property name="geometry">
-     <rect>
-      <x>160</x>
-      <y>120</y>
-      <width>101</width>
-      <height>31</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>SET SPEED</string>
-    </property>
-   </widget>
    <widget class="QPushButton" name="btn_auto">
     <property name="geometry">
      <rect>
@@ -278,8 +70,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>Autonoumous
-Driving
+     <string>Auto Driving
 START</string>
     </property>
    </widget>
@@ -294,19 +85,6 @@ START</string>
     </property>
     <property name="text">
      <string>w1</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>120</y>
-      <width>51</width>
-      <height>17</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Speed</string>
     </property>
    </widget>
    <widget class="QPushButton" name="btn_pinkla_socket">
@@ -336,16 +114,6 @@ CONNECT</string>
      <string>w2</string>
     </property>
    </widget>
-   <widget class="QSpinBox" name="spin_speed">
-    <property name="geometry">
-     <rect>
-      <x>70</x>
-      <y>120</y>
-      <width>81</width>
-      <height>31</height>
-     </rect>
-    </property>
-   </widget>
    <widget class="QPushButton" name="btn_w3">
     <property name="geometry">
      <rect>
@@ -359,19 +127,19 @@ CONNECT</string>
      <string>w3</string>
     </property>
    </widget>
-  </widget>
-  <widget class="QPushButton" name="btn_ems">
-   <property name="geometry">
-    <rect>
-     <x>620</x>
-     <y>720</y>
-     <width>411</width>
-     <height>181</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>E-STOP</string>
-   </property>
+   <widget class="QPushButton" name="btn_ems">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>210</y>
+      <width>391</width>
+      <height>181</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>E-STOP</string>
+    </property>
+   </widget>
   </widget>
   <widget class="QLabel" name="label_pixmap_2">
    <property name="geometry">
