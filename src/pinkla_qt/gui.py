@@ -4,20 +4,13 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(current_dir + "/..")
 # print(f'current_dir : {current_dir}')
 from pinkla_qt.comm_module import *
-# from pinkla_database.pinkla_db import *
+from pinkla_database.pinkla_db import *
 
 ui_path = "./gui.ui"
 from_class = uic.loadUiType(ui_path)[0]
 
-HOST = '192.168.0.197'
-CAM_PORT = 8485
-CAM_PORT2 = 8584
-
-PINK_HOST = '192.168.0.100'
-PINK_PORT = 8090
-
 class WindowClass(QMainWindow, from_class):
-    def __init__(self, server_ip="192.168.0.5", client_ip="192.168.0.5", port1="8485", port2="8584", port3="8090"):
+    def __init__(self, server_ip="0.0.0.0", client_ip="0.0.0.0", port1="8485", port2="8584", port3="8090"):
         super().__init__()
         self.setupUi(self)
         self.setWindowTitle('Pinkla.b')
@@ -46,9 +39,7 @@ class WindowClass(QMainWindow, from_class):
         self.cal_cmd = Cal_Cmd()
         
         self.mysql_info = ["database-2.czo0g0uict7o.ap-northeast-2.rds.amazonaws.com", "pinkla", "ljl6922!"]
-        
         self.db = pinkla_mysql(self.mysql_info)
-        
         self.db.init_db()
 
     def flag_init(self):
