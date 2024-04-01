@@ -183,7 +183,8 @@ class Camera_Th(QThread):
         self.generator = find_load_center()
         self.cam_server = SERVER(port=port)
         self.conn = None
-        self.source, self.pixmap = None, None
+        self.source, self.image, self.pixmap = None, None, None
+        self.yolo = False
 
     def run(self):
         # print(self.conn)
@@ -194,11 +195,15 @@ class Camera_Th(QThread):
         while self.running == True:
             self.source = self.cam_server.show_video()
             if self.source is not None:
-                image, error = self.generator.get_load_center(self.source)
-                image = cv2.cvtColor(self.source, cv2.COLOR_BGR2RGB)
-                h,w,c = image.shape
+                if not self.yolo:
+                    self.image = self.source.copy()
+                else:
+                    self.image, error = self.generator.get_load_center(self.source.copy())
+
+                self.image = cv2.cvtColor(self.image, cv2.COLOR_BGR2RGB)
+                h,w,c = self.image.shape
                 qformat_type = QImage.Format_RGB888
-                qimage = QImage(image.data, w, h, w*c, qformat_type)
+                qimage = QImage(self.image.data, w, h, w*c, qformat_type)
                 self.pixmap = QPixmap.fromImage(qimage)
                 self.update.emit(self.pixmap)
             QThread.msleep(8)
