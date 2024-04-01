@@ -2,43 +2,55 @@ import mysql.connector
 import pandas as pd
 
 class pinkla_mysql():
-    def __init__(self):
-                
+    def __init__(self, info):
         self.df = pd.DataFrame()
+        self.info = info
+        self.connect_to_database()
         
-    def init_db(self, info):
+    def connect_to_database(self):
         self.remote = mysql.connector.connect(
-            host = info[0],
-            user = info[1],
-            password = info[2],
-            database = info[3]
+            host=self.info[0],
+            user=self.info[1],
+            password=self.info[2]
         )
-
-        self.cur = self.remote.cursor(buffered = True)
+        self.cur = self.remote.cursor(buffered=True)
         
+    def init_db(self):
+        self.connect_to_database()
+        self.create_database()
+        self.init_tables()
+        self.remote.close()
+        
+    def create_database(self):
+        create_db_query = "CREATE DATABASE IF NOT EXISTS pinkla_base"
+        self.cur.execute(create_db_query)
+        self.remote.commit()
+        
+        
+    def init_tables(self):
+        self.cur.execute("USE pinkla_base")
         self.create_lane_table()
         self.create_vehicle_table()
         self.create_object_table()
         self.create_event_table()
-                
+        
     def create_lane_table(self):
-        create_query = "create table if not exists pinkla_lane (time datetime primary key, lane_class varchar(32), number_of_lane int)"
+        create_query = "CREATE TABLE IF NOT EXISTS pinkla_lane (time DATETIME PRIMARY KEY, lane_class VARCHAR(32), number_of_lane INT)"
         self.cur.execute(create_query)
         self.remote.commit()
         
     def create_vehicle_table(self):
-        create_query = "create table if not exists pinkla_vehicle (time datetime primary key, vehicle_status varchar(32), linear_x float, angular_z float)"
+        create_query = "CREATE TABLE IF NOT EXISTS pinkla_vehicle (time DATETIME PRIMARY KEY, vehicle_status VARCHAR(32), linear_x FLOAT, angular_z FLOAT)"
         self.cur.execute(create_query)
         self.remote.commit()
         
     def create_object_table(self):
-        create_query = "create table if not exists pinkla_object (time datetime primary key, object_class varchar(32), number_of_object int)"
+        create_query = "CREATE TABLE IF NOT EXISTS pinkla_object (time DATETIME PRIMARY KEY, object_class VARCHAR(32), number_of_object INT)"
         self.cur.execute(create_query)
         self.remote.commit()
         
-        
     def create_event_table(self):
-        create_query = "create table if not exists pinkla_event (time datetime primary key, event_class varchar(32))"
+        create_query = "CREATE TABLE IF NOT EXISTS pinkla_event (time DATETIME PRIMARY KEY, event_class VARCHAR(32))"
         self.cur.execute(create_query)
         self.remote.commit()
         

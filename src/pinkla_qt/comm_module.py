@@ -337,7 +337,11 @@ class Cal_Cmd():
 
         return value
         
-
+        
+    def print_vels(self, linear_velocity, angular_velocity):
+        print('currently:\tlinear velocity {0}\t angular velocity {1} '.format(
+            linear_velocity,
+            angular_velocity))
 
 def center_ui(object):
         screen_geometry = QApplication.desktop().screenGeometry()

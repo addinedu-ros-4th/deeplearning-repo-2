@@ -4,13 +4,13 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(current_dir + "/..")
 # print(f'current_dir : {current_dir}')
 from pinkla_qt.comm_module import *
-# from pinkla_database.pinkla_db import *
+from pinkla_database.pinkla_db import *
 
 ui_path = "./gui.ui"
 from_class = uic.loadUiType(ui_path)[0]
 
 class WindowClass(QMainWindow, from_class):
-    def __init__(self, server_ip="192.168.0.197", client_ip="192.168.0.100", port1="8485", port2="8584", port3="8090"):
+    def __init__(self, server_ip="0.0.0.0", client_ip="0.0.0.0", port1="8485", port2="8584", port3="8090"):
         super().__init__()
         self.setupUi(self)
         self.setWindowTitle('Pinkla.b')
@@ -39,11 +39,9 @@ class WindowClass(QMainWindow, from_class):
         self.cal_cmd = Cal_Cmd()
         self.sender = None
         
-        # self.mysql_info = ["localhost", "joe", "0000", "pinkla_base"]
-        
-        # self.db = pinkla_mysql()
-        
-        # self.db.init_db(self.mysql_info)
+        self.mysql_info = ["database-2.czo0g0uict7o.ap-northeast-2.rds.amazonaws.com", "pinkla", "ljl6922!"]
+        self.db = pinkla_mysql(self.mysql_info)
+        self.db.init_db()
 
     def flag_init(self):
         self.isCamSocketOpened, self.isCamSocketOpened2 = [False], [False]
@@ -338,30 +336,30 @@ class WindowClass(QMainWindow, from_class):
 
         if event.key() == Qt.Key_W:
             if self.cal_cmd.lx == 0.0:
-                self.cal_cmd.lx = 2.5
-            # 선속도 직진 2.5 보다 빠르거나 후진 -2.5보다 빠르면 직진속도 추가
-            elif (self.cal_cmd.lx >= 2.5) or (-2.5 >= self.cal_cmd.lx):
+                self.cal_cmd.lx = 3.0
+            # 선속도 직진 3.0 보다 빠르거나 후진 -3.0보다 빠르면 직진속도 추가
+            elif (self.cal_cmd.lx >= 3.0) or (-3.0 >= self.cal_cmd.lx):
                 self.cal_cmd.lx = self.cal_cmd.lx + LIN_VEL_STEP_SIZE
-            # 후진속도 -2.5 아래로 감속 시키면 선속도 초기화
-            elif self.cal_cmd.lx > -2.5:
+            # 후진속도 -3.0 아래로 감속 시키면 선속도 초기화
+            elif self.cal_cmd.lx > -3.0:
                 self.cal_cmd.lx = 0.0
             # 각속도 초기화
             if self.cal_cmd.az != 0.0:
                 self.cal_cmd.az = 0.0
-            self.print_vels(self.cal_cmd.lx, self.cal_cmd.az)
+            self.cal_cmd.print_vels(self.cal_cmd.lx, self.cal_cmd.az)
         elif event.key() == Qt.Key_X:
             if self.cal_cmd.lx == 0.0:
-                self.cal_cmd.lx = -2.5         
-            # 선속도 후진 -2.5 보다 빠르거나 직진 2.5보다 빠르면 후진속도 추가                
-            elif (-2.5 >= self.cal_cmd.lx) or (self.cal_cmd.lx >= 2.5):
+                self.cal_cmd.lx = -3.0         
+            # 선속도 후진 -3.0 보다 빠르거나 직진 3.0보다 빠르면 후진속도 추가                
+            elif (-3.0 >= self.cal_cmd.lx) or (self.cal_cmd.lx >= 3.0):
                 self.cal_cmd.lx = self.cal_cmd.lx - LIN_VEL_STEP_SIZE
-            # 선속도 직진 2.5아래로 감속 시키면 선속도 초기화
-            elif 2.5 > self.cal_cmd.lx:
+            # 선속도 직진 3.0아래로 감속 시키면 선속도 초기화
+            elif 3.0 > self.cal_cmd.lx:
                 self.cal_cmd.lx = 0.0
             # 각속도 초기화
             if self.cal_cmd.az != 0.0:
                 self.cal_cmd.az = 0.0                               
-            self.print_vels(self.cal_cmd.lx, self.cal_cmd.az)
+            self.cal_cmd.print_vels(self.cal_cmd.lx, self.cal_cmd.az)
         elif event.key() == Qt.Key_A:
             if self.cal_cmd.az == 0.0:
                 self.cal_cmd.az = 5.0
@@ -369,7 +367,7 @@ class WindowClass(QMainWindow, from_class):
                 self.cal_cmd.az = self.cal_cmd.az + ANG_VEL_STEP_SIZE
             elif 0.0 > self.cal_cmd.az:
                 self.cal_cmd.az = 0.0       
-            self.print_vels(self.cal_cmd.lx, self.cal_cmd.az)            
+            self.cal_cmd.print_vels(self.cal_cmd.lx, self.cal_cmd.az)            
         elif event.key() == Qt.Key_D:
             if self.cal_cmd.az == 0.0:
                 self.cal_cmd.az = -5.0
@@ -377,11 +375,11 @@ class WindowClass(QMainWindow, from_class):
                 self.cal_cmd.az = self.cal_cmd.az - ANG_VEL_STEP_SIZE
             elif self.cal_cmd.az > 0.0:
                 self.cal_cmd.az = 0.0  
-            self.print_vels(self.cal_cmd.lx, self.cal_cmd.az)            
+            self.cal_cmd.print_vels(self.cal_cmd.lx, self.cal_cmd.az)            
         elif event.key() == Qt.Key_S:
             self.cal_cmd.lx = 0.0
             self.cal_cmd.az = 0.0          
-            self.print_vels(self.cal_cmd.lx, self.cal_cmd.az)
+            self.cal_cmd.print_vels(self.cal_cmd.lx, self.cal_cmd.az)
         value = self.cal_cmd.cal()
         # print(value)
         try:
