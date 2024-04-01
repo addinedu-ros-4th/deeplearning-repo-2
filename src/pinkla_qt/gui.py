@@ -45,11 +45,11 @@ class WindowClass(QMainWindow, from_class):
 
         self.cal_cmd = Cal_Cmd()
         
-        self.mysql_info = ["localhost", "joe", "0000", "pinkla_base"]
+        # self.mysql_info = ["localhost", "joe", "0000", "pinkla_base"]
         
-        self.db = pinkla_mysql()
+        # self.db = pinkla_mysql()
         
-        self.db.init_db(self.mysql_info)
+        # self.db.init_db(self.mysql_info)
 
     def flag_init(self):
         self.isCamSocketOpened, self.isCamSocketOpened2 = [False], [False]
