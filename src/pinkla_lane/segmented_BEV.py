@@ -34,7 +34,7 @@ def birdeye(img, verbose=False):
 
     # 이미지 원근 변환
     warped = cv2.warpPerspective(img, M, (w, h), flags=cv2.INTER_LINEAR)
-    warped = cv2.cvtColor(warped, cv2.COLOR_BGR2RGB) 
+    # warped = cv2.cvtColor(warped, cv2.COLOR_BGR2RGB) 
 
     if verbose:
         f, axarray = plt.subplots(1, 2)
@@ -90,12 +90,12 @@ if __name__ == '__main__':
         # cv2.imshow("Video", filled_image)
 
 
-        # segmented_binarized = binarize(filled_image)
+        segmented_binarized = binarize(filled_image)
 
 
         # cv2.imshow("Video", segmented_binarized)
 
-        segmented_birdeye, M, Minv = birdeye(cv2.cvtColor(filled_image, cv2.COLOR_BGR2RGB))
+        segmented_birdeye, M, Minv = birdeye(cv2.cvtColor(segmented_binarized, cv2.COLOR_BGR2RGB))
 
         cv2.imshow("Video", segmented_birdeye)
 
