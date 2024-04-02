@@ -4,19 +4,13 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(current_dir + "/..")
 # print(f'current_dir : {current_dir}')
 from pinkla_qt.comm_module import *
+from pinkla_database.pinkla_db import *
 
 ui_path = "./gui.ui"
 from_class = uic.loadUiType(ui_path)[0]
 
-HOST = '192.168.0.197'
-CAM_PORT = 8485
-CAM_PORT2 = 8584
-
-PINK_HOST = '192.168.0.100'
-PINK_PORT = 8090
-
 class WindowClass(QMainWindow, from_class):
-    def __init__(self, server_ip="192.168.0.197", client_ip="192.168.0.100", port1="8485", port2="8584", port3="8090"):
+    def __init__(self, server_ip="0.0.0.0", client_ip="0.0.0.0", port1="8485", port2="8584", port3="8090"):
         super().__init__()
         self.setupUi(self)
         self.setWindowTitle('Pinkla.b')
@@ -43,6 +37,11 @@ class WindowClass(QMainWindow, from_class):
         self.show_logo(self.label_pixmap_2, self.pixmap2)
 
         self.cal_cmd = Cal_Cmd()
+        self.sender = None
+        
+        self.mysql_info = ["database-2.czo0g0uict7o.ap-northeast-2.rds.amazonaws.com", "pinkla", "ljl6922!"]
+        self.db = pinkla_mysql(self.mysql_info)
+        self.db.init_db()
 
     def flag_init(self):
         self.isCamSocketOpened, self.isCamSocketOpened2 = [False], [False]
@@ -93,18 +92,18 @@ class WindowClass(QMainWindow, from_class):
         self.camera_server = SERVER(self.server_ip, self.cam_port1)
         self.camera_th = Camera_Th(self, port=self.cam_port1)
         self.camera_th.daemon = True
-        self.camera_th.update.connect(lambda pixmap : self.update_image(pixmap,
+        self.camera_th.update.connect(lambda pixmap, error : self.update_image(pixmap, error,
                                                                         self.label_pixmap,
-                                                                        self.pixmap))
+                                                                        self.pixmap, self.camera_th))
         self.camera_th.update.connect(lambda pixmap : self.update_record(pixmap,
                                                                         self.camera_server))
 
         self.camera_server2 = SERVER(self.server_ip, self.cam_port2)
         self.camera_th2 = Camera_Th(self, port=self.cam_port2)
         self.camera_th2.daemon = True
-        self.camera_th2.update.connect(lambda pixmap : self.update_image(pixmap,
+        self.camera_th2.update.connect(lambda pixmap, error : self.update_image(pixmap, error,
                                                                         self.label_pixmap_2,
-                                                                        self.pixmap2))
+                                                                        self.pixmap2, self.camera_th2))
         self.camera_th2.update.connect(lambda pixmap : self.update_record(pixmap,
                                                                         self.camera_server2))
 
@@ -144,17 +143,22 @@ class WindowClass(QMainWindow, from_class):
         self.btn_pinkla_socket.clicked.connect(self.click_pinkla_socket)
         # self.btn_for.clicked.connect(self.click_forward)
         # self.btn_st.clicked.connect(self.click_stop)
-        self.btn_auto.clicked.connect(lambda: self.seg_yolo_start(self.camera_th))
+        self.btn_auto.clicked.connect(lambda: self.yolo_seg_lane_start(self.camera_th))
 
-    def seg_yolo_start(self, thread):
+    def yolo_seg_lane_start(self, thread):
         if not self.isLaneDetectionOn:
             self.btn_auto.setText('Auto Driving\nSTOP')
             self.isLaneDetectionOn = True
-            thread.yolo = True
+            thread.yolo_lane = True
         else:
             self.btn_auto.setText('Auto Driving\nSTART')
             self.isLaneDetectionOn = False
-            thread.yolo = False
+            thread.yolo_lane = False
+            try:
+                if self.sender is not None:
+                    self.sender.cmd = [0, 100, 5, 0, 0, 0, 0]
+            except Exception as e:
+                pass
 
     def click_cam_socket(self, flag_soc, flag_cam, flag_rec, socket, btn_soc, btn_cam, btn_rec, label, pix, thread):
         flag_cam[0] = False
@@ -272,11 +276,21 @@ class WindowClass(QMainWindow, from_class):
             self.pinkla_socket.running = False
             self.pinkla_socket.stop()
 
-    def update_image(self, pixmap, label, pix): 
+    def update_image(self, pixmap, error, label, pix, thread): 
         try:
             pix = pixmap.scaled(label.width(), label.height())
             label.setPixmap(pix)
             label.setAlignment(Qt.AlignCenter)
+
+            if thread.yolo_lane:
+                value = self.cal_cmd.moveTo(error)
+                try:
+                    self.sender.cmd = [1, 100, 5, int(value[0]), int(value[1]), int(value[2]), int(value[3])]
+                except Exception as e:
+                    # print(e)
+                    pass
+
+                pass
         except Exception as e:
             self.show_logo(label, pix)
             pass
@@ -317,40 +331,57 @@ class WindowClass(QMainWindow, from_class):
 
 
     def keyPressEvent(self, event):
-        x, y, z = (0.0, 0.0, 0.0)
-        if event.key() == Qt.Key_I:
-            print("Move forward")
-            x, y, z = (2.0, 0.0, 0.0)
-        elif event.key() == Qt.Key_Comma:
-            print("Move backward")
-            x, y, z = (-2.0, 0.0, 0.0)
-        elif event.key() == Qt.Key_J:
-            print("Rotae left")
-            x, y, z = (0.0, 0.0, 18.0)
-        elif event.key() == Qt.Key_L:
-            print("Rotate right")
-            x, y, z = (0.0, 0.0, -18.0)
-        elif event.key() == Qt.Key_K:
-            print("Stop")
-            x, y, z = (0.0, 0.0, 0.0)
-        elif event.key() == Qt.Key_U:
-            print("Forward Turn left")
-            x, y, z = (2.0, 0.0, 4.0)
-        elif event.key() == Qt.Key_O:
-            print("Forward Turn Right")
-            x, y, z = (2.0, 0.0, -4.0)
-        elif event.key() == Qt.Key_M:
-            print("Backward Turn left")
-            x, y, z = (-2.0, 0.0, -4.0)
-        elif event.key() == Qt.Key_Period:
-            print("Turn right")
-            x, y, z = (-2.0, 0.0, 4.0)
+        LIN_VEL_STEP_SIZE = 0.2
+        ANG_VEL_STEP_SIZE = 2.5
 
-        self.cal_cmd.lx = x
-        self.cal_cmd.ly = y
-        self.cal_cmd.az = z
+        if event.key() == Qt.Key_W:
+            if self.cal_cmd.lx == 0.0:
+                self.cal_cmd.lx = 3.0
+            # 선속도 직진 3.0 보다 빠르거나 후진 -3.0보다 빠르면 직진속도 추가
+            elif (self.cal_cmd.lx >= 3.0) or (-3.0 >= self.cal_cmd.lx):
+                self.cal_cmd.lx = self.cal_cmd.lx + LIN_VEL_STEP_SIZE
+            # 후진속도 -3.0 아래로 감속 시키면 선속도 초기화
+            elif self.cal_cmd.lx > -3.0:
+                self.cal_cmd.lx = 0.0
+            # 각속도 초기화
+            if self.cal_cmd.az != 0.0:
+                self.cal_cmd.az = 0.0
+            self.cal_cmd.print_vels(self.cal_cmd.lx, self.cal_cmd.az)
+        elif event.key() == Qt.Key_X:
+            if self.cal_cmd.lx == 0.0:
+                self.cal_cmd.lx = -3.0         
+            # 선속도 후진 -3.0 보다 빠르거나 직진 3.0보다 빠르면 후진속도 추가                
+            elif (-3.0 >= self.cal_cmd.lx) or (self.cal_cmd.lx >= 3.0):
+                self.cal_cmd.lx = self.cal_cmd.lx - LIN_VEL_STEP_SIZE
+            # 선속도 직진 3.0아래로 감속 시키면 선속도 초기화
+            elif 3.0 > self.cal_cmd.lx:
+                self.cal_cmd.lx = 0.0
+            # 각속도 초기화
+            if self.cal_cmd.az != 0.0:
+                self.cal_cmd.az = 0.0                               
+            self.cal_cmd.print_vels(self.cal_cmd.lx, self.cal_cmd.az)
+        elif event.key() == Qt.Key_A:
+            if self.cal_cmd.az == 0.0:
+                self.cal_cmd.az = 5.0
+            elif (self.cal_cmd.az >= 5.0):
+                self.cal_cmd.az = self.cal_cmd.az + ANG_VEL_STEP_SIZE
+            elif 0.0 > self.cal_cmd.az:
+                self.cal_cmd.az = 0.0       
+            self.cal_cmd.print_vels(self.cal_cmd.lx, self.cal_cmd.az)            
+        elif event.key() == Qt.Key_D:
+            if self.cal_cmd.az == 0.0:
+                self.cal_cmd.az = -5.0
+            elif (-5.0 >= self.cal_cmd.az):                
+                self.cal_cmd.az = self.cal_cmd.az - ANG_VEL_STEP_SIZE
+            elif self.cal_cmd.az > 0.0:
+                self.cal_cmd.az = 0.0  
+            self.cal_cmd.print_vels(self.cal_cmd.lx, self.cal_cmd.az)            
+        elif event.key() == Qt.Key_S:
+            self.cal_cmd.lx = 0.0
+            self.cal_cmd.az = 0.0          
+            self.cal_cmd.print_vels(self.cal_cmd.lx, self.cal_cmd.az)
         value = self.cal_cmd.cal()
-        print(value)
+        # print(value)
         try:
             self.sender.cmd = [1, 100, 5, int(value[0]), int(value[1]), int(value[2]), int(value[3])]
         except Exception as e:

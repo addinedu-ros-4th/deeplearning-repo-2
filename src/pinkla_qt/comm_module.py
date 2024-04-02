@@ -12,6 +12,7 @@ import time
 # import datetime
 from datetime import datetime
 import psutil
+import math
 
 from pinkla_lane.lane_detection import *
 
@@ -174,7 +175,7 @@ class Socket(QThread):
 
 
 class Camera_Th(QThread):
-    update = pyqtSignal(QPixmap)
+    update = pyqtSignal(QPixmap, int)
 
     def __init__(self, sec=0, parent=None, port=0000):
         super().__init__()
@@ -184,10 +185,10 @@ class Camera_Th(QThread):
         self.cam_server = SERVER(port=port)
         self.conn = None
         self.source, self.image, self.pixmap = None, None, None
-        self.yolo = False
+        self.yolo_lane = False
+        self.error = 0
 
     def run(self):
-        # print(self.conn)
         while self.conn is None:
             QThread.msleep(10)
         self.cam_server.conn = self.conn
@@ -195,17 +196,17 @@ class Camera_Th(QThread):
         while self.running == True:
             self.source = self.cam_server.show_video()
             if self.source is not None:
-                if not self.yolo:
+                if not self.yolo_lane:
                     self.image = self.source.copy()
                 else:
-                    self.image, error = self.generator.get_load_center(self.source.copy())
+                    self.image, self.error = self.generator.get_road_center(self.source.copy())
 
                 self.image = cv2.cvtColor(self.image, cv2.COLOR_BGR2RGB)
                 h,w,c = self.image.shape
                 qformat_type = QImage.Format_RGB888
                 qimage = QImage(self.image.data, w, h, w*c, qformat_type)
                 self.pixmap = QPixmap.fromImage(qimage)
-                self.update.emit(self.pixmap)
+                self.update.emit(self.pixmap, self.error)
             QThread.msleep(8)
 
     def stop(self):
@@ -300,7 +301,8 @@ class Cal_Cmd():
         self.ly = 0.0
         self.az = 0.0
         self.r = 0.025
-        self.b = 0.11
+        # self.b = 0.11
+        self.b = 0.08
 
         self.w1, self.w2, self.w3, self.w4 = 0.0, 0.0, 0.0, 0.0
 
@@ -319,6 +321,27 @@ class Cal_Cmd():
 
         return value
 
+    def moveTo(self, error):
+        angle = math.atan2(error, 360)
+
+        self.lx = 2.2
+        self.ly = 0.0
+        self.az = angle * -40.0
+
+        self.w1 = (1/self.r) * (self.lx-self.ly-self.b*self.az)
+        self.w2 = (1/self.r) * (self.lx+self.ly-self.b*self.az)
+        self.w3 = (1/self.r) * (self.lx-self.ly+self.b*self.az)
+        self.w4 = (1/self.r) * (self.lx+self.ly+self.b*self.az)
+        value = [self.w4, self.w3, self.w2, self.w1]
+        print(angle, value)
+
+        return value
+        
+        
+    def print_vels(self, linear_velocity, angular_velocity):
+        print('currently:\tlinear velocity {0}\t angular velocity {1} '.format(
+            linear_velocity,
+            angular_velocity))
 
 def center_ui(object):
         screen_geometry = QApplication.desktop().screenGeometry()
