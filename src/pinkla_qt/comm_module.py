@@ -175,7 +175,9 @@ class Socket(QThread):
 
 
 class Camera_Th(QThread):
-    update = pyqtSignal(QPixmap, int)
+    # update = pyqtSignal(QPixmap, int)
+    update = pyqtSignal(QPixmap, list)
+
 
     def __init__(self, sec=0, parent=None, port=0000):
         super().__init__()
@@ -186,7 +188,8 @@ class Camera_Th(QThread):
         self.conn = None
         self.source, self.image, self.pixmap = None, None, None
         self.yolo_lane = False
-        self.error = 0
+        # self.error = 0
+        # self.error = [0.,0.,0.,0.]
 
     def run(self):
         while self.conn is None:
@@ -198,15 +201,18 @@ class Camera_Th(QThread):
             if self.source is not None:
                 if not self.yolo_lane:
                     self.image = self.source.copy()
-                else:
-                    self.image, self.error = self.generator.get_road_center(self.source.copy())
+                    image = cv2.cvtColor(self.image, cv2.COLOR_BGR2RGB)
+                    error = [0.,0.,0.,0.]
 
-                self.image = cv2.cvtColor(self.image, cv2.COLOR_BGR2RGB)
-                h,w,c = self.image.shape
+                else:
+                    self.image, error = self.generator.get_road_center(self.source.copy())
+                    image = cv2.cvtColor(self.image, cv2.COLOR_BGR2RGB)
+
+                h,w,c = image.shape
                 qformat_type = QImage.Format_RGB888
-                qimage = QImage(self.image.data, w, h, w*c, qformat_type)
+                qimage = QImage(image.data, w, h, w*c, qformat_type)
                 self.pixmap = QPixmap.fromImage(qimage)
-                self.update.emit(self.pixmap, self.error)
+                self.update.emit(self.pixmap, error)
             QThread.msleep(8)
 
     def stop(self):
@@ -322,21 +328,25 @@ class Cal_Cmd():
         return value
 
     def moveTo(self, error):
-        angle = math.atan2(error, 360)
+        angle = math.atan2(error, 418)
 
         self.lx = 2.2
         self.ly = 0.0
-        self.az = angle * -40.0
+        self.az = angle * -30.0
 
         self.w1 = (1/self.r) * (self.lx-self.ly-self.b*self.az)
         self.w2 = (1/self.r) * (self.lx+self.ly-self.b*self.az)
         self.w3 = (1/self.r) * (self.lx-self.ly+self.b*self.az)
         self.w4 = (1/self.r) * (self.lx+self.ly+self.b*self.az)
         value = [self.w4, self.w3, self.w2, self.w1]
-        print(angle, value)
+        # print(angle, value)
+        # print(angle)
 
         return value
         
+    def moveTo2(self, value):
+        return value
+
         
     def print_vels(self, linear_velocity, angular_velocity):
         print('currently:\tlinear velocity {0}\t angular velocity {1} '.format(

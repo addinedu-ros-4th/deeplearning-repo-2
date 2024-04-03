@@ -283,7 +283,8 @@ class WindowClass(QMainWindow, from_class):
             label.setAlignment(Qt.AlignCenter)
 
             if thread.yolo_lane:
-                value = self.cal_cmd.moveTo(error)
+                # value = self.cal_cmd.moveTo(error)
+                value = self.cal_cmd.moveTo2(error)
                 try:
                     self.sender.cmd = [1, 100, 5, int(value[0]), int(value[1]), int(value[2]), int(value[3])]
                 except Exception as e:
@@ -380,6 +381,11 @@ class WindowClass(QMainWindow, from_class):
             self.cal_cmd.lx = 0.0
             self.cal_cmd.az = 0.0          
             self.cal_cmd.print_vels(self.cal_cmd.lx, self.cal_cmd.az)
+        else:
+            self.cal_cmd.lx = 0.0
+            self.cal_cmd.az = 0.0          
+            self.cal_cmd.print_vels(self.cal_cmd.lx, self.cal_cmd.az)
+
         value = self.cal_cmd.cal()
         # print(value)
         try:
