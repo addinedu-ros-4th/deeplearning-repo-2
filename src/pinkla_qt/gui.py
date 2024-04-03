@@ -38,6 +38,7 @@ class WindowClass(QMainWindow, from_class):
 
         self.cal_cmd = Cal_Cmd()
         self.sender = None
+        self.controller = None
         
         # self.mysql_info = ["database-2.czo0g0uict7o.ap-northeast-2.rds.amazonaws.com", "pinkla", "ljl6922!"]
         # self.db = pinkla_mysql(self.mysql_info)
@@ -150,10 +151,23 @@ class WindowClass(QMainWindow, from_class):
             self.btn_auto.setText('Auto Driving\nSTOP')
             self.isLaneDetectionOn = True
             thread.yolo_lane = True
+            
+            if thread.yolo is None:
+                thread.yolo = Yolo_Th()
+                thread.yolo.daemon = True
+                thread.yolo.update.connect(thread.get_lane_info)
+
+                thread.yolo.start()
+            thread.yolo.running = True
+
         else:
             self.btn_auto.setText('Auto Driving\nSTART')
             self.isLaneDetectionOn = False
             thread.yolo_lane = False
+
+            thread.yolo.running = False
+            # thread.yolo.stop()
+
             try:
                 if self.sender is not None:
                     self.sender.cmd = [0, 100, 5, 0, 0, 0, 0]
@@ -330,105 +344,14 @@ class WindowClass(QMainWindow, from_class):
         pix = pix.scaled(label.width(), label.height())
         label.setPixmap(pix)
 
-
     def keyPressEvent(self, event):
-        LIN_VEL_STEP_SIZE = 0.2
-        ANG_VEL_STEP_SIZE = 2.5
-        shift_flag = False
-
-        if event.key() == Qt.Key_W:
-            self.cal_cmd.ly = 0.0
-
-            if self.cal_cmd.az != 0.0:
-                self.cal_cmd.ax = 0.0
-
-            if self.cal_cmd.lx == 0.0:
-                self.cal_cmd.lx = 2.0
-            elif self.cal_cmd.lx >= 3.0:
-                self.cal_cmd.lx = 3.0
-            else:
-                self.cal_cmd.lx += LIN_VEL_STEP_SIZE
-
-        elif event.key() == Qt.Key_X:
-            self.cal_cmd.ly = 0.0
-
-            if self.cal_cmd.az != 0.0:
-                self.cal_cmd.ax = 0.0
-
-            if self.cal_cmd.lx == 0.0:
-                self.cal_cmd.lx = -2.0
-            elif self.cal_cmd.lx <= -3.0:
-                self.cal_cmd.lx = -3.0
-            else:
-                self.cal_cmd.lx -= LIN_VEL_STEP_SIZE
-
-        elif event.key() == Qt.Key_A:
-            if event.modifiers() & Qt.ShiftModifier:
-                self.cal_cmd.lx = 0.0
-                self.cal_cmd.ly = -2.4
-                self.cal_cmd.az = 0.0
-            else:
-                self.cal_cmd.ly = 0.0
-                if self.cal_cmd.az < 0.0:
-                    self.cal_cmd.az = 0.0
-                if self.cal_cmd.az >= 50.0:
-                    self.cal_cmd.az = 50.0
-                else:
-                    self.cal_cmd.az += ANG_VEL_STEP_SIZE
-
-        elif event.key() == Qt.Key_D:
-            if event.modifiers() & Qt.ShiftModifier:
-                self.cal_cmd.lx = 0.0
-                self.cal_cmd.ly = 2.4
-                self.cal_cmd.az = 0.0
-            else:
-                self.cal_cmd.ly = 0.0
-                if self.cal_cmd.az > 0.0:
-                    self.cal_cmd.az = 0.0
-                if self.cal_cmd.az <= -50.0:
-                    self.cal_cmd.az = -50.0
-                else:
-                    self.cal_cmd.az -= ANG_VEL_STEP_SIZE
-
-        elif event.key() == Qt.Key_S:
-            self.cal_cmd.lx = 0.0
-            self.cal_cmd.ly = 0.0
-            self.cal_cmd.az = 0.0
-        elif event.key() == Qt.Key_Q:
-            self.cal_cmd.lx = 2.4
-            self.cal_cmd.ly = -2.4
-            self.cal_cmd.az = 0.0
-        elif event.key() == Qt.Key_E:
-            self.cal_cmd.lx = 2.4
-            self.cal_cmd.ly = 2.4
-            self.cal_cmd.az = 0.0
-        elif event.key() == Qt.Key_Z:
-            self.cal_cmd.lx = -2.4
-            self.cal_cmd.ly = -2.4
-            self.cal_cmd.az = 0.0
-        elif event.key() == Qt.Key_C:
-            self.cal_cmd.lx = -2.4
-            self.cal_cmd.ly = 2.4
-            self.cal_cmd.az = 0.0
-
-        else:
-            if event.key() == Qt.Key_Shift:
-                shift_flag = True
-            else:
-                self.cal_cmd.lx = 0.0
-                self.cal_cmd.ly = 0.0
-                self.cal_cmd.az = 0.0
-
-        if not shift_flag:
-            self.cal_cmd.print_vels(self.cal_cmd.lx, self.cal_cmd.ly, self.cal_cmd.az)
-            value = self.cal_cmd.cal()
-            print(value)
-
         try:
-            self.sender.cmd = [1, 100, 5, int(value[0]), int(value[1]), int(value[2]), int(value[3])]
-        except Exception as e:
-            # print(e)
+            if self.controller is None:
+                self.controller = KeyboardTeleopController(self.cal_cmd, self.sender)
+            self.controller.press_key_control(event)
+        except Exception as e: 
             pass
+        
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

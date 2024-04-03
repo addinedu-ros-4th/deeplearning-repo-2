@@ -173,23 +173,47 @@ class Socket(QThread):
         except Exception as e:
             pass
 
+class Yolo_Th(QThread):
+    update = pyqtSignal(np.ndarray, list)
+
+    def __init__(self):
+        super().__init__()
+        self.running = True
+        self.source = None
+        self.image = None
+        self.generator = find_road_center()
+        
+    def run(self):
+        while self.running == True:
+            value = [0.,0.,0.,0.]
+            if self.source is not None:
+                self.image, value = self.generator.get_road_center(self.source)
+
+                self.update.emit(self.image, value)
+            QThread.msleep(8)
+
+    def stop(self):
+        self.running = False
+        del self.source
+        del self.image
+        # del self.generator
 
 class Camera_Th(QThread):
     # update = pyqtSignal(QPixmap, int)
     update = pyqtSignal(QPixmap, list)
 
-
     def __init__(self, sec=0, parent=None, port=0000):
         super().__init__()
         self.main = parent
         self.running = True
-        self.generator = find_road_center()
         self.cam_server = SERVER(port=port)
         self.conn = None
         self.source, self.image, self.pixmap = None, None, None
+
+        self.generator = find_road_center()
         self.yolo_lane = False
-        # self.error = 0
-        # self.error = [0.,0.,0.,0.]
+        self.yolo = None
+        self.test_img, self.test_value = None, None
 
     def run(self):
         while self.conn is None:
@@ -199,21 +223,37 @@ class Camera_Th(QThread):
         while self.running == True:
             self.source = self.cam_server.show_video()
             if self.source is not None:
+                self.value = [0.,0.,0.,0.]
+
+                if self.yolo is not None:
+                    self.yolo.source = self.source.copy()
+
                 if not self.yolo_lane:
                     self.image = self.source.copy()
-                    image = cv2.cvtColor(self.image, cv2.COLOR_BGR2RGB)
-                    value = [0.,0.,0.,0.]
-
                 else:
-                    self.image, value = self.generator.get_road_center(self.source.copy())
-                    image = cv2.cvtColor(self.image, cv2.COLOR_BGR2RGB)
+                    # self.image, value = self.generator.get_road_center(self.source.copy())
 
-                h,w,c = image.shape
-                qformat_type = QImage.Format_RGB888
-                qimage = QImage(image.data, w, h, w*c, qformat_type)
-                self.pixmap = QPixmap.fromImage(qimage)
-                self.update.emit(self.pixmap, value)
+                    if self.test_img is not None and self.test_value is not None:
+                        # image = cv2.cvtColor(self.test_img, cv2.COLOR_BGR2RGB)
+                        self.image = self.test_img
+                        self.value = self.test_value
+
+                image = cv2.cvtColor(self.image, cv2.COLOR_BGR2RGB)
+                try:
+                    h,w,c = image.shape
+                    qformat_type = QImage.Format_RGB888
+                    qimage = QImage(image.data, w, h, w*c, qformat_type)
+                    self.pixmap = QPixmap.fromImage(qimage)
+                    self.update.emit(self.pixmap, self.value)
+
+                except Exception as e:
+                    print(e)
+                    pass
             QThread.msleep(8)
+
+    def get_lane_info(self, image, value):
+        self.test_img = image
+        self.test_value = value
 
     def stop(self):
         self.running = False
@@ -327,8 +367,8 @@ class Cal_Cmd():
 
         return value
 
-    def moveTo(self, error):
-        angle = math.atan2(error, 418)
+    def moveTo(self, delta):
+        angle = math.atan2(delta, 418)
 
         self.lx = 2.2
         self.ly = 0.0
@@ -347,10 +387,116 @@ class Cal_Cmd():
     def moveTo2(self, value):
         return value
 
-        
     def print_vels(self, linear_x_velocity, linear_y_velocity, angular_velocity):
         print('linear x velocity {0:.3} | linear y velocity {1:.3} | angular velocity {2:.3}'.format(
             linear_x_velocity, linear_y_velocity, angular_velocity))
+
+
+class KeyboardTeleopController():
+    def __init__(self, cal_cmd, sender):
+        self.LIN_VEL_STEP_SIZE = 0.2
+        self.ANG_VEL_STEP_SIZE = 2.5
+        self.cal_cmd = cal_cmd
+        self.sender = sender
+
+    def press_key_control(self, event):
+        
+        shift_flag = False
+
+        if event.key() == Qt.Key_W:
+            self.cal_cmd.ly = 0.0
+
+            if self.cal_cmd.az != 0.0:
+                self.cal_cmd.ax = 0.0
+
+            if self.cal_cmd.lx == 0.0:
+                self.cal_cmd.lx = 2.0
+            elif self.cal_cmd.lx >= 3.0:
+                self.cal_cmd.lx = 3.0
+            else:
+                self.cal_cmd.lx += self.LIN_VEL_STEP_SIZE
+
+        elif event.key() == Qt.Key_X:
+            self.cal_cmd.ly = 0.0
+
+            if self.cal_cmd.az != 0.0:
+                self.cal_cmd.ax = 0.0
+
+            if self.cal_cmd.lx == 0.0:
+                self.cal_cmd.lx = -2.0
+            elif self.cal_cmd.lx <= -3.0:
+                self.cal_cmd.lx = -3.0
+            else:
+                self.cal_cmd.lx -= self.LIN_VEL_STEP_SIZE
+
+        elif event.key() == Qt.Key_A:
+            if event.modifiers() & Qt.ShiftModifier:
+                self.cal_cmd.lx = 0.0
+                self.cal_cmd.ly = -2.4
+                self.cal_cmd.az = 0.0
+            else:
+                self.cal_cmd.ly = 0.0
+                if self.cal_cmd.az < 0.0:
+                    self.cal_cmd.az = 0.0
+                if self.cal_cmd.az >= 50.0:
+                    self.cal_cmd.az = 50.0
+                else:
+                    self.cal_cmd.az += self.ANG_VEL_STEP_SIZE
+
+        elif event.key() == Qt.Key_D:
+            if event.modifiers() & Qt.ShiftModifier:
+                self.cal_cmd.lx = 0.0
+                self.cal_cmd.ly = 2.4
+                self.cal_cmd.az = 0.0
+            else:
+                self.cal_cmd.ly = 0.0
+                if self.cal_cmd.az > 0.0:
+                    self.cal_cmd.az = 0.0
+                if self.cal_cmd.az <= -50.0:
+                    self.cal_cmd.az = -50.0
+                else:
+                    self.cal_cmd.az -= self.ANG_VEL_STEP_SIZE
+
+        elif event.key() == Qt.Key_S:
+            self.cal_cmd.lx = 0.0
+            self.cal_cmd.ly = 0.0
+            self.cal_cmd.az = 0.0
+        elif event.key() == Qt.Key_Q:
+            self.cal_cmd.lx = 2.4
+            self.cal_cmd.ly = -2.4
+            self.cal_cmd.az = 0.0
+        elif event.key() == Qt.Key_E:
+            self.cal_cmd.lx = 2.4
+            self.cal_cmd.ly = 2.4
+            self.cal_cmd.az = 0.0
+        elif event.key() == Qt.Key_Z:
+            self.cal_cmd.lx = -2.4
+            self.cal_cmd.ly = -2.4
+            self.cal_cmd.az = 0.0
+        elif event.key() == Qt.Key_C:
+            self.cal_cmd.lx = -2.4
+            self.cal_cmd.ly = 2.4
+            self.cal_cmd.az = 0.0
+
+        else:
+            if event.key() == Qt.Key_Shift:
+                shift_flag = True
+            else:
+                self.cal_cmd.lx = 0.0
+                self.cal_cmd.ly = 0.0
+                self.cal_cmd.az = 0.0
+
+        if not shift_flag:
+            self.cal_cmd.print_vels(self.cal_cmd.lx, self.cal_cmd.ly, self.cal_cmd.az)
+            value = self.cal_cmd.cal()
+            # print(value)
+
+        try:
+            self.sender.cmd = [1, 100, 5, int(value[0]), int(value[1]), int(value[2]), int(value[3])]
+        except Exception as e:
+            # print(e)
+            pass
+
 
 def center_ui(object):
         screen_geometry = QApplication.desktop().screenGeometry()
