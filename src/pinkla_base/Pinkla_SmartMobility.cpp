@@ -28,8 +28,8 @@ void Pinkla_SmartMobility::setSpeed(uint16_t speed) {
 
 
 void Pinkla_SmartMobility::setSpeed(uint8_t id, uint16_t speed) {
-	if(speed > 150){
-		speed = 150;
+	if(speed > 160){
+		speed = 160;
 	}
 	
 	if(id == 1){
