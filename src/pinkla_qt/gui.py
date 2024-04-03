@@ -39,9 +39,9 @@ class WindowClass(QMainWindow, from_class):
         self.cal_cmd = Cal_Cmd()
         self.sender = None
         
-        self.mysql_info = ["database-2.czo0g0uict7o.ap-northeast-2.rds.amazonaws.com", "pinkla", "ljl6922!"]
-        self.db = pinkla_mysql(self.mysql_info)
-        self.db.init_db()
+        # self.mysql_info = ["database-2.czo0g0uict7o.ap-northeast-2.rds.amazonaws.com", "pinkla", "ljl6922!"]
+        # self.db = pinkla_mysql(self.mysql_info)
+        # self.db.init_db()
 
     def flag_init(self):
         self.isCamSocketOpened, self.isCamSocketOpened2 = [False], [False]
@@ -276,12 +276,13 @@ class WindowClass(QMainWindow, from_class):
             self.pinkla_socket.running = False
             self.pinkla_socket.stop()
 
-    def update_image(self, pixmap, error, label, pix, thread): 
+    def update_image(self, pixmap, error, label, pix, thread):
+
         try:
             pix = pixmap.scaled(label.width(), label.height())
             label.setPixmap(pix)
             label.setAlignment(Qt.AlignCenter)
-
+            
             if thread.yolo_lane:
                 # value = self.cal_cmd.moveTo(error)
                 value = self.cal_cmd.moveTo2(error)
@@ -291,7 +292,6 @@ class WindowClass(QMainWindow, from_class):
                     # print(e)
                     pass
 
-                pass
         except Exception as e:
             self.show_logo(label, pix)
             pass
@@ -334,64 +334,100 @@ class WindowClass(QMainWindow, from_class):
     def keyPressEvent(self, event):
         LIN_VEL_STEP_SIZE = 0.2
         ANG_VEL_STEP_SIZE = 2.5
+        shift_flag = False
 
         if event.key() == Qt.Key_W:
+            self.cal_cmd.ly = 0.0
+
+            if self.cal_cmd.az != 0.0:
+                self.cal_cmd.ax = 0.0
+
             if self.cal_cmd.lx == 0.0:
+                self.cal_cmd.lx = 2.0
+            elif self.cal_cmd.lx >= 3.0:
                 self.cal_cmd.lx = 3.0
-            # 선속도 직진 3.0 보다 빠르거나 후진 -3.0보다 빠르면 직진속도 추가
-            elif (self.cal_cmd.lx >= 3.0) or (-3.0 >= self.cal_cmd.lx):
-                self.cal_cmd.lx = self.cal_cmd.lx + LIN_VEL_STEP_SIZE
-            # 후진속도 -3.0 아래로 감속 시키면 선속도 초기화
-            elif self.cal_cmd.lx > -3.0:
-                self.cal_cmd.lx = 0.0
-            # 각속도 초기화
-            if self.cal_cmd.az != 0.0:
-                self.cal_cmd.az = 0.0
-            self.cal_cmd.print_vels(self.cal_cmd.lx, self.cal_cmd.az)
+            else:
+                self.cal_cmd.lx += LIN_VEL_STEP_SIZE
+
         elif event.key() == Qt.Key_X:
-            if self.cal_cmd.lx == 0.0:
-                self.cal_cmd.lx = -3.0         
-            # 선속도 후진 -3.0 보다 빠르거나 직진 3.0보다 빠르면 후진속도 추가                
-            elif (-3.0 >= self.cal_cmd.lx) or (self.cal_cmd.lx >= 3.0):
-                self.cal_cmd.lx = self.cal_cmd.lx - LIN_VEL_STEP_SIZE
-            # 선속도 직진 3.0아래로 감속 시키면 선속도 초기화
-            elif 3.0 > self.cal_cmd.lx:
-                self.cal_cmd.lx = 0.0
-            # 각속도 초기화
+            self.cal_cmd.ly = 0.0
+
             if self.cal_cmd.az != 0.0:
-                self.cal_cmd.az = 0.0                               
-            self.cal_cmd.print_vels(self.cal_cmd.lx, self.cal_cmd.az)
+                self.cal_cmd.ax = 0.0
+
+            if self.cal_cmd.lx == 0.0:
+                self.cal_cmd.lx = -2.0
+            elif self.cal_cmd.lx <= -3.0:
+                self.cal_cmd.lx = -3.0
+            else:
+                self.cal_cmd.lx -= LIN_VEL_STEP_SIZE
+
         elif event.key() == Qt.Key_A:
-            if self.cal_cmd.az == 0.0:
-                self.cal_cmd.az = 5.0
-            elif (self.cal_cmd.az >= 5.0):
-                self.cal_cmd.az = self.cal_cmd.az + ANG_VEL_STEP_SIZE
-            elif 0.0 > self.cal_cmd.az:
-                self.cal_cmd.az = 0.0       
-            self.cal_cmd.print_vels(self.cal_cmd.lx, self.cal_cmd.az)            
+            if event.modifiers() & Qt.ShiftModifier:
+                self.cal_cmd.lx = 0.0
+                self.cal_cmd.ly = -2.4
+                self.cal_cmd.az = 0.0
+            else:
+                self.cal_cmd.ly = 0.0
+                if self.cal_cmd.az < 0.0:
+                    self.cal_cmd.az = 0.0
+                if self.cal_cmd.az >= 50.0:
+                    self.cal_cmd.az = 50.0
+                else:
+                    self.cal_cmd.az += ANG_VEL_STEP_SIZE
+
         elif event.key() == Qt.Key_D:
-            if self.cal_cmd.az == 0.0:
-                self.cal_cmd.az = -5.0
-            elif (-5.0 >= self.cal_cmd.az):                
-                self.cal_cmd.az = self.cal_cmd.az - ANG_VEL_STEP_SIZE
-            elif self.cal_cmd.az > 0.0:
-                self.cal_cmd.az = 0.0  
-            self.cal_cmd.print_vels(self.cal_cmd.lx, self.cal_cmd.az)            
+            if event.modifiers() & Qt.ShiftModifier:
+                self.cal_cmd.lx = 0.0
+                self.cal_cmd.ly = 2.4
+                self.cal_cmd.az = 0.0
+            else:
+                self.cal_cmd.ly = 0.0
+                if self.cal_cmd.az > 0.0:
+                    self.cal_cmd.az = 0.0
+                if self.cal_cmd.az <= -50.0:
+                    self.cal_cmd.az = -50.0
+                else:
+                    self.cal_cmd.az -= ANG_VEL_STEP_SIZE
+
         elif event.key() == Qt.Key_S:
             self.cal_cmd.lx = 0.0
-            self.cal_cmd.az = 0.0          
-            self.cal_cmd.print_vels(self.cal_cmd.lx, self.cal_cmd.az)
-        else:
-            self.cal_cmd.lx = 0.0
-            self.cal_cmd.az = 0.0          
-            self.cal_cmd.print_vels(self.cal_cmd.lx, self.cal_cmd.az)
+            self.cal_cmd.ly = 0.0
+            self.cal_cmd.az = 0.0
+        elif event.key() == Qt.Key_Q:
+            self.cal_cmd.lx = 2.4
+            self.cal_cmd.ly = -2.4
+            self.cal_cmd.az = 0.0
+        elif event.key() == Qt.Key_E:
+            self.cal_cmd.lx = 2.4
+            self.cal_cmd.ly = 2.4
+            self.cal_cmd.az = 0.0
+        elif event.key() == Qt.Key_Z:
+            self.cal_cmd.lx = -2.4
+            self.cal_cmd.ly = -2.4
+            self.cal_cmd.az = 0.0
+        elif event.key() == Qt.Key_C:
+            self.cal_cmd.lx = -2.4
+            self.cal_cmd.ly = 2.4
+            self.cal_cmd.az = 0.0
 
-        value = self.cal_cmd.cal()
-        # print(value)
+        else:
+            if event.key() == Qt.Key_Shift:
+                shift_flag = True
+            else:
+                self.cal_cmd.lx = 0.0
+                self.cal_cmd.ly = 0.0
+                self.cal_cmd.az = 0.0
+
+        if not shift_flag:
+            self.cal_cmd.print_vels(self.cal_cmd.lx, self.cal_cmd.ly, self.cal_cmd.az)
+            value = self.cal_cmd.cal()
+            print(value)
+
         try:
             self.sender.cmd = [1, 100, 5, int(value[0]), int(value[1]), int(value[2]), int(value[3])]
         except Exception as e:
-            print(e)
+            # print(e)
             pass
 
 if __name__ == "__main__":
