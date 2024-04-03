@@ -39,9 +39,9 @@ class WindowClass(QMainWindow, from_class):
         self.cal_cmd = Cal_Cmd()
         self.sender = None
         
-        self.mysql_info = ["database-2.czo0g0uict7o.ap-northeast-2.rds.amazonaws.com", "pinkla", "ljl6922!"]
-        self.db = pinkla_mysql(self.mysql_info)
-        self.db.init_db()
+        self.mysql_info = ["database-2.czo0g0uict7o.ap-northeast-2.rds.amazonaws.com", "pinkla", "ljl6922!", "pinkla_base"]
+        self.db = pinkla_mysql()
+        self.db.init_db(self.mysql_info)
 
     def flag_init(self):
         self.isCamSocketOpened, self.isCamSocketOpened2 = [False], [False]
@@ -49,6 +49,7 @@ class WindowClass(QMainWindow, from_class):
         self.isRecOn, self.isRecOn2 = [False], [False]
         self.isPinkSocketOpened = False
         self.isLaneDetectionOn = False
+        self.isObjectDetectionOn = False
 
     def ui_init(self):
         self.setFocusPolicy(Qt.StrongFocus)
@@ -144,6 +145,7 @@ class WindowClass(QMainWindow, from_class):
         # self.btn_for.clicked.connect(self.click_forward)
         # self.btn_st.clicked.connect(self.click_stop)
         self.btn_auto.clicked.connect(lambda: self.yolo_seg_lane_start(self.camera_th))
+        self.btn_auto_2.clicked.connect(lambda: self.yolo_object_detect_start(self.camera_th2))
 
     def yolo_seg_lane_start(self, thread):
         if not self.isLaneDetectionOn:
@@ -159,6 +161,21 @@ class WindowClass(QMainWindow, from_class):
                     self.sender.cmd = [0, 100, 5, 0, 0, 0, 0]
             except Exception as e:
                 pass
+    
+    def yolo_object_detect_start(self, thread): # 여기 수정했어요
+        if not self.isObjectDetectionOn:
+            self.btn_auto_2.setText('Object Detection\nSTOP')
+            self.isObjectDetectionOn = True
+            thread.yolo_object = True
+        else:
+            self.btn_auto_2.setText('Object Detection\nSTART')
+            self.isObjectDetectionOn = False
+            thread.yolo_object = False
+            try:
+                if self.sender is not None:
+                    self.sender.cmd = [0, 100, 5, 0, 0, 0, 0]
+            except Exception as e:
+                pass            
 
     def click_cam_socket(self, flag_soc, flag_cam, flag_rec, socket, btn_soc, btn_cam, btn_rec, label, pix, thread):
         flag_cam[0] = False
