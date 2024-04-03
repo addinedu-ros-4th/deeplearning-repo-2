@@ -183,7 +183,7 @@ class Camera_Th(QThread):
         super().__init__()
         self.main = parent
         self.running = True
-        self.generator = find_load_center()
+        self.generator = find_road_center()
         self.cam_server = SERVER(port=port)
         self.conn = None
         self.source, self.image, self.pixmap = None, None, None
@@ -202,17 +202,17 @@ class Camera_Th(QThread):
                 if not self.yolo_lane:
                     self.image = self.source.copy()
                     image = cv2.cvtColor(self.image, cv2.COLOR_BGR2RGB)
-                    error = [0.,0.,0.,0.]
+                    value = [0.,0.,0.,0.]
 
                 else:
-                    self.image, error = self.generator.get_road_center(self.source.copy())
+                    self.image, value = self.generator.get_road_center(self.source.copy())
                     image = cv2.cvtColor(self.image, cv2.COLOR_BGR2RGB)
 
                 h,w,c = image.shape
                 qformat_type = QImage.Format_RGB888
                 qimage = QImage(image.data, w, h, w*c, qformat_type)
                 self.pixmap = QPixmap.fromImage(qimage)
-                self.update.emit(self.pixmap, error)
+                self.update.emit(self.pixmap, value)
             QThread.msleep(8)
 
     def stop(self):
@@ -348,10 +348,9 @@ class Cal_Cmd():
         return value
 
         
-    def print_vels(self, linear_velocity, angular_velocity):
-        print('currently:\tlinear velocity {0}\t angular velocity {1} '.format(
-            linear_velocity,
-            angular_velocity))
+    def print_vels(self, linear_x_velocity, linear_y_velocity, angular_velocity):
+        print('linear x velocity {0:.3} | linear y velocity {1:.3} | angular velocity {2:.3}'.format(
+            linear_x_velocity, linear_y_velocity, angular_velocity))
 
 def center_ui(object):
         screen_geometry = QApplication.desktop().screenGeometry()
