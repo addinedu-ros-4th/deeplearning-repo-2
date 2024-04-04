@@ -178,8 +178,6 @@ class Socket(QThread):
             pass
 
 class Camera_Th(QThread):
-    # update = pyqtSignal(QPixmap, int)
-    # update = pyqtSignal(QPixmap, list)
     update = pyqtSignal(np.ndarray, list)
 
     def __init__(self, sec=0, parent=None, port=0000):
@@ -193,7 +191,6 @@ class Camera_Th(QThread):
         self.generator = find_road_center()
         self.yolo_lane = False
         self.seg_result = [None]
-
 
     def run(self):
         while self.conn is None:

@@ -1,4 +1,5 @@
 import sys, os
+import pandas as pd
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(current_dir + "/..")
@@ -15,7 +16,7 @@ class WindowClass(QMainWindow, from_class):
         self.setupUi(self)
         self.setWindowTitle('Pinkla.b')
         center_ui(self)
-
+        print(server_ip, client_ip)
         self.server_ip = server_ip
         self.client_ip = client_ip
         self.cam_port1 = int(port1)
@@ -39,10 +40,7 @@ class WindowClass(QMainWindow, from_class):
         self.cal_cmd = Cal_Cmd()
         self.sender = None
         self.controller = None
-        
-        # self.mysql_info = ["database-2.czo0g0uict7o.ap-northeast-2.rds.amazonaws.com", "pinkla", "ljl6922!"]
-        # self.db = pinkla_mysql(self.mysql_info)
-        # self.db.init_db()
+        self.check_password = 0
 
     def flag_init(self):
         self.isCamSocketOpened, self.isCamSocketOpened2 = [False], [False]
@@ -145,6 +143,13 @@ class WindowClass(QMainWindow, from_class):
         # self.btn_for.clicked.connect(self.click_forward)
         # self.btn_st.clicked.connect(self.click_stop)
         self.btn_auto.clicked.connect(lambda: self.yolo_seg_lane_start(self.camera_th, self.camera_th2))
+
+        self.logButton.hide()
+        self.logButton.clicked.connect(self.createLogWindow)
+        
+        self.useDBButton.clicked.connect(self.init_db)
+        self.dbPassword.returnPressed.connect(self.init_db)
+        self.dbPassword.setEchoMode(QLineEdit.Password)
 
     def yolo_seg_lane_start(self, thread, thread2):
         if not self.isLaneDetectionOn:
@@ -306,17 +311,21 @@ class WindowClass(QMainWindow, from_class):
                 image = self.cv2_info_drawing(image, thread, seg_result)
 
             h,w,c = image.shape
-
             qformat_type = QImage.Format_RGB888
             qimage = QImage(image.data, w, h, w*c, qformat_type)
             pixmap = QPixmap.fromImage(qimage)
-
             pix = pixmap.scaled(label.width(), label.height())
             label.setPixmap(pix)
             label.setAlignment(Qt.AlignCenter)
             
             if thread.yolo_lane:
                 vel = self.cal_cmd.move_to_lane_center(seg_result)
+                
+                if self.check_password == 1:
+                    self.save_data(seg_result)
+                else:
+                    pass
+
                 try:
                     self.sender.cmd = [1, 100, 5, int(vel[0]), int(vel[1]), int(vel[2]), int(vel[3])]
                 except Exception as e:
@@ -327,11 +336,41 @@ class WindowClass(QMainWindow, from_class):
             # print(e)
             self.show_logo(label, pix)
             pass
+        
+    def save_data(self, seg_result):
+        coordinate = seg_result[-1]
+        # try:
+        if coordinate:
+            lane_data = []
+            current_time = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
+
+            border = coordinate[0]
+            intersection = coordinate[1]
+            middle = coordinate[2]
+            target = [self.cal_cmd.cen_x, self.cal_cmd.cen_y]
+            
+            lane_data.append(current_time)
+            lane_data.append(len(border))
+            lane_data.append(border)
+            lane_data.append(len(intersection))
+            lane_data.append(intersection)
+            lane_data.append(len(middle))
+            lane_data.append(middle)
+            lane_data.append(target)
+            # print(type(current_time))
+            # print(lane_data)
+            
+            self.mysql.save_lane_data(lane_data)
+        else:
+            pass
+        # except Exception as e:
+        #     print(e)
+        #     pass
 
     def click_record(self, flag_rec, recorder, btn):
         if not flag_rec[0]:
             flag_rec[0] = True
-            recorder.record_start(width=640, height=480, fps=30)
+            recorder.record_start(width=640, height=480, fps=20)
             btn.setText('RECORD\nSTOP')
         else:
             flag_rec[0] = False
@@ -369,7 +408,83 @@ class WindowClass(QMainWindow, from_class):
             self.controller.press_key_control(event)
         except Exception as e: 
             pass
+    
+    def init_db(self):
+        try:
+            self.mysql_info = ["database-2.czo0g0uict7o.ap-northeast-2.rds.amazonaws.com", "pinkla"]
+            password = self.dbPassword.text()
+            self.mysql_info.append(password)
+            self.mysql = pinkla_mysql(self.mysql_info)
+            self.mysql.init_db()
+            
+            self.check_password = 1
+            
+           
+            
+        except Exception as e:
+            self.checkPW.setText("Wrong Password!!!")
+            pass
         
+        if self.check_password == 1:
+            self.logButton.show()
+    
+    def createLogWindow(self):
+        log_window = logClass(self)
+        log_window.exec_()
+        
+        
+    def closeEvent(self, event):
+        if self.mysql:
+            self.mysql.close_mysql() 
+        event.accept()
+        
+
+class logClass(QDialog):
+    def __init__(self, WindowClass):
+        super().__init__()
+        self.ui = uic.loadUi("db.ui", self)
+        self.main_window = WindowClass
+        self.show()
+        self.log_in(WindowClass)
+        
+        
+    def set_window(self):
+        table_name = self.mysql.get_table_name()
+        for name in table_name:
+            if name == "object_class" or name == "pinkla_event":
+                pass
+            else:
+                self.tableList.addItem(name)
+                
+    def log_in(self, class_instance):
+        self.info = class_instance.mysql_info
+        self.mysql = pinkla_mysql(self.info)
+        self.tableList.addItem(" ")
+        self.set_window()
+        
+        self.tableList.currentIndexChanged.connect(self.select_table)
+            
+    def select_table(self):
+        current_select = self.tableList.currentText()
+        table = self.mysql.select_data(current_select)
+        rows, cols = table.shape
+        
+        self.tableWidget.setRowCount(rows)
+        self.tableWidget.setColumnCount(cols)
+        self.tableWidget.setHorizontalHeaderLabels(table.columns)
+        self.tableWidget.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+        
+        for i in range(rows):
+            for j in range(cols):
+                item = QTableWidgetItem(str(table.iloc[i, j]))
+                self.tableWidget.setItem(i, j, item)
+        
+        
+    def closeEvent(self, event):
+        if self.mysql:
+            self.mysql.close_mysql() 
+        event.accept()
+
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

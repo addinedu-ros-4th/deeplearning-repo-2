@@ -92,6 +92,9 @@ class find_road_center():
         self.model = YOLO("../../data/bestyolov8n.pt", task="segment")
         # self.model = YOLO("../../data/bestyolov8m.pt")
         self.image = None
+        self.seg_center0 = (0, 0)
+        self.seg_center1 = (0, 0)
+        self.seg_center2 = (0, 0)
         self.img_center_x = int(640/2)
         self.img_center_y = int(480/2)
         self.roi_rect_start = (0, self.img_center_y - 100)
@@ -107,6 +110,7 @@ class find_road_center():
         self.seg_center_middle_list = []
         self.seg_center_border_list = []
         self.seg_center_inter_list = []
+        self.coordinate = []
         self.temp_border = None
 
         self.get_border_cen = Centroid()
@@ -119,6 +123,7 @@ class find_road_center():
         self.seg_center_middle_list.clear()
         self.seg_center_border_list.clear()
         self.seg_center_inter_list.clear()
+        self.coordinate.clear()
         line_center_x, line_center_y = 0, 0
 
         self.image = image.copy()
@@ -176,6 +181,11 @@ class find_road_center():
                 except Exception as e:
                     print("middle_line : ",e)
                     pass
+
+
+                self.coordinate.append(self.seg_center_border)
+                self.coordinate.append(self.seg_center_inter)
+                self.coordinate.append(self.seg_center_middle)
         except TypeError as e:
             # print("for mask, box in zip(self.segmentation,self.classes) : ", e)
             pass
@@ -245,5 +255,5 @@ class find_road_center():
             print(e)
             pass
         
-        seg_result = [line_center_x, line_center_y, self.seg_center_border, self.cnt_stop]
+        seg_result = [line_center_x, line_center_y, self.seg_center_border, self.cnt_stop, self.coordinate]
         return self.image, seg_result
