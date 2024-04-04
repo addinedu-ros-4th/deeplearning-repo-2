@@ -24,7 +24,8 @@ class find_object():
         # self.KNOWN_DISTANCE = 11.81  # 객체와의 거리(초기에 검출되는 객체에 한해 입력 요구 / 단위 : inch)
         # KNOWN_WIDTH = 6.7  # 실제 객체의 너비
 
-        self.focalLength = 478.87
+        # self.focalLength = 478.87
+        self.focalLength = (470.86256773 + 470.89842857) / 2.0
 
     def get_bounding_boxes(self, results):
         # yolo 모델의 예측 결과에서 객체 boundary box와 클래스 명을 반환
