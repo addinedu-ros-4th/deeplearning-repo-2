@@ -83,7 +83,6 @@ class WindowClass(QMainWindow, from_class):
                                                                            self.cam_socket2, 
                                                                            self.isCamSocketOpened2))
 
-
         self.pinkla_socket = Socket_Pinkla(self.client_ip, self.serial_port3)
         self.pinkla_socket.daemon = True
         self.pinkla_socket.update.connect(self.check_connect_pink)
@@ -92,22 +91,23 @@ class WindowClass(QMainWindow, from_class):
         self.camera_server = SERVER(self.server_ip, self.cam_port1)
         self.camera_th = Camera_Th(self, port=self.cam_port1)
         self.camera_th.daemon = True
-        self.camera_th.update.connect(lambda pixmap, seg_result : self.update_image(pixmap, seg_result,
+        self.camera_th.update.connect(lambda image, result : self.update_image(image, result,
                                                                         self.label_pixmap,
                                                                         self.pixmap, self.camera_th))
-        self.camera_th.update.connect(lambda pixmap : self.update_record(pixmap,
+        self.camera_th.update.connect(lambda image, result : self.update_record(image, result,
                                                                         self.camera_server))
 
         self.camera_server2 = SERVER(self.server_ip, self.cam_port2)
         self.camera_th2 = Camera_Th(self, port=self.cam_port2)
         self.camera_th2.daemon = True
-        self.camera_th2.update.connect(lambda pixmap, seg_result : self.update_image(pixmap, seg_result,
+        self.camera_th2.update.connect(lambda image, result : self.update_image(image, result,
                                                                         self.label_pixmap_2,
                                                                         self.pixmap2, self.camera_th2))
-        self.camera_th2.update.connect(lambda pixmap : self.update_record(pixmap,
+        self.camera_th2.update.connect(lambda image, result : self.update_record(image, result,
                                                                         self.camera_server2))
 
     def btn_init(self):
+        self.mysql = None
         self.logButton.hide()
         self.logButton.clicked.connect(self.createLogWindow)
         self.useDBButton.clicked.connect(self.init_db)
@@ -167,7 +167,7 @@ class WindowClass(QMainWindow, from_class):
                 if self.sender is not None:
                     self.sender.cmd = [0, 100, 5, 0, 0, 0, 0]
             except Exception as e:
-                print(e)
+                print("yolo_seg_lane_start: ",e)
                 pass
     
     def yolo_object_detect_start(self, thread):
@@ -183,7 +183,8 @@ class WindowClass(QMainWindow, from_class):
                 if self.sender is not None:
                     self.sender.cmd = [0, 100, 5, 0, 0, 0, 0]
             except Exception as e:
-                pass            
+                print("yolo_object_detect_start: ",e)
+                pass
 
     def click_cam_socket(self, flag_soc, flag_cam, flag_rec, socket, btn_soc, btn_cam, btn_rec, label, pix, thread):
         flag_cam[0] = False
@@ -287,6 +288,7 @@ class WindowClass(QMainWindow, from_class):
                 self.sender.stop()
                 del self.sender
             except Exception as e:
+                print("check_connect_pink: ", e)
                 pass
 
     def click_pinkla_socket(self):
@@ -301,12 +303,12 @@ class WindowClass(QMainWindow, from_class):
             self.pinkla_socket.running = False
             self.pinkla_socket.stop()
 
-    def cv2_info_drawing(self, image, thread, seg_result):
+    def cv2_info_drawing(self, image, thread, result):
 
-        if thread.yolo_lane and thread.seg_result[0] is not None:
-            cv2.rectangle(image, (0, int(self.cal_cmd.img_height/2 - 100)), (self.cal_cmd.img_width, self.cal_cmd.img_height), color=(0,0,255), thickness = 5)
-            cv2.putText(image, text=f"delta_x: {self.cal_cmd.hor_dist:.2f}, delta_y: {self.cal_cmd.ver_dist:.2f}, angle: {self.cal_cmd.angle:.2f}", org=(50, 100), fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=0.6, color=(255,255,255), thickness=2)
-            cv2.putText(image, text=f"distance: {self.cal_cmd.dist:.2f}", org=(50, 130), fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=0.6, color=(255,255,255), thickness=2)
+        if thread.yolo_lane and thread.result[0][0] is not None:
+            cv2.rectangle(image, (0, int(self.cal_cmd.img_height/2 - 120)), (self.cal_cmd.img_width, self.cal_cmd.img_height), color=(0,0,255), thickness = 5)
+            cv2.putText(image, text=f"delta_x: {self.cal_cmd.hor_dist:.2f}, delta_y: {self.cal_cmd.ver_dist:.2f}, angle: {self.cal_cmd.angle:.2f}", org=(50, 80), fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=0.6, color=(255,255,255), thickness=2)
+            cv2.putText(image, text=f"distance: {self.cal_cmd.dist:.2f}", org=(50, 110), fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=0.6, color=(255,255,255), thickness=2)
             cv2.putText(image, text="target", org=(int(self.cal_cmd.cen_x-20), int(self.cal_cmd.cen_y-20)), fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=1, color=(255,0,0), thickness=2)
 
             cv2.line(image, (int(self.cal_cmd.x)+5, int(self.cal_cmd.y)), (int(self.cal_cmd.seg_center_border[0])-5, int(self.cal_cmd.seg_center_border[1])), color=(128,128,128), thickness=5 )
@@ -316,13 +318,13 @@ class WindowClass(QMainWindow, from_class):
 
         return image
 
-    def update_image(self, image, seg_result, label, pix, thread):
+    def update_image(self, image, result, label, pix, thread):
         try:
-            cv2.putText(image, text=f"{self.cal_cmd.w4:.2f}, {self.cal_cmd.w3:.2f}, {self.cal_cmd.w2:.2f}, {self.cal_cmd.w1:.2f}", org=(50, 40), fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=0.6, color=(255,255,255), thickness=2)
-            cv2.putText(image, text=f"linear_x: {self.cal_cmd.lx:.2f}, linear_y: {self.cal_cmd.ly:.2f}, angular_z: {self.cal_cmd.az:.2f}", org=(50, 70), fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=0.6, color=(255,255,255), thickness=2)
+            cv2.putText(image, text=f"{self.cal_cmd.w4:.2f}, {self.cal_cmd.w3:.2f}, {self.cal_cmd.w2:.2f}, {self.cal_cmd.w1:.2f}", org=(50, 20), fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=0.6, color=(255,255,255), thickness=2)
+            cv2.putText(image, text=f"linear_x: {self.cal_cmd.lx:.2f}, linear_y: {self.cal_cmd.ly:.2f}, angular_z: {self.cal_cmd.az:.2f}", org=(50, 50), fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=0.6, color=(255,255,255), thickness=2)
 
-            if len(thread.seg_result) > 1:
-                image = self.cv2_info_drawing(image, thread, seg_result)
+            if len(thread.result[0]) > 1:
+                image = self.cv2_info_drawing(image, thread, result[0])
 
             h,w,c = image.shape
             qformat_type = QImage.Format_RGB888
@@ -333,10 +335,10 @@ class WindowClass(QMainWindow, from_class):
             label.setAlignment(Qt.AlignCenter)
             
             if thread.yolo_lane:
-                vel = self.cal_cmd.move_to_lane_center(seg_result)
-                
+                vel = self.cal_cmd.move_to_lane_center(thread.result[0])
+                # print(seg_result)
                 if self.check_password == 1:
-                    self.save_data(seg_result)
+                    self.save_data(thread.result[0])
                 else:
                     pass
 
@@ -391,9 +393,14 @@ class WindowClass(QMainWindow, from_class):
             recorder.record_stop()
             btn.setText('RECORD\nSTART')
 
-    def update_record(self, pixmap, recorder):
+    def update_record(self, cvimage, result, recorder):
         try:
             if recorder is not None:
+                h,w,c = cvimage.shape
+                qformat_type = QImage.Format_RGB888
+                qimage = QImage(cvimage.data, w, h, w*c, qformat_type)
+                pixmap = QPixmap.fromImage(qimage)
+
                 image = pixmap.toImage()
                 width, height = image.width(), image.height()
                 ptr = image.bits()
@@ -417,8 +424,8 @@ class WindowClass(QMainWindow, from_class):
 
     def keyPressEvent(self, event):
         try:
-            if self.controller is None:
-                self.controller = KeyboardTeleopController(self.cal_cmd, self.sender)
+            # if self.controller is None:
+            self.controller = KeyboardTeleopController(self.cal_cmd, self.sender)
             self.controller.press_key_control(event)
         except Exception as e: 
             pass
@@ -430,10 +437,7 @@ class WindowClass(QMainWindow, from_class):
             self.mysql_info.append(password)
             self.mysql = pinkla_mysql(self.mysql_info)
             self.mysql.init_db()
-            
             self.check_password = 1
-            
-           
             
         except Exception as e:
             self.checkPW.setText("Wrong Password!!!")

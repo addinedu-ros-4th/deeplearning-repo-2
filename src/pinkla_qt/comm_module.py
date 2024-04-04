@@ -65,10 +65,10 @@ class SERVER():
             dist = dist2
             cam = "Lane"
         else:
-            cmtx = cmtx1
-            dist = dist1
-            # cmtx = cmtx2
-            # dist = dist2
+            # cmtx = cmtx1
+            # dist = dist1
+            cmtx = cmtx2
+            dist = dist2
             cam = "Object"
 
         if not self.show:
@@ -190,11 +190,13 @@ class Camera_Th(QThread):
         self.source, self.image, self.pixmap = None, None, None
 
         self.object_generator = find_object()
-        self.seg_generator = find_road_center()
+        self.seg_generator = Find_Road_Center()
 
         self.yolo_lane = False
-        self.yolo_object = False # 여기 수정했어요
+        self.yolo_object = False
+        self.result = []
         self.seg_result = [None]
+        self.obj_result = [None]
 
     def run(self):
         while self.conn is None:
@@ -207,16 +209,20 @@ class Camera_Th(QThread):
             if self.source is not None:
                 if self.yolo_lane :
                     self.image, self.seg_result = self.seg_generator.get_road_center(self.source.copy())
+                    self.obj_result = [None]
                 elif self.yolo_object :
                     self.image = self.object_generator.calculate_depth(self.source.copy())
                     self.seg_result = [None]
+                    self.obj_result = [None]
                 else:
                     self.image = self.source.copy()
                     self.seg_result = [None]
+                    self.obj_result = [None]
 
                 try:
+                    self.result = [self.seg_result, self.obj_result]
                     image = cv2.cvtColor(self.image, cv2.COLOR_BGR2RGB)
-                    self.update.emit(image, self.seg_result)
+                    self.update.emit(image, self.result)
                 except Exception as e:
                     # print(e)
                     pass
@@ -288,9 +294,9 @@ class Control_Pinkla(QThread):
 
     def __init__(self, s=None):
         super().__init__()
+        self.s = s
         self.running = True
         self.cmd = [0, 100, 5, 0, 0, 0, 0]
-        self.s = s
 
     def run(self):
         while self.running:
@@ -301,7 +307,7 @@ class Control_Pinkla(QThread):
                 self.update.emit(True)
                 QThread.msleep(30)
             except Exception as e :
-                print(e)
+                print("Control_Pinkla: ",e)
                 self.s.close()
                 self.update.emit(False)
                 self.running = False
@@ -366,8 +372,13 @@ class Cal_Cmd():
 
         self.lpf_x = LowPassFilter(5.0, 1)
         self.lpf_y = LowPassFilter(5.0, 1)
-        self.lpf_dx = LowPassFilter(0.1, 0.5)
-        self.lpf_dy = LowPassFilter(0.1, 0.5)
+        self.lpf_dx = LowPassFilter(3.0, 1)
+        self.lpf_dy = LowPassFilter(3.0, 1)
+
+        self.param_x = 3.33
+        self.param_y1 = 1.57
+        self.param_y2 = 2.76
+        self.param_z = 11.1
 
 
     def cal(self):
@@ -435,13 +446,12 @@ class Cal_Cmd():
 
         self.dist = math.sqrt(self.hor_dist**2 + self.ver_dist**2 + self.cam_h **2)
 
-
-        max_lin_x = abs(self.ver_dist / self.max_distance) * 3.2
-        max_lin_y = abs(self.hor_dist / self.max_distance / 1.54) * 2.7
+        max_lin_x = abs(self.ver_dist / self.max_distance) * self.param_x
+        max_lin_y = abs(self.hor_dist / self.max_distance / self.param_y1) * self.param_y2
             
         vx = (self.ver_dist / (abs(self.ver_dist) + abs(self.hor_dist)) * max_lin_x) * -1
         vy = (self.hor_dist / (abs(self.ver_dist) + abs(self.hor_dist)) * max_lin_y) * -1
-        vz = self.angle * 11.1
+        vz = self.angle * self.param_z
 
         self.r = 0.025
         self.b = 0.11
@@ -465,7 +475,7 @@ class Cal_Cmd():
             linear_x_velocity, linear_y_velocity, angular_velocity))
 
 
-class KeyboardTeleopController():
+class KeyboardTeleopController(object):
     def __init__(self, cal_cmd, sender):
         self.LIN_VEL_STEP_SIZE = 0.2
         self.ANG_VEL_STEP_SIZE = 2.5
@@ -473,7 +483,7 @@ class KeyboardTeleopController():
         self.sender = sender
 
     def press_key_control(self, event):
-        
+        value = [0,0,0,0]
         shift_flag = False
 
         if event.key() == Qt.Key_W:
@@ -562,12 +572,11 @@ class KeyboardTeleopController():
         if not shift_flag:
             self.cal_cmd.print_vels(self.cal_cmd.lx, self.cal_cmd.ly, self.cal_cmd.az)
             value = self.cal_cmd.cal()
-            # print(value)
 
         try:
             self.sender.cmd = [1, 100, 5, int(value[0]), int(value[1]), int(value[2]), int(value[3])]
         except Exception as e:
-            # print(e)
+            print("KeyboardTeleopController: ", e)
             pass
 
 
