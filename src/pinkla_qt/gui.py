@@ -355,33 +355,33 @@ class WindowClass(QMainWindow, from_class):
         
     def save_data(self, seg_result):
         coordinate = seg_result[-1]
-        # try:
-        if coordinate:
-            lane_data = []
-            current_time = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
+        try:
+            if coordinate:
+                lane_data = []
+                current_time = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
 
-            border = coordinate[0]
-            intersection = coordinate[1]
-            middle = coordinate[2]
-            target = [self.cal_cmd.cen_x, self.cal_cmd.cen_y]
-            
-            lane_data.append(current_time)
-            lane_data.append(len(border))
-            lane_data.append(border)
-            lane_data.append(len(intersection))
-            lane_data.append(intersection)
-            lane_data.append(len(middle))
-            lane_data.append(middle)
-            lane_data.append(target)
-            # print(type(current_time))
-            # print(lane_data)
-            
-            self.mysql.save_lane_data(lane_data)
-        else:
+                border = coordinate[0]
+                intersection = coordinate[1]
+                middle = coordinate[2]
+                target = [self.cal_cmd.cen_x, self.cal_cmd.cen_y]
+                
+                lane_data.append(current_time)
+                lane_data.append(len(border))
+                lane_data.append(border)
+                lane_data.append(len(intersection))
+                lane_data.append(intersection)
+                lane_data.append(len(middle))
+                lane_data.append(middle)
+                lane_data.append(target)
+                # print(type(current_time))
+                # print(lane_data)
+                
+                self.mysql.save_lane_data(lane_data)
+            else:
+                pass
+        except Exception as e:
+            print(e)
             pass
-        # except Exception as e:
-        #     print(e)
-        #     pass
 
     def click_record(self, flag_rec, recorder, btn):
         if not flag_rec[0]:
@@ -448,7 +448,7 @@ class WindowClass(QMainWindow, from_class):
     
     def createLogWindow(self):
         if self.mysql is not None :
-            log_window = logClass(self, self.mysql)
+            log_window = logClass(self)
             log_window.exec_()
         
         
@@ -470,7 +470,7 @@ class logClass(QDialog):
     def set_window(self):
         table_name = self.mysql.get_table_name()
         for name in table_name:
-            if name == "object_class" or name == "pinkla_event":
+            if name == "object_class":
                 pass
             else:
                 self.tableList.addItem(name)
