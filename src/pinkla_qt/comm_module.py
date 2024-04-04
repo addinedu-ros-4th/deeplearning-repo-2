@@ -351,7 +351,7 @@ class Cal_Cmd():
         self.img_width = 640
         self.img_height = 480
 
-        self.cam_h = 0.08
+        self.cam_height = 0.08
         self.cam_shift = 0.06
         self.hor_ang = math.radians(1)
         self.ver_ang = math.radians(-18)
@@ -365,9 +365,7 @@ class Cal_Cmd():
         self.cen_x, self.cen_y = 0., 0.
         self.x, self.y = 0., 0.
         self.seg_center_border = (0,0)
-
-        self.max_distance = 10
-
+        self.rate = 10
         self.w1, self.w2, self.w3, self.w4 = 0.0, 0.0, 0.0, 0.0
 
         self.lpf_x = LowPassFilter(5.0, 1)
@@ -375,9 +373,9 @@ class Cal_Cmd():
         self.lpf_dx = LowPassFilter(3.0, 1)
         self.lpf_dy = LowPassFilter(3.0, 1)
 
-        self.param_x = 3.33
-        self.param_y1 = 1.57
-        self.param_y2 = 2.76
+        self.param_x = 3.2
+        self.param_y1 = 1.54
+        self.param_y2 = 2.7
         self.param_z = 11.1
 
 
@@ -444,13 +442,13 @@ class Cal_Cmd():
         self.angle2 = np.arctan2(self.hor_dist, self.ver_dist)
         # print(self.angle, self.angle2)
 
-        self.dist = math.sqrt(self.hor_dist**2 + self.ver_dist**2 + self.cam_h **2)
+        self.dist = math.sqrt(self.hor_dist**2 + self.ver_dist**2 + self.cam_height **2)
 
-        max_lin_x = abs(self.ver_dist / self.max_distance) * self.param_x
-        max_lin_y = abs(self.hor_dist / self.max_distance / self.param_y1) * self.param_y2
+        mx = abs(self.ver_dist / self.rate) * self.param_x
+        my = abs(self.hor_dist / self.rate / self.param_y1) * self.param_y2
             
-        vx = (self.ver_dist / (abs(self.ver_dist) + abs(self.hor_dist)) * max_lin_x) * -1
-        vy = (self.hor_dist / (abs(self.ver_dist) + abs(self.hor_dist)) * max_lin_y) * -1
+        vx = (self.ver_dist / (abs(self.ver_dist) + abs(self.hor_dist)) * mx) * -1
+        vy = (self.hor_dist / (abs(self.ver_dist) + abs(self.hor_dist)) * my) * -1
         vz = self.angle * self.param_z
 
         self.r = 0.025
