@@ -93,7 +93,7 @@ class WindowClass(QMainWindow, from_class):
         self.camera_server = SERVER(self.server_ip, self.cam_port1)
         self.camera_th = Camera_Th(self, port=self.cam_port1)
         self.camera_th.daemon = True
-        self.camera_th.update.connect(lambda pixmap, error : self.update_image(pixmap, error,
+        self.camera_th.update.connect(lambda pixmap, seg_result : self.update_image(pixmap, seg_result,
                                                                         self.label_pixmap,
                                                                         self.pixmap, self.camera_th))
         self.camera_th.update.connect(lambda pixmap : self.update_record(pixmap,
@@ -102,7 +102,7 @@ class WindowClass(QMainWindow, from_class):
         self.camera_server2 = SERVER(self.server_ip, self.cam_port2)
         self.camera_th2 = Camera_Th(self, port=self.cam_port2)
         self.camera_th2.daemon = True
-        self.camera_th2.update.connect(lambda pixmap, error : self.update_image(pixmap, error,
+        self.camera_th2.update.connect(lambda pixmap, seg_result : self.update_image(pixmap, seg_result,
                                                                         self.label_pixmap_2,
                                                                         self.pixmap2, self.camera_th2))
         self.camera_th2.update.connect(lambda pixmap : self.update_record(pixmap,
@@ -144,34 +144,26 @@ class WindowClass(QMainWindow, from_class):
         self.btn_pinkla_socket.clicked.connect(self.click_pinkla_socket)
         # self.btn_for.clicked.connect(self.click_forward)
         # self.btn_st.clicked.connect(self.click_stop)
-        self.btn_auto.clicked.connect(lambda: self.yolo_seg_lane_start(self.camera_th))
+        self.btn_auto.clicked.connect(lambda: self.yolo_seg_lane_start(self.camera_th, self.camera_th2))
 
-    def yolo_seg_lane_start(self, thread):
+    def yolo_seg_lane_start(self, thread, thread2):
         if not self.isLaneDetectionOn:
             self.btn_auto.setText('Auto Driving\nSTOP')
             self.isLaneDetectionOn = True
             thread.yolo_lane = True
+            # thread2.yolo_lane = True
             
-            if thread.yolo is None:
-                thread.yolo = Yolo_Th()
-                thread.yolo.daemon = True
-                thread.yolo.update.connect(thread.get_lane_info)
-
-                thread.yolo.start()
-            thread.yolo.running = True
-
         else:
             self.btn_auto.setText('Auto Driving\nSTART')
             self.isLaneDetectionOn = False
             thread.yolo_lane = False
-
-            thread.yolo.running = False
-            # thread.yolo.stop()
+            # thread2.yolo_lane = False
 
             try:
                 if self.sender is not None:
                     self.sender.cmd = [0, 100, 5, 0, 0, 0, 0]
             except Exception as e:
+                print(e)
                 pass
 
     def click_cam_socket(self, flag_soc, flag_cam, flag_rec, socket, btn_soc, btn_cam, btn_rec, label, pix, thread):
@@ -290,23 +282,49 @@ class WindowClass(QMainWindow, from_class):
             self.pinkla_socket.running = False
             self.pinkla_socket.stop()
 
-    def update_image(self, pixmap, error, label, pix, thread):
+    def cv2_info_drawing(self, image, thread, seg_result):
 
+        if thread.yolo_lane and thread.seg_result[0] is not None:
+            cv2.rectangle(image, (0, int(self.cal_cmd.img_height/2 - 100)), (self.cal_cmd.img_width, self.cal_cmd.img_height), color=(0,0,255), thickness = 5)
+            cv2.putText(image, text=f"delta_x: {self.cal_cmd.hor_dist:.2f}, delta_y: {self.cal_cmd.ver_dist:.2f}, angle: {self.cal_cmd.angle:.2f}", org=(50, 100), fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=0.6, color=(255,255,255), thickness=2)
+            cv2.putText(image, text=f"distance: {self.cal_cmd.dist:.2f}", org=(50, 130), fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=0.6, color=(255,255,255), thickness=2)
+            cv2.putText(image, text="target", org=(int(self.cal_cmd.cen_x-20), int(self.cal_cmd.cen_y-20)), fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=1, color=(255,0,0), thickness=2)
+
+            cv2.line(image, (int(self.cal_cmd.x)+5, int(self.cal_cmd.y)), (int(self.cal_cmd.seg_center_border[0])-5, int(self.cal_cmd.seg_center_border[1])), color=(128,128,128), thickness=5 )
+            cv2.circle(image, (int(self.cal_cmd.cen_x), int(self.cal_cmd.cen_y)), radius=10, color=(255,0,0), thickness=-1)
+            cv2.arrowedLine(image, (int(self.cal_cmd.img_width/2), int(self.cal_cmd.img_height)+5), (int(self.cal_cmd.cen_x), int(self.cal_cmd.cen_y)), color=(50,50,50), thickness=5, tipLength=0.2)
+            cv2.circle(image, (int(self.cal_cmd.img_width/2), int(self.cal_cmd.img_height)), radius = 10, color = (255, 255, 255), thickness = -1)
+
+        return image
+
+    def update_image(self, image, seg_result, label, pix, thread):
         try:
+            cv2.putText(image, text=f"{self.cal_cmd.w4:.2f}, {self.cal_cmd.w3:.2f}, {self.cal_cmd.w2:.2f}, {self.cal_cmd.w1:.2f}", org=(50, 40), fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=0.6, color=(255,255,255), thickness=2)
+            cv2.putText(image, text=f"linear_x: {self.cal_cmd.lx:.2f}, linear_y: {self.cal_cmd.ly:.2f}, angular_z: {self.cal_cmd.az:.2f}", org=(50, 70), fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=0.6, color=(255,255,255), thickness=2)
+
+            if len(thread.seg_result) > 1:
+                image = self.cv2_info_drawing(image, thread, seg_result)
+
+            h,w,c = image.shape
+
+            qformat_type = QImage.Format_RGB888
+            qimage = QImage(image.data, w, h, w*c, qformat_type)
+            pixmap = QPixmap.fromImage(qimage)
+
             pix = pixmap.scaled(label.width(), label.height())
             label.setPixmap(pix)
             label.setAlignment(Qt.AlignCenter)
             
             if thread.yolo_lane:
-                # value = self.cal_cmd.moveTo(error)
-                value = self.cal_cmd.moveTo2(error)
+                vel = self.cal_cmd.move_to_lane_center(seg_result)
                 try:
-                    self.sender.cmd = [1, 100, 5, int(value[0]), int(value[1]), int(value[2]), int(value[3])]
+                    self.sender.cmd = [1, 100, 5, int(vel[0]), int(vel[1]), int(vel[2]), int(vel[3])]
                 except Exception as e:
                     # print(e)
                     pass
 
         except Exception as e:
+            # print(e)
             self.show_logo(label, pix)
             pass
 
