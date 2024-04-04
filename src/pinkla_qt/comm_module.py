@@ -200,6 +200,10 @@ class Camera_Th(QThread):
                     self.image = self.source.copy()
                 else:
                     self.image, self.error = self.generator.get_road_center(self.source.copy())
+                if not self.yolo_object:
+                    self.image = self.source.copy()
+                else:
+                    self.image = self.object_generator.calculate_depth(self.source.copy())
 
                 self.image = cv2.cvtColor(self.image, cv2.COLOR_BGR2RGB)
                 h,w,c = self.image.shape
