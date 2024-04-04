@@ -15,6 +15,14 @@ class CameraStreamer:
         self.quality = quality
         self.encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), quality]
         self.socket = None
+        
+        if self.cam_index == 0:
+            self.cam = cv2.VideoCapture(self.cam_index)
+        else:
+            self.cam = self.cam_index
+
+        self.cam.set(3, self.width)
+        self.cam.set(4, self.height)
 
     def connect_to_server(self):
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -32,13 +40,9 @@ class CameraStreamer:
     def send_video_data(self):
         self.socket = self.connect_to_server()
 
-        cam = cv2.VideoCapture(self.cam_index)
-        cam.set(3, self.width)
-        cam.set(4, self.height)
-
         while True:
             try:
-                ret, frame = cam.read() 
+                ret, frame = self.cam.read()
                 if ret:
                     result, frame = cv2.imencode('.jpg', frame, self.encode_param) 
                     data = np.array(frame)
@@ -50,7 +54,7 @@ class CameraStreamer:
             except Exception as e:
                 self.socket = self.connect_to_server()
 
-        cam.release()
+        self.cam.release()
         self.socket.close()
         print("release and close ")
 
@@ -63,9 +67,9 @@ def main():
     if len(sys.argv) == 2:
         # Only one argument, run a single thread for the specified camera index
         cam_index = int(sys.argv[1])
-
+        # cam_index = sys.argv[1]
         camera1 = CameraStreamer(server_address, port1, cam_index)
-        camera2 = CameraStreamer(server_address, port2, cam_index)
+        camera2 = CameraStreamer(server_address, port2, camera1.cam)
         thread1 = threading.Thread(target=camera1.send_video_data)
         thread2 = threading.Thread(target=camera2.send_video_data)
         thread1.start()
