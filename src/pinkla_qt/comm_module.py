@@ -15,7 +15,7 @@ import psutil
 import math
 
 from pinkla_lane.lane_detection import *
-from pinkla_object.predict_distance import *
+from pinkla_object.main.predict_distance import *
 
 cmtx1 = np.array([[474.9308089, 0., 313.10372736],
                 [0., 474.24684641, 254.94399015],
