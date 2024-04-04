@@ -89,7 +89,7 @@ lpf_dy = LowPassFilter(0.1, 0.5)
 
 class find_road_center():
     def __init__(self):
-        self.model = YOLO("../../data/bestyolov8n.pt")
+        self.model = YOLO("../../data/bestyolov8n.pt", task="segment")
         # self.model = YOLO("../../data/bestyolov8m.pt")
         self.image = None
         self.img_center_x = int(640/2)
@@ -112,7 +112,6 @@ class find_road_center():
 
         self.zeros_image = np.zeros((480, 640, 3)).astype(np.uint8)
         self.zeros_image[:, :] = [0, 0, 255]
-        self.value = [0.,0.,0.,0.]
 
         self.temp_border = None
 
@@ -121,12 +120,21 @@ class find_road_center():
         self.get_inter_cen = Centroid()
 
         self.cnt_stop = 0
-        self.w4, self.w3, self.w2, self.w1 = 0,0,0,0
+
+        self.border_info = []
+        self.middle_info = []
+        self.inter_info = []
+
 
     def get_road_center(self, image):
         self.seg_center_middle_list = []
         self.seg_center_border_list = []
         self.seg_center_inter_list = []
+        
+        self.border_info = []
+        self.middle_info = []
+        self.inter_info = []
+        line_center_x, line_center_y = 0, 0
 
         self.image = image.copy()
         ROI = self.image[self.roi_rect_start[1]:self.roi_rect_end[1], self.roi_rect_start[0]:self.roi_rect_end[0]]
@@ -143,7 +151,6 @@ class find_road_center():
                     if check_right_lane(xy):
                         self.seg_center_border = self.get_border_cen.get_centroid(xy)
                         self.seg_center_border_list.append(self.seg_center_border)
-
                         cv2.polylines(self.image,[xy],isClosed=True,color=(255,255,255),thickness=3)
                         cv2.circle(self.image, (int(self.seg_center_border[0]), int(self.seg_center_border[1])), radius=10, color=(255,255,255),thickness=-1)
                         cv2.putText(self.image, text="border", org=(self.seg_center_border[0]-20, self.seg_center_border[1]-20), fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=1, color=(255,255,255), thickness=2)
@@ -160,7 +167,6 @@ class find_road_center():
                     xy = mask.xy[0].astype("int") 
                     self.seg_center_inter = self.get_inter_cen.get_centroid(xy)
                     self.seg_center_inter_list.append(self.seg_center_inter)
-                    
                     cv2.polylines(self.image,[xy],isClosed=True,color=(64,64,64),thickness=3)
                     cv2.circle(self.image, (int(self.seg_center_inter[0]), int(self.seg_center_inter[1])), radius=10, color=(64,64,64),thickness=-1)
                     cv2.putText(self.image, text="intersection", org=(self.seg_center_inter[0]-20, self.seg_center_inter[1]-20), fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=1, color=(64,64,64), thickness=2)
@@ -170,7 +176,6 @@ class find_road_center():
                     xy = mask.xy[0].astype("int")
                     self.seg_center_middle = self.get_middle_cen.get_centroid(xy)
                     self.seg_center_middle_list.append(self.seg_center_middle)
-
                     cv2.polylines(self.image,[xy],isClosed=True,color=(0,255,255),thickness=3)
                     cv2.circle(self.image, (int(self.seg_center_middle[0]), int(self.seg_center_middle[1])), radius=10, color=(0,255,255),thickness=-1)
                     cv2.putText(self.image, text="middle", org=(int(self.seg_center_middle[0])-20, int(self.seg_center_middle[1])-20), fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=1, color=(0,255,255), thickness=2)
@@ -232,108 +237,23 @@ class find_road_center():
 
 
         # thk test
-        vx,vy,vz = 0.,0.,0.
         try:
-            hor_ang = math.radians(1)
-            ver_ang = math.radians(-18)
-            cam_h = 0.08
-            cam_shift = 0.06
-            hor_pixel_per_deg = 640 / math.degrees(hor_ang)
-            ver_pixel_per_deg = 640 / math.degrees(ver_ang)
-
             # 우측 차선 주행 중, 갑자기 왼쪽 border_line만 검출 시 -> 우측으로 rotation 필요. 오른쪽 border_line 이전 값 적용
             if self.seg_center_border[0] < 300:
                 self.seg_center_border = self.temp_border
 
-            x = lpf_x.filter(line_center_x)
-            y = lpf_y.filter(line_center_y)
-
-            cen_x = (x + self.seg_center_border[0]) / 2
-            cen_y = (y + self.seg_center_border[1]) / 2
-
-            # target_pos - robot_pos
-            delta_x_t = self.img_center_x - cen_x
-            delta_y_t = (self.roi_rect_end[1]) - cen_y
-
-            delta_x = lpf_dx.filter(delta_x_t)
-            delta_y = lpf_dy.filter(delta_y_t)
-
-            target_pos = np.array([int(cen_x), int(cen_y)])
-            robot_pos = np.array([self.img_center_x, int(self.roi_rect_end[1])])
-            # robot_pos = np.array([self.img_center_x, int(self.roi_rect_end[1] - 50)])
-            
-            # distance = np.linalg.norm(robot_pos - target_pos)
-            distance = np.sqrt(delta_x**2 + delta_y**2)
-            angle = np.arctan2(delta_x, delta_y)
-
-            # hor_dist = delta_x / hor_pixel_per_deg
-            hor_dist = delta_x / 10 * -1
-            ver_dist = (delta_y / ver_pixel_per_deg)  + (cam_shift * 100 * -1)
-            dist = math.sqrt(hor_dist**2 + ver_dist**2 + cam_h **2)
-
-
-            # max_lin_x = 1.8
-            # max_lin_y = 1.8
-            # max_distance = 100
-            # vx = max_lin_x * (distance / max_distance)
-            # vz = angle * 50.0
-
-            max_distance = 10
-
-            max_lin_x = abs(ver_dist / max_distance) * 3.2
-            max_lin_y = abs(hor_dist / max_distance / 1.54) * 2.7
-            
-            vx = (ver_dist / (abs(ver_dist) + abs(hor_dist)) * max_lin_x) * -1
-            vy = (hor_dist / (abs(ver_dist) + abs(hor_dist)) * max_lin_y) * -1
-            vz = angle * 11.1
-            # print(max_lin_x, max_lin_y, vx, vy, vz)
-
-
-            test_x = robot_pos[0] - distance * np.sin(angle)
-            test_y = robot_pos[1] - distance * np.cos(angle)
-
-
-            self.w1 = (1/0.025) * (vx-vy-0.11*vz)
-            self.w2 = (1/0.025) * (vx+vy-0.11*vz)
-            self.w3 = (1/0.025) * (vx-vy+0.11*vz)
-            self.w4 = (1/0.025) * (vx+vy+0.11*vz)
-
+            if len(self.seg_center_border_list) == 0 and len(self.seg_center_inter_list) == 0 and len(self.seg_center_middle_list) == 0:
+                self.cnt_stop += 1
+            else:
+                self.cnt_stop = 0
             
         except Exception as e:
             print(e)
             pass
 
-        # print(distance, dist, hor_dist, ver_dist)
-
-        if len(self.seg_center_border_list) == 0 and len(self.seg_center_inter_list) == 0 and len(self.seg_center_middle_list) == 0:
-            print("stoping")
-            self.cnt_stop += 1
-            if self.cnt_stop > 20:
-                self.value = [0., 0., 0., 0.]
-        else:
-            self.value = [self.w4, self.w3, self.w2, self.w1]
-            self.cnt_stop = 0
-
-        # print(len(self.seg_center_border_list),len(self.seg_center_inter_list),len(self.seg_center_middle_list), self.cnt_stop)
-        cv2.putText(self.image, text=f"{self.value[0]:.2f}, {self.value[1]:.2f}, {self.value[2]:.2f}, {self.value[3]:.2f}", org=(50, 40), fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=0.6, color=(255,255,255), thickness=2)
-        try:
-            cv2.rectangle(self.image, self.roi_rect_start, self.roi_rect_end, color = (255, 0, 0), thickness = 8)
-
-            cv2.line(self.image, (int(x)+5, int(y)), (int(self.seg_center_border[0])-5, int(self.seg_center_border[1])), color=(128,128,128), thickness=5 )
-
-            cv2.putText(self.image, text=f"linear_y: {vy:.2f}, linear_x: {vx:.2f}, angular_z: {vz:.2f}", org=(50, 70), fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=0.6, color=(255,255,255), thickness=2)
-            cv2.putText(self.image, text=f"delta_x: {hor_dist:.2f}, delta_y: {ver_dist:.2f}, angle: {angle:.2f}", org=(50, 100), fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=0.6, color=(255,255,255), thickness=2)
-            cv2.putText(self.image, text=f"distance: {distance:.2f}", org=(50, 130), fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=0.6, color=(255,255,255), thickness=2)
-
-            cv2.putText(self.image, text="target", org=(int(cen_x-20), int(cen_y-20)), fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=1, color=(0,0,255), thickness=2)
-
-            cv2.circle(self.image, (int(cen_x), int(cen_y)), radius=10, color=(0,0,255), thickness=-1)
-            cv2.arrowedLine(self.image, (self.img_center_x, int(self.roi_rect_end[1])+5), (int(cen_x), int(cen_y)), color=(50,50,50), thickness=5, tipLength=0.2)
-            cv2.circle(self.image, (self.img_center_x, int(self.roi_rect_end[1])), radius = 10, color = (255, 255, 255), thickness = -1)
-        except Exception as e:
-            print(e)
-            pass        
-
-        return self.image, self.value
+        cv2.rectangle(self.image, self.roi_rect_start, self.roi_rect_end, color = (255, 0, 0), thickness = 2)
+        
+        seg_result = [line_center_x, line_center_y, self.seg_center_border, self.cnt_stop]
+        return self.image, seg_result
 
 
