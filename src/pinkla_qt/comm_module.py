@@ -175,7 +175,7 @@ class Socket(QThread):
 
 
 class Camera_Th(QThread):
-    update = pyqtSignal(QPixmap, int)
+    update = pyqtSignal(QPixmap, int, list)
 
     def __init__(self, sec=0, parent=None, port=0000):
         super().__init__()
@@ -187,6 +187,7 @@ class Camera_Th(QThread):
         self.source, self.image, self.pixmap = None, None, None
         self.yolo_lane = False
         self.error = 0
+        self.coordinate = []
 
     def run(self):
         while self.conn is None:
@@ -199,14 +200,14 @@ class Camera_Th(QThread):
                 if not self.yolo_lane:
                     self.image = self.source.copy()
                 else:
-                    self.image, self.error = self.generator.get_road_center(self.source.copy())
+                    self.image, self.error, self.coordinate = self.generator.get_road_center(self.source.copy())
 
                 self.image = cv2.cvtColor(self.image, cv2.COLOR_BGR2RGB)
                 h,w,c = self.image.shape
                 qformat_type = QImage.Format_RGB888
                 qimage = QImage(self.image.data, w, h, w*c, qformat_type)
                 self.pixmap = QPixmap.fromImage(qimage)
-                self.update.emit(self.pixmap, self.error)
+                self.update.emit(self.pixmap, self.error, self.coordinate)
             QThread.msleep(8)
 
     def stop(self):

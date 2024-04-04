@@ -63,6 +63,7 @@ def main():
     if len(sys.argv) == 2:
         # Only one argument, run a single thread for the specified camera index
         cam_index = int(sys.argv[1])
+        # cam_index = "../../data/Untitled.avi"
         camera = CameraStreamer(server_address, port1, cam_index)
         thread = threading.Thread(target=camera.send_video_data)
         thread.start()

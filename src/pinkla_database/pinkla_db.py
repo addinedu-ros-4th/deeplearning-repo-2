@@ -3,9 +3,12 @@ import pandas as pd
 
 class pinkla_mysql():
     def __init__(self, info):
-        self.df = pd.DataFrame()
+        self.df = None
         self.info = info
         self.connect_to_database()
+        self.cur.execute("USE pinkla_base")
+        self.remote.commit()
+        
         
     def connect_to_database(self):
         self.remote = mysql.connector.connect(
@@ -14,12 +17,12 @@ class pinkla_mysql():
             password=self.info[2]
         )
         self.cur = self.remote.cursor(buffered=True)
-        
+
+
     def init_db(self):
-        self.connect_to_database()
         self.create_database()
         self.init_tables()
-        self.remote.close()
+        
         
     def create_database(self):
         create_db_query = "CREATE DATABASE IF NOT EXISTS pinkla_base"
@@ -28,80 +31,160 @@ class pinkla_mysql():
         
         
     def init_tables(self):
-        self.cur.execute("USE pinkla_base")
+        
+        self.create_action_table()
         self.create_lane_table()
-        self.create_vehicle_table()
         self.create_object_table()
-        self.create_event_table()
+        self.create_vehicle_table()
+        self.create_class_table()
+        # self.save_object_class()
         
+    
+    
+    def create_action_table(self):
+        create_query = "CREATE TABLE IF NOT EXISTS pinkla_action \
+                            (time DATETIME PRIMARY KEY, \
+                            action VARCHAR(16) NOT NULL, \
+                            drive_LED BOOL NOT NULL, \
+                            L_LED BOOL NOT NULL, \
+                            R_LED BOOL NOT NULL, \
+                            break_LED BOOL NOT NULL, \
+                            buzzer BOOL NOT NULL)"
+        self.cur.execute(create_query)
+        self.remote.commit()
+
+
     def create_lane_table(self):
-        create_query = "CREATE TABLE IF NOT EXISTS pinkla_lane (time DATETIME PRIMARY KEY, lane_class VARCHAR(32), number_of_lane INT)"
+        create_query = "CREATE TABLE IF NOT EXISTS pinkla_lane \
+                            (time varchar(32) PRIMARY KEY, \
+                            border_line INT NOT NULL, \
+                            border_line_centroid VARCHAR(16) NOT NULL, \
+                            intersection_line INT NOT NULL, \
+                            intersection_line_centroid VARCHAR(16) NOT NULL, \
+                            middle_line INT NOT NULL, \
+                            middle_line_centroid VARCHAR(16) NOT NULL, \
+                            target_point VARCHAR(16) NOT NULL)"
         self.cur.execute(create_query)
         self.remote.commit()
-        
-    def create_vehicle_table(self):
-        create_query = "CREATE TABLE IF NOT EXISTS pinkla_vehicle (time DATETIME PRIMARY KEY, vehicle_status VARCHAR(32), linear_x FLOAT, angular_z FLOAT)"
-        self.cur.execute(create_query)
-        self.remote.commit()
-        
+
+
     def create_object_table(self):
-        create_query = "CREATE TABLE IF NOT EXISTS pinkla_object (time DATETIME PRIMARY KEY, object_class VARCHAR(32), number_of_object INT)"
+        create_query = "CREATE TABLE IF NOT EXISTS pinkla_object \
+                        (time DATETIME PRIMARY KEY, \
+                        action VARCHAR(16) NOT NULL, \
+                        object_list INT NOT NULL, \
+                        object_distance FLOAT NOT NULL, \
+                        detected_image BLOB NOT NULL)"
+        self.cur.execute(create_query)
+        self.remote.commit()
+
+
+    def create_vehicle_table(self):
+        create_query = "CREATE TABLE IF NOT EXISTS pinkla_vehicle \
+                        (target_point VARCHAR(16), \
+                        linear_x FLOAT NOT NULL, \
+                        angular_z FLOAT NOT NULL)"
+        self.cur.execute(create_query)
+        self.remote.commit()
+
+
+    def create_class_table(self):
+        check_query = "DROP TABLE IF EXISTS object_class"
+        self.cur.execute(check_query)
+
+        create_query = "CREATE TABLE IF NOT EXISTS object_class \
+                        (object_list INT PRIMARY KEY, \
+                        object_classes VARCHAR(16) NOT NULL)"
         self.cur.execute(create_query)
         self.remote.commit()
         
-    def create_event_table(self):
-        create_query = "CREATE TABLE IF NOT EXISTS pinkla_event (time DATETIME PRIMARY KEY, event_class VARCHAR(32))"
-        self.cur.execute(create_query)
-        self.remote.commit()
         
-    
+        
+    def get_table_name(self):
+        query = "SELECT table_name FROM information_schema.tables WHERE table_schema = 'pinkla_base'"
+        self.cur.execute(query)
+        table_name = [row[0] for row in self.cur.fetchall()]
+        return table_name
+        
+        
+        
+    def save_action_data(self, action_data):
+        save_query = f"INSERT INTO pinkla_action (time, drive_LED, action, L_LED, R_LED, break_LED, buzzer) \
+                        VALUES ('{action_data[0]}', '{action_data[1]}', '{action_data[2]}', '{action_data[3]}', \
+                        '{action_data[4]}', '{action_data[5]}', '{action_data[6]}')"
+        self.cur.execute(save_query)
+        self.remote.commit()
+
     def save_lane_data(self, lane_data):
-        self.cur.execute(f"insert into pinkla_lane (time, lane_class, number_of_lane) values ({lane_data[0]}, {lane_data[1]}, {lane_data[2]})")
+        save_query = f"INSERT INTO pinkla_lane (time, border_line, border_line_centroid, intersection_line, \
+                            intersection_line_centroid, middle_line, middle_line_centroid, target_point) \
+                        VALUES ('{lane_data[0]}', '{lane_data[1]}', '{lane_data[2]}', '{lane_data[3]}', \
+                            '{lane_data[4]}', '{lane_data[5]}', '{lane_data[6]}', '{lane_data[7]}')"
+        self.cur.execute(save_query)
         self.remote.commit()
-    
-    
-    def save_vehicle_data(self, vehicle_data):
-        self.cur.execute(f"insert into pinkla_vehicle (time, vehicle_status, linear_x, angular_z) values ({vehicle_data[0]}, {vehicle_data[1]}, {vehicle_data[2]}), {vehicle_data[3]}")
-        self.remote.commit()
-        
-        
+
     def save_object_data(self, object_data):
-        self.cur.execute(f"insert into pinkla_object (time, lane_class, number_of_lane) values ({object_data[0]}, {object_data[1]}, {object_data[2]})")
+        save_query = f"INSERT INTO pinkla_object (time, action, object_list, object_distance, detected_image) \
+                        VALUES ('{object_data[0]}', '{object_data[1]}', '{object_data[2]}', \
+                            '{object_data[3]}', '{object_data[4]}')"
+        self.cur.execute(save_query)
+        self.remote.commit()
+
+    def save_vehicle_data(self, vehicle_data):
+        save_query = f"INSERT INTO pinkla_vehicle (target_point, linear_x, angular_z) \
+                        VALUES ('{vehicle_data[0]}', '{vehicle_data[1]}', '{vehicle_data[2]}')"
+        self.cur.execute(save_query)
+        self.remote.commit()
+
+    def save_object_class(self, object_list):
+        for i in object_list:
+            save_query = f"INSERT INTO object_class (object_list, object_classes) \
+                            VALUES ('{i[0]}', '{i[1]}')"
+            self.cur.execute(save_query)
         self.remote.commit()
         
+    
+    def select_data(self, table_name):
+        if table_name == "pinkla_action":
+            self.get_action_data()
+        elif table_name == "pinkla_lane":
+            self.get_lane_data()
+        elif table_name == "pinkla_object":
+            self.get_object_data()
+        elif table_name == "pinkla_vehicle":
+            self.get_vehicle_data()
+        else:
+            self.df = None
+            
+        return self.df
         
-    def save_event_data(self, event_data):
-        self.cur.execute(f"insert into pinkla_event (time, lane_class, number_of_lane) values ({event_data[0]}, {event_data[1]})")
-        self.remote.commit()
-        
-        
+    
+    def get_action_data(self):
+        self.cur.execute("select * from pinkla_action")
+        result = self.cur.fetchall()
+        self.df =  pd.DataFrame(result, columns = ["time", "drive_LED", "action", "L_LED", "R_LED", "break_LED", "buzzer"])
+    
+    
     def get_lane_data(self):
         self.cur.execute("select * from pinkla_lane")
         result = self.cur.fetchall()
-        self.df = pd.DataFrame(result, columns = ["time, lane_class, lane_number"])
-        return self.df
+        self.df = pd.DataFrame(result, columns = ["time", "border_line", "border_line_centroid", "intersection_line",
+                                                  "intersection_line_centroid", "middle_line", "middle_line_centroid", "target_point"])
         
-        
+    
+    def get_object_data(self):
+        self.cur.execute("select time, action, object_list, object_distance from pinkla_object")
+        result = self.cur.fetchall()
+        self.df = pd.DataFrame(result, columns = ["time", "action", "object_list", "object_distance"])
+    
+     
     def get_vehicle_data(self):
         self.cur.execute("select * from pinkla_vehicle")
         result = self.cur.fetchall()
-        self.df = pd.DataFrame(result, columns = ["time, vehicle_status, linear_x, angular_z"])
-        return self.df
-        
-        
-    def get_object_data(self):
-        self.cur.execute("select * from pinkla_object")
-        result = self.cur.fetchall()
-        self.df = pd.DataFrame(result, columns = ["time, object_class, number_of_object"])
-        return self.df
-        
-        
-    def get_event_data(self):
-        self.cur.execute("select * from pinkla_event")
-        result = self.cur.fetchall()
-        self.df = pd.DataFrame(result, columns = ["time, event_class"])
-        return self.df
+        self.df = pd.DataFrame(result, columns = ["target_point", "linear_x", "angular_z"])
+    
     
     
     def close_mysql(self):
+        self.cur.close()
         self.remote.close()
