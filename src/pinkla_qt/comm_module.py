@@ -15,6 +15,7 @@ import psutil
 import math
 
 from pinkla_lane.lane_detection import *
+from pinkla_object.main.predict_distance import *
 
 cmtx1 = np.array([[474.9308089, 0., 313.10372736],
                   [0., 474.24684641, 254.94399015],
@@ -188,8 +189,11 @@ class Camera_Th(QThread):
         self.conn = None
         self.source, self.image, self.pixmap = None, None, None
 
-        self.generator = find_road_center()
+        self.object_generator = find_object()
+        self.seg_generator = find_road_center()
+
         self.yolo_lane = False
+        self.yolo_object = False # 여기 수정했어요
         self.seg_result = [None]
 
     def run(self):
@@ -199,13 +203,16 @@ class Camera_Th(QThread):
 
         while self.running == True:
             self.source = self.cam_server.show_video()
+            
             if self.source is not None:
-
-                if not self.yolo_lane:
-                    self.image = self.source.copy()
+                if self.yolo_lane :
+                    self.image, self.seg_result = self.seg_generator.get_road_center(self.source.copy())
+                elif self.yolo_object :
+                    self.image = self.object_generator.calculate_depth(self.source.copy())
                     self.seg_result = [None]
                 else:
-                    self.image, self.seg_result = self.generator.get_road_center(self.source.copy())
+                    self.image = self.source.copy()
+                    self.seg_result = [None]
 
                 try:
                     image = cv2.cvtColor(self.image, cv2.COLOR_BGR2RGB)
@@ -562,53 +569,6 @@ class KeyboardTeleopController():
         except Exception as e:
             # print(e)
             pass
-
-
-class logClass(QDialog):
-    def __init__(self, WindowClass):
-        super().__init__()
-        self.ui = uic.loadUi("db.ui", self)
-        self.main_window = WindowClass
-        self.show()
-        self.log_in(WindowClass)
-        
-        
-    def set_window(self):
-        table_name = self.mysql.get_table_name()
-        for name in table_name:
-            if name == "object_class" or name == "pinkla_event":
-                pass
-            else:
-                self.tableList.addItem(name)
-                
-    def log_in(self, class_instance):
-        self.info = class_instance.mysql_info
-        self.mysql = pinkla_mysql(self.info)
-        self.tableList.addItem(" ")
-        self.set_window()
-        
-        self.tableList.currentIndexChanged.connect(self.select_table)
-            
-    def select_table(self):
-        current_select = self.tableList.currentText()
-        table = self.mysql.select_data(current_select)
-        rows, cols = table.shape
-        
-        self.tableWidget.setRowCount(rows)
-        self.tableWidget.setColumnCount(cols)
-        self.tableWidget.setHorizontalHeaderLabels(table.columns)
-        self.tableWidget.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
-        
-        for i in range(rows):
-            for j in range(cols):
-                item = QTableWidgetItem(str(table.iloc[i, j]))
-                self.tableWidget.setItem(i, j, item)
-        
-        
-    def closeEvent(self, event):
-        if self.mysql:
-            self.mysql.close_mysql() 
-        event.accept()
 
 
 def center_ui(object):

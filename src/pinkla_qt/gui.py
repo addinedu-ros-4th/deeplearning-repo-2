@@ -48,6 +48,7 @@ class WindowClass(QMainWindow, from_class):
         self.isRecOn, self.isRecOn2 = [False], [False]
         self.isPinkSocketOpened = False
         self.isLaneDetectionOn = False
+        self.isObjectDetectionOn = False
 
     def ui_init(self):
         self.setFocusPolicy(Qt.StrongFocus)
@@ -107,6 +108,12 @@ class WindowClass(QMainWindow, from_class):
                                                                         self.camera_server2))
 
     def btn_init(self):
+        self.logButton.hide()
+        self.logButton.clicked.connect(self.createLogWindow)
+        self.useDBButton.clicked.connect(self.init_db)
+        self.dbPassword.returnPressed.connect(self.init_db)
+        self.dbPassword.setEchoMode(QLineEdit.Password)
+
         self.btn_cam_socket.clicked.connect(lambda: self.click_cam_socket(self.isCamSocketOpened, self.isCameraOn, self.isRecOn,
                                                                           self.cam_socket,
                                                                           self.btn_cam_socket,
@@ -142,34 +149,41 @@ class WindowClass(QMainWindow, from_class):
         self.btn_pinkla_socket.clicked.connect(self.click_pinkla_socket)
         # self.btn_for.clicked.connect(self.click_forward)
         # self.btn_st.clicked.connect(self.click_stop)
-        self.btn_auto.clicked.connect(lambda: self.yolo_seg_lane_start(self.camera_th, self.camera_th2))
+        self.btn_auto.clicked.connect(lambda: self.yolo_seg_lane_start(self.camera_th))
+        self.btn_auto_2.clicked.connect(lambda: self.yolo_object_detect_start(self.camera_th2))
 
-        self.logButton.hide()
-        self.logButton.clicked.connect(self.createLogWindow)
         
-        self.useDBButton.clicked.connect(self.init_db)
-        self.dbPassword.returnPressed.connect(self.init_db)
-        self.dbPassword.setEchoMode(QLineEdit.Password)
 
-    def yolo_seg_lane_start(self, thread, thread2):
+    def yolo_seg_lane_start(self, thread):
         if not self.isLaneDetectionOn:
             self.btn_auto.setText('Auto Driving\nSTOP')
             self.isLaneDetectionOn = True
             thread.yolo_lane = True
-            # thread2.yolo_lane = True
-            
         else:
             self.btn_auto.setText('Auto Driving\nSTART')
             self.isLaneDetectionOn = False
             thread.yolo_lane = False
-            # thread2.yolo_lane = False
-
             try:
                 if self.sender is not None:
                     self.sender.cmd = [0, 100, 5, 0, 0, 0, 0]
             except Exception as e:
                 print(e)
                 pass
+    
+    def yolo_object_detect_start(self, thread):
+        if not self.isObjectDetectionOn:
+            self.btn_auto_2.setText('Object Detection\nSTOP')
+            self.isObjectDetectionOn = True
+            thread.yolo_object = True
+        else:
+            self.btn_auto_2.setText('Object Detection\nSTART')
+            self.isObjectDetectionOn = False
+            thread.yolo_object = False
+            try:
+                if self.sender is not None:
+                    self.sender.cmd = [0, 100, 5, 0, 0, 0, 0]
+            except Exception as e:
+                pass            
 
     def click_cam_socket(self, flag_soc, flag_cam, flag_rec, socket, btn_soc, btn_cam, btn_rec, label, pix, thread):
         flag_cam[0] = False
@@ -429,8 +443,9 @@ class WindowClass(QMainWindow, from_class):
             self.logButton.show()
     
     def createLogWindow(self):
-        log_window = logClass(self)
-        log_window.exec_()
+        if self.mysql is not None :
+            log_window = logClass(self, self.mysql)
+            log_window.exec_()
         
         
     def closeEvent(self, event):
@@ -439,6 +454,51 @@ class WindowClass(QMainWindow, from_class):
         event.accept()
         
 
+class logClass(QDialog):
+    def __init__(self, WindowClass):
+        super().__init__()
+        self.ui = uic.loadUi("db.ui", self)
+        self.main_window = WindowClass
+        self.show()
+        self.log_in(WindowClass)
+        
+        
+    def set_window(self):
+        table_name = self.mysql.get_table_name()
+        for name in table_name:
+            if name == "object_class" or name == "pinkla_event":
+                pass
+            else:
+                self.tableList.addItem(name)
+                
+    def log_in(self, class_instance):
+        self.info = class_instance.mysql_info
+        self.mysql = pinkla_mysql(self.info)
+        self.tableList.addItem(" ")
+        self.set_window()
+        
+        self.tableList.currentIndexChanged.connect(self.select_table)
+            
+    def select_table(self):
+        current_select = self.tableList.currentText()
+        table = self.mysql.select_data(current_select)
+        rows, cols = table.shape
+        
+        self.tableWidget.setRowCount(rows)
+        self.tableWidget.setColumnCount(cols)
+        self.tableWidget.setHorizontalHeaderLabels(table.columns)
+        self.tableWidget.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+        
+        for i in range(rows):
+            for j in range(cols):
+                item = QTableWidgetItem(str(table.iloc[i, j]))
+                self.tableWidget.setItem(i, j, item)
+        
+        
+    def closeEvent(self, event):
+        if self.mysql:
+            self.mysql.close_mysql() 
+        event.accept()
 
 
 

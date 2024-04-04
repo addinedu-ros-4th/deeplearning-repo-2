@@ -41,7 +41,7 @@
      <x>620</x>
      <y>230</y>
      <width>411</width>
-     <height>401</height>
+     <height>491</height>
     </rect>
    </property>
    <property name="title">
@@ -51,7 +51,7 @@
     <property name="geometry">
      <rect>
       <x>310</x>
-      <y>160</y>
+      <y>250</y>
       <width>89</width>
       <height>31</height>
      </rect>
@@ -78,7 +78,7 @@ START</string>
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>160</y>
+      <y>250</y>
       <width>89</width>
       <height>31</height>
      </rect>
@@ -105,7 +105,7 @@ CONNECT</string>
     <property name="geometry">
      <rect>
       <x>110</x>
-      <y>160</y>
+      <y>250</y>
       <width>89</width>
       <height>31</height>
      </rect>
@@ -118,7 +118,7 @@ CONNECT</string>
     <property name="geometry">
      <rect>
       <x>210</x>
-      <y>160</y>
+      <y>250</y>
       <width>89</width>
       <height>31</height>
      </rect>
@@ -131,7 +131,7 @@ CONNECT</string>
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>210</y>
+      <y>300</y>
       <width>391</width>
       <height>181</height>
      </rect>
@@ -144,7 +144,7 @@ CONNECT</string>
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>120</y>
+      <y>216</y>
       <width>51</width>
       <height>17</height>
      </rect>
@@ -157,7 +157,7 @@ CONNECT</string>
     <property name="geometry">
      <rect>
       <x>170</x>
-      <y>120</y>
+      <y>210</y>
       <width>101</width>
       <height>31</height>
      </rect>
@@ -170,10 +170,24 @@ CONNECT</string>
     <property name="geometry">
      <rect>
       <x>80</x>
-      <y>120</y>
+      <y>210</y>
       <width>81</width>
       <height>31</height>
      </rect>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="btn_auto_2">
+    <property name="geometry">
+     <rect>
+      <x>170</x>
+      <y>120</y>
+      <width>231</width>
+      <height>81</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Object Detection
+START</string>
     </property>
    </widget>
   </widget>
