@@ -3,27 +3,6 @@ import cv2
 import numpy as np
 import math 
 
-
-class LowPassFilter(object):
-    def __init__(self, cut_off_freqency, ts):
-    	# cut_off_freqency: 차단 주파수
-        # ts: 주기
-        
-        self.ts = ts
-        self.cut_off_freqency = cut_off_freqency
-        self.tau = self.get_tau()
-
-        self.prev_data = 0.
-        
-    def get_tau(self):
-        return 1 / (2 * np.pi * self.cut_off_freqency)
-
-    def filter(self, data):
-        val = (self.ts * data + self.tau * self.prev_data) / (self.tau + self.ts)
-        self.prev_data = val
-        return val 
-
-
 class Centroid():
     def __init__(self):
         self.temp_x, self.temp_y = 0, 0
@@ -34,7 +13,6 @@ class Centroid():
         self.centroid_x = 0
         self.centroid_y = 0
         n = len(polygon)
-
         try:
             for i in range(n):
                 j = (i + 1) % n
@@ -80,24 +58,17 @@ def check_left_lane(arr):
         result = True
     return result
 
-
-lpf_x = LowPassFilter(5.0, 1)
-lpf_y = LowPassFilter(5.0, 1)
-lpf_dx = LowPassFilter(0.1, 0.5)
-lpf_dy = LowPassFilter(0.1, 0.5)
-
-
-class find_road_center():
+class Find_Road_Center():
     def __init__(self):
         self.model = YOLO("../../data/bestyolov8n.pt", task="segment")
-        # self.model = YOLO("../../data/bestyolov8m.pt")
+        # self.model = YOLO("../../data/bestyolov8m.pt", task="segment")
         self.image = None
         self.seg_center0 = (0, 0)
         self.seg_center1 = (0, 0)
         self.seg_center2 = (0, 0)
         self.img_center_x = int(640/2)
         self.img_center_y = int(480/2)
-        self.roi_rect_start = (0, self.img_center_y - 100)
+        self.roi_rect_start = (0, self.img_center_y - 80)
         self.roi_rect_end = (self.img_center_x * 2, int(self.img_center_y * 2))
 
         self.zeros_image = np.zeros((480, 640, 3)).astype(np.uint8)
@@ -111,7 +82,10 @@ class find_road_center():
         self.seg_center_border_list = []
         self.seg_center_inter_list = []
         self.coordinate = []
-        self.temp_border = None
+
+        self.temp_border = (0,0)
+        self.temp_line_center_x = 0
+        self.temp_line_center_y = 0
 
         self.get_border_cen = Centroid()
         self.get_middle_cen = Centroid()
@@ -181,11 +155,6 @@ class find_road_center():
                 except Exception as e:
                     print("middle_line : ",e)
                     pass
-
-
-                self.coordinate.append(self.seg_center_border)
-                self.coordinate.append(self.seg_center_inter)
-                self.coordinate.append(self.seg_center_middle)
         except TypeError as e:
             # print("for mask, box in zip(self.segmentation,self.classes) : ", e)
             pass
@@ -230,7 +199,6 @@ class find_road_center():
             line_center_x = self.seg_center_middle[0]
             line_center_y = self.seg_center_middle[1]
 
-
         # middle 라인 2개 이상 검출 시, 우선 순위 : 오른쪽 > 왼쪽
         if len(self.seg_center_border_list) > 1:
             if self.seg_center_border_list[0][0] > self.seg_center_border_list[-1][0]:
@@ -238,22 +206,46 @@ class find_road_center():
             else:
                 self.seg_center_border = self.seg_center_border_list[-1]
 
-
-        # 최종 선정 된 기준 선 정보를 임시 저장하고, 값이 튀는 것을 방지해야 함
-
+        # 최종 선정 된 기준 선 정보를 임시 저장하고, 값이 튀는 것을 방지
         try:
-            # 우측 차선 주행 중, 갑자기 왼쪽 border_line만 검출 시 -> 우측으로 rotation 필요. 오른쪽 border_line 이전 값 적용
-            if self.seg_center_border[0] < 300:
-                self.seg_center_border = self.temp_border
+            self.temp_line_center_x = line_center_x
+            self.temp_line_center_y = line_center_y
+            self.temp_border = self.seg_center_border
+        except Exception as e:
+            print(e)
+    
+        try:
+        # 우측 차선 주행 중, 갑자기 왼쪽 border_line만 검출 시 -> 우측으로 rotation 필요. 오른쪽 border_line 이전 값 적용
+            if len(self.seg_center_border_list) > 0:
+                if self.seg_center_border[0] < 300:
+                    self.seg_center_border = self.temp_border
 
             if len(self.seg_center_border_list) == 0 and len(self.seg_center_inter_list) == 0 and len(self.seg_center_middle_list) == 0:
                 self.cnt_stop += 1
             else:
                 self.cnt_stop = 0
             
+            self.coordinate.append(self.seg_center_border)
+            self.coordinate.append(self.seg_center_inter)
+            self.coordinate.append(self.seg_center_middle)
+
+            # print(line_center_x, line_center_y, self.seg_center_border, self.cnt_stop, self.coordinate)
+            seg_result = [line_center_x, line_center_y, self.seg_center_border, self.cnt_stop, self.coordinate]
+            return self.image, seg_result
+
         except Exception as e:
-            print(e)
-            pass
+            print("Lane Detection Last Line: ",e)
+            line_center_x = self.temp_line_center_x
+            line_center_y = self.temp_line_center_y
+            self.seg_center_border = self.temp_border
+            self.cnt_stop = 20
+            self.coordinate = [0,0,0]
+            seg_result = [line_center_x, line_center_y, self.seg_center_border, self.cnt_stop, self.coordinate]
         
-        seg_result = [line_center_x, line_center_y, self.seg_center_border, self.cnt_stop, self.coordinate]
-        return self.image, seg_result
+            return self.image, seg_result
+            # pass
+
+
+# 오토 스타트 -> 인식 x => None Type not subsribe error
+# 오토 스타트 -> 스탑 => 수동 제어 불가능
+# 오브젝트 스타 -> 스탑 => 수동제어 불가능
