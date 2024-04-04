@@ -55,7 +55,7 @@ class CameraStreamer:
         print("release and close ")
 
 def main():
-    server_address = '192.168.0.100'
+    server_address = '192.168.0.197'
     port1 = 8485
     port2 = 8584
 
@@ -63,13 +63,20 @@ def main():
     if len(sys.argv) == 2:
         # Only one argument, run a single thread for the specified camera index
         cam_index = int(sys.argv[1])
-        camera = CameraStreamer(server_address, port1, cam_index)
-        thread = threading.Thread(target=camera.send_video_data)
-        thread.start()
-        thread.join()
+
+        camera1 = CameraStreamer(server_address, port1, cam_index)
+        camera2 = CameraStreamer(server_address, port2, cam_index)
+        thread1 = threading.Thread(target=camera1.send_video_data)
+        thread2 = threading.Thread(target=camera2.send_video_data)
+        thread1.start()
+        thread2.start()
+        thread1.join()
+        thread2.join()
+
     elif len(sys.argv) == 3:
         # Two arguments, run threads for both camera indices
         cam_indices = [int(arg) for arg in sys.argv[1:]]
+
         camera1 = CameraStreamer(server_address, port1, cam_indices[0])
         camera2 = CameraStreamer(server_address, port2, cam_indices[1])
         thread1 = threading.Thread(target=camera1.send_video_data)
