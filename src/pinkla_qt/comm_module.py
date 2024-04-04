@@ -15,16 +15,23 @@ import psutil
 import math
 
 from pinkla_lane.lane_detection import *
+from pinkla_object.predict_distance import *
 
 cmtx1 = np.array([[474.9308089, 0., 313.10372736],
                 [0., 474.24684641, 254.94399015],
                 [0.,0.,1.]])
 dist1 = np.array([[0.0268074362, -0.178310961, -0.000144841081, -0.00103575477, 0.183767484]])
 
-cmtx2 = np.array([[470.86256773,0.,322.79554974],
-                  [0.,470.89842857,236.76274254],
+# raspberrypi front camera
+# cmtx2 = np.array([[470.86256773,0.,322.79554974],
+#                   [0.,470.89842857,236.76274254],
+#                   [0.,0.,1.]])
+# dist2 = np.array([[0.00727918, -0.09059939, -0.00224102, -0.00040328, 0.06114216]])
+
+cmtx2 = np.array([[693.79303454, 0. ,290.04788772],
+                  [0., 695.31755488, 248.75886213], 
                   [0.,0.,1.]])
-dist2 = np.array([[0.00727918, -0.09059939, -0.00224102, -0.00040328, 0.06114216]])
+dist2 = np.array([[-0.41231278, 0.15145024, 0.00230435, 0.00253762, 0.13721517]])
 
 class SERVER():
     def __init__(self, host='0.0.0.0', port=0000):
@@ -182,10 +189,12 @@ class Camera_Th(QThread):
         self.main = parent
         self.running = True
         self.generator = find_load_center()
+        self.object_generator = find_object()
         self.cam_server = SERVER(port=port)
         self.conn = None
         self.source, self.image, self.pixmap = None, None, None
         self.yolo_lane = False
+        self.yolo_object = False # 여기 수정했어요
         self.error = 0
 
     def run(self):
@@ -195,11 +204,13 @@ class Camera_Th(QThread):
 
         while self.running == True:
             self.source = self.cam_server.show_video()
+            
             if self.source is not None:
                 if not self.yolo_lane:
                     self.image = self.source.copy()
                 else:
-                    self.image, self.error = self.generator.get_road_center(self.source.copy())
+                    self.image, self.error = self.generator.get_road_center(self.source.copy())              
+
                 if not self.yolo_object:
                     self.image = self.source.copy()
                 else:
