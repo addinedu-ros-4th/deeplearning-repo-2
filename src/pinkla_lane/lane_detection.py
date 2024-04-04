@@ -160,21 +160,13 @@ class Find_Road_Center():
             pass
     
 
-        # 인터섹션 2개 검출 시, 왼쪽/오른쪽 선택
         if len(self.seg_center_inter_list) > 1:
-            # 평균 사용
-            # x = int((self.seg_center1_list[0][0] + self.seg_center1_list[-1][0])/2)
-            # y = int((self.seg_center1_list[0][1] + self.seg_center1_list[-1][1])/2)
-            # self.seg_center_inter = (x,y)
-
-            # 두 x 좌표의 차이가 10이하 일 때, 아래 또는 평균 사용
             delta = self.seg_center_inter_list[0][0] - self.seg_center_inter_list[-1][0]
             if abs(delta) <= 10:
                 avg_x = int((self.seg_center_inter_list[0][0] + self.seg_center_inter_list[-1][0])/2)
                 avg_y = int((self.seg_center_inter_list[0][1] + self.seg_center_inter_list[-1][1])/2)
                 self.seg_center_inter = (avg_x, avg_y)
             else:
-            # 둘 중 더 오른쪽에 있는 놈 사용
                 if self.seg_center_inter_list[0][0] > self.seg_center_inter_list[-1][0]:
                     self.seg_center_inter = self.seg_center_inter_list[0]
                 else:
@@ -183,30 +175,24 @@ class Find_Road_Center():
             pass
 
 
-        # (미들, 인터) 2개 동시 검출 시 우선순위를 구분하자면 : 미들 > 인터섹션
-        # (미들, 인터) 두개 동시 검출 시 => 평균값 사용
         if len(self.seg_center_middle_list) > 0 and len(self.seg_center_inter_list) > 0:
             line_center_x = int((self.seg_center_middle[0] + self.seg_center_inter[0])/2)
             line_center_y = int((self.seg_center_middle[1] + self.seg_center_inter[1])/2)
             
-        # 미들 검출 X => 인터 섹션을 왼쪽 차선으로
         elif len(self.seg_center_middle_list) == 0:
             line_center_x = self.seg_center_inter[0]
             line_center_y = self.seg_center_inter[1]
             
-        # 미들 검출 O => 미들 라인을 왼쪽 차선으로
         else:
             line_center_x = self.seg_center_middle[0]
             line_center_y = self.seg_center_middle[1]
 
-        # middle 라인 2개 이상 검출 시, 우선 순위 : 오른쪽 > 왼쪽
         if len(self.seg_center_border_list) > 1:
             if self.seg_center_border_list[0][0] > self.seg_center_border_list[-1][0]:
                 self.seg_center_border = self.seg_center_border_list[0]
             else:
                 self.seg_center_border = self.seg_center_border_list[-1]
 
-        # 최종 선정 된 기준 선 정보를 임시 저장하고, 값이 튀는 것을 방지
         try:
             self.temp_line_center_x = line_center_x
             self.temp_line_center_y = line_center_y
@@ -215,7 +201,6 @@ class Find_Road_Center():
             print(e)
     
         try:
-        # 우측 차선 주행 중, 갑자기 왼쪽 border_line만 검출 시 -> 우측으로 rotation 필요. 오른쪽 border_line 이전 값 적용
             if len(self.seg_center_border_list) > 0:
                 if self.seg_center_border[0] < 300:
                     self.seg_center_border = self.temp_border
@@ -229,7 +214,6 @@ class Find_Road_Center():
             self.coordinate.append(self.seg_center_inter)
             self.coordinate.append(self.seg_center_middle)
 
-            # print(line_center_x, line_center_y, self.seg_center_border, self.cnt_stop, self.coordinate)
             seg_result = [line_center_x, line_center_y, self.seg_center_border, self.cnt_stop, self.coordinate]
             return self.image, seg_result
 
@@ -243,9 +227,3 @@ class Find_Road_Center():
             seg_result = [line_center_x, line_center_y, self.seg_center_border, self.cnt_stop, self.coordinate]
         
             return self.image, seg_result
-            # pass
-
-
-# 오토 스타트 -> 인식 x => None Type not subsribe error
-# 오토 스타트 -> 스탑 => 수동 제어 불가능
-# 오브젝트 스타 -> 스탑 => 수동제어 불가능
