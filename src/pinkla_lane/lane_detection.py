@@ -68,7 +68,7 @@ class Find_Road_Center():
         self.seg_center2 = (0, 0)
         self.img_center_x = int(640/2)
         self.img_center_y = int(480/2)
-        self.roi_rect_start = (0, self.img_center_y - 80)
+        self.roi_rect_start = (0, self.img_center_y - 100)
         self.roi_rect_end = (self.img_center_x * 2, int(self.img_center_y * 2))
 
         self.zeros_image = np.zeros((480, 640, 3)).astype(np.uint8)

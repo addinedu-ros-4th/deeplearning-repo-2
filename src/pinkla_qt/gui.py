@@ -306,7 +306,7 @@ class WindowClass(QMainWindow, from_class):
     def cv2_info_drawing(self, image, thread, result):
 
         if thread.yolo_lane and thread.result[0][0] is not None:
-            cv2.rectangle(image, (0, int(self.cal_cmd.img_height/2 - 120)), (self.cal_cmd.img_width, self.cal_cmd.img_height), color=(0,0,255), thickness = 5)
+            # cv2.rectangle(image, (0, int(self.cal_cmd.img_height/2 - 100)), (self.cal_cmd.img_width, self.cal_cmd.img_height), color=(0,0,255), thickness = 5)
             cv2.putText(image, text=f"delta_x: {self.cal_cmd.hor_dist:.2f}, delta_y: {self.cal_cmd.ver_dist:.2f}, angle: {self.cal_cmd.angle:.2f}", org=(50, 80), fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=0.6, color=(255,255,255), thickness=2)
             cv2.putText(image, text=f"distance: {self.cal_cmd.dist:.2f}", org=(50, 110), fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=0.6, color=(255,255,255), thickness=2)
             cv2.putText(image, text="target", org=(int(self.cal_cmd.cen_x-20), int(self.cal_cmd.cen_y-20)), fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=1, color=(255,0,0), thickness=2)
