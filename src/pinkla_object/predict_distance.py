@@ -25,14 +25,14 @@ class Find_Object():
         self.colors = {
             'car': (0, 111, 0), 
             'crosswalk': (140, 140, 140), 
-            'green_light': (22, 219, 29),
-            'human': (0, 228, 255), 
-            'only_right_turn': (255, 216, 0),
-            'only_straight': (255, 0, 95),
-            'red_light': (95, 95, 241), 
-            'start_line': (255, 165, 0),
-            'stop_line': (0, 94, 255), 
-            'yellow_light': (125, 237, 250)
+            'green_light': (29, 219, 22),
+            'human': (255, 228, 0), 
+            'only_right_turn': (0, 216, 255),
+            'only_straight': (95, 0, 255),
+            'red_light': (241, 95, 95), 
+            'start_line': (0, 165, 255),
+            'stop_line': (255, 94, 0), 
+            'yellow_light': (250, 237, 125)
         }
 
         self.focalLength = (470.86256773 + 470.89842857) / 2.0
@@ -68,8 +68,12 @@ class Find_Object():
 
     def calculate_depth(self, image):
         self.image = image.copy()
+        object_boxes, cls_indices, confidences = [], [], []
 
         results = self.model.predict(self.image, conf=0.6, vid_stride=30, max_det = 5, verbose=False)
+
+        obj_result = []
+        obj_info = []
 
         # 첫 번째 프레임에서 객체가 감지된 경우
         if results[0].boxes is not None:
@@ -86,11 +90,16 @@ class Find_Object():
                     distance = self.distance_to_camera(known_width, self.focalLength, perwidth)
                     distance = distance*2.278
                     # 바운딩 박스와 거리 정보 영상에 표시
-                    cv2.rectangle(self.image, (object_box[0], object_box[1]), (object_box[2], object_box[3]), color, 2)
-                    cv2.putText(self.image, f"{(distance):.2f}cm", (object_box[0] - 50, object_box[1] - 10), cv2.FONT_HERSHEY_SIMPLEX, .5, (255, 0, 0), 2)
-                    cv2.putText(self.image, f"Conf: {confidence:.2f}", (object_box[0], object_box[3] + 20), cv2.FONT_HERSHEY_SIMPLEX, .5, (0, 255, 0), 2)
-                    
-                    # 클래스명 출력
-                    cv2.putText(self.image, class_name, (object_box[0], object_box[1] - 30), cv2.FONT_HERSHEY_SIMPLEX, .5, color, 2)
 
-        return self.image
+                    obj_info = [class_name, object_box, distance, confidence, color]
+
+                    obj_result.append(obj_info)
+                
+                    # cv2.rectangle(self.image, (object_box[0], object_box[1]), (object_box[2], object_box[3]), color, 2)
+                    # cv2.putText(self.image, f"{(distance):.2f}cm", (object_box[0], object_box[1] - 10), cv2.FONT_HERSHEY_SIMPLEX, .5, (255, 0, 0), 2)
+                    # cv2.putText(self.image, f"Conf: {confidence:.2f}", (object_box[0], object_box[3] + 20), cv2.FONT_HERSHEY_SIMPLEX, .5, (0, 255, 0), 2)
+                    
+                    # # 클래스명 출력
+                    # cv2.putText(self.image, class_name, (object_box[0], object_box[1] - 30), cv2.FONT_HERSHEY_SIMPLEX, .5, color, 2)
+
+        return obj_result
