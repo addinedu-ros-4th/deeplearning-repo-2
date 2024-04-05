@@ -5,6 +5,8 @@ import time
 import threading
 import sys
 
+hard_cam_index = [0, 1, 2, 3]
+
 class CameraStreamer:
     def __init__(self, server_address, port, cam_index=0, width=640, height=480, quality=100):
         self.server_address = server_address
@@ -16,13 +18,13 @@ class CameraStreamer:
         self.encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), quality]
         self.socket = None
         
-        if self.cam_index == 0:
+        if self.cam_index not in hard_cam_index:
             self.cam = cv2.VideoCapture(self.cam_index)
+            self.cam.set(3, self.width)
+            self.cam.set(4, self.height)
         else:
             self.cam = self.cam_index
 
-        self.cam.set(3, self.width)
-        self.cam.set(4, self.height)
 
     def connect_to_server(self):
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
