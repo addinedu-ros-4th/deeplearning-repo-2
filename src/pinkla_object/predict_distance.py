@@ -87,10 +87,10 @@ class Find_Object():
                     distance = distance*2.278
                     # 바운딩 박스와 거리 정보 영상에 표시
                     cv2.rectangle(self.image, (object_box[0], object_box[1]), (object_box[2], object_box[3]), color, 2)
-                    cv2.putText(self.image, f"{(distance*1.956):.2f}cm", (object_box[2] - 50, object_box[1] - 10), cv2.FONT_HERSHEY_SIMPLEX, .5, (255, 0, 0), 2)
+                    cv2.putText(self.image, f"{(distance):.2f}cm", (object_box[0] - 50, object_box[1] - 10), cv2.FONT_HERSHEY_SIMPLEX, .5, (255, 0, 0), 2)
                     cv2.putText(self.image, f"Conf: {confidence:.2f}", (object_box[0], object_box[3] + 20), cv2.FONT_HERSHEY_SIMPLEX, .5, (0, 255, 0), 2)
                     
                     # 클래스명 출력
-                    cv2.putText(self.image, class_name, (object_box[0], object_box[1] - 10), cv2.FONT_HERSHEY_SIMPLEX, .5, color, 2)
+                    cv2.putText(self.image, class_name, (object_box[0], object_box[1] - 30), cv2.FONT_HERSHEY_SIMPLEX, .5, color, 2)
 
         return self.image
