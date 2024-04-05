@@ -93,7 +93,7 @@ if __name__ == "__main__":
     app = QApplication(sys.argv)
     login_dialog = LoginDialog()
     if login_dialog.exec_() == QDialog.Accepted:
-        print("close")
+        print("Login Success")
         sys.exit(app.exec_())
     else:
         sys.exit()
