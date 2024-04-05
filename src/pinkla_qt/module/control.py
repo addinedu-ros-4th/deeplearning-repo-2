@@ -192,7 +192,10 @@ class KeyboardTeleopController(object):
             elif self.cal_cmd.lx >= 5.0:
                 self.cal_cmd.lx = 5.0
             else:
-                self.cal_cmd.lx += self.LIN_VEL_STEP_SIZE
+                if self.cal_cmd.lx <= 0.0:
+                    self.cal_cmd.lx += self.LIN_VEL_STEP_SIZE*2
+                else:
+                    self.cal_cmd.lx += self.LIN_VEL_STEP_SIZE
 
         elif event.key() == Qt.Key_X:
             self.cal_cmd.ly = 0.0
@@ -205,7 +208,10 @@ class KeyboardTeleopController(object):
             elif self.cal_cmd.lx <= -5.0:
                 self.cal_cmd.lx = -5.0
             else:
-                self.cal_cmd.lx -= self.LIN_VEL_STEP_SIZE
+                if self.cal_cmd.lx >= 0.0:
+                    self.cal_cmd.lx -= self.LIN_VEL_STEP_SIZE*2
+                else:
+                    self.cal_cmd.lx -= self.LIN_VEL_STEP_SIZE
 
         elif event.key() == Qt.Key_A:
             if event.modifiers() & Qt.ShiftModifier:
