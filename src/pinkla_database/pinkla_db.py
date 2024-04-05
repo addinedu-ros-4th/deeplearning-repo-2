@@ -100,11 +100,20 @@ class pinkla_mysql():
         
         
         
-    def get_table_name(self):
+    def get_table_info(self):
         query = "SELECT table_name FROM information_schema.tables WHERE table_schema = 'pinkla_base'"
         self.cur.execute(query)
-        table_name = [row[0] for row in self.cur.fetchall()]
-        return table_name
+        table_info = [row[0] for row in self.cur.fetchall()]
+        
+        return table_info
+    
+    
+    def get_time_range(self, table_name):
+        query = f"SELECT DISTINCT SUBSTRING(time, 1, 15) AS unique_value FROM {table_name};"
+        self.cur.execute(query)
+        time_range = self.cur.fetchall()
+        
+        return time_range
         
         
         
@@ -144,11 +153,11 @@ class pinkla_mysql():
         self.remote.commit()
         
     
-    def select_data(self, table_name):
+    def select_data(self, table_name, start_time, end_time):
         if table_name == "pinkla_action":
             self.get_action_data()
         elif table_name == "pinkla_lane":
-            self.get_lane_data()
+            self.get_lane_data(start_time, end_time)
         elif table_name == "pinkla_object":
             self.get_object_data()
         elif table_name == "pinkla_vehicle":
@@ -165,8 +174,8 @@ class pinkla_mysql():
         self.df =  pd.DataFrame(result, columns = ["time", "drive_LED", "action", "L_LED", "R_LED", "break_LED", "buzzer"])
     
     
-    def get_lane_data(self):
-        self.cur.execute("select * from pinkla_lane")
+    def get_lane_data(self, start_time, end_time):
+        self.cur.execute("SELECT * FROM pinkla_lane WHERE time BETWEEN %s AND %s", (start_time, end_time))
         result = self.cur.fetchall()
         self.df = pd.DataFrame(result, columns = ["time", "border_line", "border_line_centroid", "intersection_line",
                                                   "intersection_line_centroid", "middle_line", "middle_line_centroid", "target_point"])
