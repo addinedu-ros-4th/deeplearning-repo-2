@@ -51,6 +51,7 @@ class WindowClass(QMainWindow, from_class):
         self.isPinkSocketOpened = False
         self.isLaneDetectionOn = False
         self.isObjectDetectionOn = False
+        self.isLoopAutoOn = False
 
     def ui_init(self):
         self.setFocusPolicy(Qt.StrongFocus)
@@ -110,6 +111,7 @@ class WindowClass(QMainWindow, from_class):
 
     def btn_init(self):
         self.btn_ems.clicked.connect(self.click_ems)
+        self.btn_auto_loop.clicked.connect(self.click_auto_loop)
 
         self.mysql = None
         self.logButton.hide()
@@ -156,11 +158,27 @@ class WindowClass(QMainWindow, from_class):
         self.btn_auto.clicked.connect(lambda: self.yolo_seg_lane_start(self.camera_th))
         self.btn_auto_2.clicked.connect(lambda: self.yolo_object_detect_start(self.camera_th2))
 
+    def click_auto_loop(self):
+        if not self.isLoopAutoOn:
+            self.isLoopAutoOn = True
+            self.btn_auto_loop.setText('Auto Loop\nOFF')
+            self.cal_cmd.loop = True
+        else:
+            self.isLoopAutoOn = False
+            self.btn_auto_loop.setText('Auto Loop\nON')
+            self.cal_cmd.loop = False
+
     def click_ems(self):
         try:
             print("click_ems")
             if self.sender is not None:
+                self.cal_cmd.lx = 0.
+                self.cal_cmd.ly = 0.
+                self.cal_cmd.az = 0.
                 self.sender.cmd = [0, 100, 5, 0, 0, 0, 0]
+                self.btn_auto.setText('Auto Driving\nSTART')
+                self.isLaneDetectionOn = False
+                self.camera_th.yolo_lane = False
         except Exception as e:
             pass
 
@@ -323,7 +341,7 @@ class WindowClass(QMainWindow, from_class):
 
             cv2.line(image, (int(self.cal_cmd.x)+5, int(self.cal_cmd.y)), (int(self.cal_cmd.seg_center_border[0])-5, int(self.cal_cmd.seg_center_border[1])), color=(128,128,128), thickness=5 )
             cv2.circle(image, (int(self.cal_cmd.cen_x), int(self.cal_cmd.cen_y)), radius=10, color=(255,0,0), thickness=-1)
-            cv2.arrowedLine(image, (int(self.cal_cmd.img_width/2), int(self.cal_cmd.img_height)+5), (int(self.cal_cmd.cen_x), int(self.cal_cmd.cen_y)), color=(50,50,50), thickness=5, tipLength=0.2)
+            cv2.arrowedLine(image, (int(self.cal_cmd.img_width/2), int(self.cal_cmd.img_height)+5), (int(self.cal_cmd.cen_x), int(self.cal_cmd.cen_y)), color=(0,0,128), thickness=5, tipLength=0.2)
             cv2.circle(image, (int(self.cal_cmd.img_width/2), int(self.cal_cmd.img_height)), radius = 10, color = (255, 255, 255), thickness = -1)
 
         return image

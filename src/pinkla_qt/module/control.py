@@ -90,35 +90,16 @@ class Cal_Cmd():
         self.param_y1 = 1.54
         self.param_y2 = 2.7
         self.param_z = 11.1
-
+        self.loop = False
 
     def cal(self):
         self.w1 = (1/self.r) * (self.lx-self.ly-self.b*self.az)
         self.w2 = (1/self.r) * (self.lx+self.ly-self.b*self.az)
         self.w3 = (1/self.r) * (self.lx-self.ly+self.b*self.az)
         self.w4 = (1/self.r) * (self.lx+self.ly+self.b*self.az)
-
         # value = [self.w1, self.w2, self.w3, self.w4]
         value = [self.w4, self.w3, self.w2, self.w1]
         return value
-
-    def moveTo(self, delta):
-        angle = math.atan2(delta, 418)
-
-        self.lx = 2.2
-        self.ly = 0.0
-        self.az = angle * -30.0
-
-        self.w1 = (1/self.r) * (self.lx-self.ly-self.b*self.az)
-        self.w2 = (1/self.r) * (self.lx+self.ly-self.b*self.az)
-        self.w3 = (1/self.r) * (self.lx-self.ly+self.b*self.az)
-        self.w4 = (1/self.r) * (self.lx+self.ly+self.b*self.az)
-        value = [self.w4, self.w3, self.w2, self.w1]
-        return value
-        
-    def moveTo2(self, value):
-        return value
-
 
     def move_to_lane_center(self, seg_result):
         # print(seg_result)
@@ -170,8 +151,11 @@ class Cal_Cmd():
         if cnt_stop > 20:
             self.lx = 0.
             self.ly = 0.
-            self.az = 0.
             self.dist = 0.
+            if self.loop :
+                self.az = 25.
+            else:
+                self.az = 0.
         else:
             self.lx = vx
             self.ly = vy
@@ -205,8 +189,8 @@ class KeyboardTeleopController(object):
 
             if self.cal_cmd.lx == 0.0:
                 self.cal_cmd.lx = 2.0
-            elif self.cal_cmd.lx >= 3.0:
-                self.cal_cmd.lx = 3.0
+            elif self.cal_cmd.lx >= 5.0:
+                self.cal_cmd.lx = 5.0
             else:
                 self.cal_cmd.lx += self.LIN_VEL_STEP_SIZE
 
@@ -218,8 +202,8 @@ class KeyboardTeleopController(object):
 
             if self.cal_cmd.lx == 0.0:
                 self.cal_cmd.lx = -2.0
-            elif self.cal_cmd.lx <= -3.0:
-                self.cal_cmd.lx = -3.0
+            elif self.cal_cmd.lx <= -5.0:
+                self.cal_cmd.lx = -5.0
             else:
                 self.cal_cmd.lx -= self.LIN_VEL_STEP_SIZE
 

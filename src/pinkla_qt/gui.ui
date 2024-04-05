@@ -51,7 +51,7 @@
     <property name="geometry">
      <rect>
       <x>110</x>
-      <y>100</y>
+      <y>140</y>
       <width>31</width>
       <height>21</height>
      </rect>
@@ -64,7 +64,7 @@
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>100</y>
+      <y>140</y>
       <width>31</width>
       <height>21</height>
      </rect>
@@ -79,8 +79,11 @@
       <x>10</x>
       <y>30</y>
       <width>141</width>
-      <height>61</height>
+      <height>91</height>
      </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background-color: rgb(220, 138, 221);</string>
     </property>
     <property name="text">
      <string>PINKLA
@@ -91,7 +94,7 @@ CONNECT</string>
     <property name="geometry">
      <rect>
       <x>50</x>
-      <y>100</y>
+      <y>140</y>
       <width>31</width>
       <height>21</height>
      </rect>
@@ -104,7 +107,7 @@ CONNECT</string>
     <property name="geometry">
      <rect>
       <x>80</x>
-      <y>100</y>
+      <y>140</y>
       <width>31</width>
       <height>21</height>
      </rect>
@@ -213,6 +216,9 @@ START</string>
       <height>61</height>
      </rect>
     </property>
+    <property name="styleSheet">
+     <string notr="true">background-color: rgb(87, 227, 137);</string>
+    </property>
     <property name="text">
      <string>Object Detection
 START</string>
@@ -276,15 +282,32 @@ START</string>
    <widget class="QPushButton" name="btn_auto">
     <property name="geometry">
      <rect>
-      <x>10</x>
+      <x>140</x>
       <y>100</y>
-      <width>381</width>
+      <width>251</width>
       <height>61</height>
      </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background-color: rgb(154, 153, 150);</string>
     </property>
     <property name="text">
      <string>Auto Driving
 START</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="btn_auto_loop">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>100</y>
+      <width>121</width>
+      <height>61</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Auto Loop
+ON</string>
     </property>
    </widget>
   </widget>
