@@ -19,8 +19,8 @@ class Camera_Th(QThread):
         self.yolo_lane = False
         self.yolo_object = False
         self.result = []
-        self.seg_result = [None]
-        self.obj_result = [None]
+        self.seg_result = [[None]]
+        self.obj_result = [[None]]
 
     def run(self):
         while self.conn is None:
@@ -31,17 +31,22 @@ class Camera_Th(QThread):
             self.source = self.cam_server.show_video()
             
             if self.source is not None:
-                if self.yolo_lane :
+
+                if self.yolo_lane and self.yolo_object:
                     self.image, self.seg_result = self.seg_generator.get_road_center(self.source.copy())
-                    self.obj_result = [None]
-                elif self.yolo_object :
-                    self.image = self.object_generator.calculate_depth(self.source.copy())
-                    self.seg_result = [None]
-                    self.obj_result = [None]
+                    self.obj_result = self.object_generator.calculate_depth(self.source.copy())
                 else:
-                    self.image = self.source.copy()
-                    self.seg_result = [None]
-                    self.obj_result = [None]
+                    if self.yolo_lane :
+                        self.image, self.seg_result = self.seg_generator.get_road_center(self.source.copy())
+                        self.obj_result = [[None]]
+                    elif self.yolo_object :
+                        self.obj_result = self.object_generator.calculate_depth(self.source.copy())
+                        self.seg_result = [[None]]
+                        self.image = self.source.copy()
+                    else:
+                        self.image = self.source.copy()
+                        self.seg_result = [[None]]
+                        self.obj_result = [[None]]
 
                 try:
                     self.result = [self.seg_result, self.obj_result]
@@ -49,8 +54,10 @@ class Camera_Th(QThread):
                     self.update.emit(image, self.result)
                 except Exception as e:
                     # print(e)
+                    self.result = [[[]],[[]]]
+                    self.update.emit(self.source, self.result)
                     pass
-            QThread.msleep(8)
+            QThread.msleep(3)
 
     def stop(self):
         self.running = False

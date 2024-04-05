@@ -146,11 +146,11 @@ class CAMERA_SERVER():
             dist = dist2
             cam = "Lane"
         else:
-            # cmtx = cmtx1
-            # dist = dist1
-            cmtx = cmtx2
-            dist = dist2
-            cam = "Object"
+            cmtx = cmtx1
+            dist = dist1
+            # cmtx = cmtx2
+            # dist = dist2
+            cam = "Follow"
 
         if not self.show:
             self.show =True

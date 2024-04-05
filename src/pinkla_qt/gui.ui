@@ -39,7 +39,7 @@
    <property name="geometry">
     <rect>
      <x>620</x>
-     <y>360</y>
+     <y>350</y>
      <width>411</width>
      <height>131</height>
     </rect>
@@ -159,11 +159,11 @@ STOP</string>
      <x>620</x>
      <y>10</y>
      <width>401</width>
-     <height>171</height>
+     <height>101</height>
     </rect>
    </property>
    <property name="title">
-    <string>Object Detection (Front)</string>
+    <string>Front Camera (Front)</string>
    </property>
    <widget class="QPushButton" name="btn_cam_socket_2">
     <property name="geometry">
@@ -207,35 +207,18 @@ OPEN</string>
 START</string>
     </property>
    </widget>
-   <widget class="QPushButton" name="btn_auto_2">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>100</y>
-      <width>381</width>
-      <height>61</height>
-     </rect>
-    </property>
-    <property name="styleSheet">
-     <string notr="true">background-color: rgb(87, 227, 137);</string>
-    </property>
-    <property name="text">
-     <string>Object Detection
-START</string>
-    </property>
-   </widget>
   </widget>
   <widget class="QGroupBox" name="groupBox_3">
    <property name="geometry">
     <rect>
      <x>620</x>
-     <y>190</y>
+     <y>140</y>
      <width>401</width>
      <height>171</height>
     </rect>
    </property>
    <property name="title">
-    <string>Lane Segmentation (Bottom)</string>
+    <string>Lane Segmentation / Object Detection (Bottom)</string>
    </property>
    <widget class="QPushButton" name="btn_cam_socket">
     <property name="geometry">
@@ -282,9 +265,9 @@ START</string>
    <widget class="QPushButton" name="btn_auto">
     <property name="geometry">
      <rect>
-      <x>140</x>
+      <x>160</x>
       <y>100</y>
-      <width>251</width>
+      <width>141</width>
       <height>61</height>
      </rect>
     </property>
@@ -299,15 +282,32 @@ START</string>
    <widget class="QPushButton" name="btn_auto_loop">
     <property name="geometry">
      <rect>
-      <x>10</x>
+      <x>310</x>
       <y>100</y>
-      <width>121</width>
+      <width>81</width>
       <height>61</height>
      </rect>
     </property>
     <property name="text">
      <string>Auto Loop
 ON</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="btn_auto_2">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>100</y>
+      <width>141</width>
+      <height>61</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background-color: rgb(87, 227, 137);</string>
+    </property>
+    <property name="text">
+     <string>Object Detection
+START</string>
     </property>
    </widget>
   </widget>

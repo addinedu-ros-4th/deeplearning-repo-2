@@ -99,7 +99,7 @@ class WindowClass(QMainWindow, from_class):
                                                                         self.pixmap, self.camera_th))
         self.camera_th.update.connect(lambda image, result : self.update_record(image, result,
                                                                         self.camera_server))
-
+        
         self.camera_server2 = CAMERA_SERVER(self.server_ip, self.cam_port2)
         self.camera_th2 = Camera_Th(self, port=self.cam_port2)
         self.camera_th2.daemon = True
@@ -156,7 +156,7 @@ class WindowClass(QMainWindow, from_class):
         # self.btn_for.clicked.connect(self.click_forward)
         # self.btn_st.clicked.connect(self.click_stop)
         self.btn_auto.clicked.connect(lambda: self.yolo_seg_lane_start(self.camera_th))
-        self.btn_auto_2.clicked.connect(lambda: self.yolo_object_detect_start(self.camera_th2))
+        self.btn_auto_2.clicked.connect(lambda: self.yolo_object_detect_start(self.camera_th))
 
     def click_auto_loop(self):
         if not self.isLoopAutoOn:
@@ -331,28 +331,38 @@ class WindowClass(QMainWindow, from_class):
             self.pinkla_socket.running = False
             self.pinkla_socket.stop()
 
-    def cv2_info_drawing(self, image, thread, result):
+    def cv2_info_drawing(self, image, thread):
 
         if thread.yolo_lane and thread.result[0][0] is not None:
             # cv2.rectangle(image, (0, int(self.cal_cmd.img_height/2 - 100)), (self.cal_cmd.img_width, self.cal_cmd.img_height), color=(0,0,255), thickness = 5)
-            cv2.putText(image, text=f"delta_x: {self.cal_cmd.hor_dist:.2f}, delta_y: {self.cal_cmd.ver_dist:.2f}, angle: {self.cal_cmd.angle:.2f}", org=(50, 80), fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=0.6, color=(255,255,255), thickness=2)
-            cv2.putText(image, text=f"distance: {self.cal_cmd.dist:.2f}", org=(50, 110), fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=0.6, color=(255,255,255), thickness=2)
-            cv2.putText(image, text="target", org=(int(self.cal_cmd.cen_x-20), int(self.cal_cmd.cen_y-20)), fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=1, color=(255,0,0), thickness=2)
-
+            # cv2.putText(image, text=f"delta_x: {self.cal_cmd.hor_dist:.2f}, delta_y: {self.cal_cmd.ver_dist:.2f}, angle: {self.cal_cmd.angle:.2f}", org=(50, 80), fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=0.6, color=(255,255,255), thickness=2)
+            # cv2.putText(image, text=f"distance: {self.cal_cmd.dist:.2f}", org=(50, 110), fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=0.6, color=(255,255,255), thickness=2)
+            # cv2.putText(image, text="target", org=(int(self.cal_cmd.cen_x-20), int(self.cal_cmd.cen_y-20)), fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=1, color=(255,0,0), thickness=2)
             cv2.line(image, (int(self.cal_cmd.x)+5, int(self.cal_cmd.y)), (int(self.cal_cmd.seg_center_border[0])-5, int(self.cal_cmd.seg_center_border[1])), color=(128,128,128), thickness=5 )
             cv2.circle(image, (int(self.cal_cmd.cen_x), int(self.cal_cmd.cen_y)), radius=10, color=(255,0,0), thickness=-1)
-            cv2.arrowedLine(image, (int(self.cal_cmd.img_width/2), int(self.cal_cmd.img_height)+5), (int(self.cal_cmd.cen_x), int(self.cal_cmd.cen_y)), color=(0,0,128), thickness=5, tipLength=0.2)
+            cv2.arrowedLine(image, (int(self.cal_cmd.img_width/2), int(self.cal_cmd.img_height)+5), (int(self.cal_cmd.cen_x), int(self.cal_cmd.cen_y)), color=(0,100,170), thickness=5, tipLength=0.2)
             cv2.circle(image, (int(self.cal_cmd.img_width/2), int(self.cal_cmd.img_height)), radius = 10, color = (255, 255, 255), thickness = -1)
+        
+        if thread.yolo_object and len(thread.result[1]) > 1:
+            for class_name, object_box, distance, confidence, color in thread.result[1]:
+                cv2.rectangle(image, (object_box[0], object_box[1]), (object_box[2], object_box[3]), color, 2)
+                cv2.putText(image, f"{(distance):.2f}cm", (object_box[0], object_box[1] - 10), cv2.FONT_HERSHEY_SIMPLEX, .5, (255, 0, 0), 2)
+                cv2.putText(image, f"Conf: {confidence:.2f}", (object_box[0], object_box[3] + 20), cv2.FONT_HERSHEY_SIMPLEX, .5, (0, 255, 0), 2)
+                cv2.putText(image, class_name, (object_box[0], object_box[1] - 30), cv2.FONT_HERSHEY_SIMPLEX, .5, color, 2)
 
         return image
 
     def update_image(self, image, result, label, pix, thread):
         try:
-            cv2.putText(image, text=f"{self.cal_cmd.w4:.2f}, {self.cal_cmd.w3:.2f}, {self.cal_cmd.w2:.2f}, {self.cal_cmd.w1:.2f}", org=(50, 20), fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=0.6, color=(255,255,255), thickness=2)
-            cv2.putText(image, text=f"linear_x: {self.cal_cmd.lx:.2f}, linear_y: {self.cal_cmd.ly:.2f}, angular_z: {self.cal_cmd.az:.2f}", org=(50, 50), fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=0.6, color=(255,255,255), thickness=2)
-
-            if len(thread.result[0]) > 1:
-                image = self.cv2_info_drawing(image, thread, result[0])
+            # cv2.putText(image, text=f"{self.cal_cmd.w4:.2f}, {self.cal_cmd.w3:.2f}, {self.cal_cmd.w2:.2f}, {self.cal_cmd.w1:.2f}", org=(50, 20), fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=0.6, color=(255,255,255), thickness=2)
+            # cv2.putText(image, text=f"linear_x: {self.cal_cmd.lx:.2f}, linear_y: {self.cal_cmd.ly:.2f}, angular_z: {self.cal_cmd.az:.2f}", org=(50, 50), fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=0.6, color=(255,255,255), thickness=2)
+            
+            try:
+                if len(thread.result[0]) > 1 or len(thread.result[1]) > 1:
+                    image = self.cv2_info_drawing(image, thread)
+            except Exception as e:
+                # print(e)
+                pass
 
             h,w,c = image.shape
             qformat_type = QImage.Format_RGB888
@@ -377,7 +387,7 @@ class WindowClass(QMainWindow, from_class):
                     pass
 
         except Exception as e:
-            # print(e)
+            print("update_image: ", e)
             self.show_logo(label, pix)
             pass
         
@@ -414,7 +424,7 @@ class WindowClass(QMainWindow, from_class):
     def click_record(self, flag_rec, recorder, btn):
         if not flag_rec[0]:
             flag_rec[0] = True
-            recorder.record_start(width=640, height=480, fps=20)
+            recorder.record_start(width=640, height=480, fps=25)
             btn.setText('RECORD\nSTOP')
         else:
             flag_rec[0] = False
