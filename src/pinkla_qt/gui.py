@@ -343,7 +343,7 @@ class WindowClass(QMainWindow, from_class):
             cv2.arrowedLine(image, (int(self.cal_cmd.img_width/2), int(self.cal_cmd.img_height)+5), (int(self.cal_cmd.cen_x), int(self.cal_cmd.cen_y)), color=(0,100,170), thickness=5, tipLength=0.2)
             cv2.circle(image, (int(self.cal_cmd.img_width/2), int(self.cal_cmd.img_height)), radius = 10, color = (255, 255, 255), thickness = -1)
         
-        if thread.yolo_object and len(thread.result[1]) > 1:
+        if thread.yolo_object and len(thread.result[1]) > 0:
             for class_name, object_box, distance, confidence, color in thread.result[1]:
                 cv2.rectangle(image, (object_box[0], object_box[1]), (object_box[2], object_box[3]), color, 2)
                 cv2.putText(image, f"{(distance):.2f}cm", (object_box[0], object_box[1] - 10), cv2.FONT_HERSHEY_SIMPLEX, .5, (255, 0, 0), 2)
@@ -358,7 +358,7 @@ class WindowClass(QMainWindow, from_class):
             # cv2.putText(image, text=f"linear_x: {self.cal_cmd.lx:.2f}, linear_y: {self.cal_cmd.ly:.2f}, angular_z: {self.cal_cmd.az:.2f}", org=(50, 50), fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=0.6, color=(255,255,255), thickness=2)
             
             try:
-                if len(thread.result[0]) > 1 or len(thread.result[1]) > 1:
+                if len(thread.result[0]) > 1 or len(thread.result[1]) > 0:
                     image = self.cv2_info_drawing(image, thread)
             except Exception as e:
                 # print(e)
