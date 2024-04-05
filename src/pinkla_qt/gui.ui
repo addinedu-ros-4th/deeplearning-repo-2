@@ -9,8 +9,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1037</width>
-    <height>910</height>
+    <width>1068</width>
+    <height>891</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -20,9 +20,9 @@
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>460</y>
-     <width>600</width>
-     <height>440</height>
+     <y>10</y>
+     <width>640</width>
+     <height>480</height>
     </rect>
    </property>
    <property name="styleSheet">
@@ -38,91 +38,40 @@
   <widget class="QGroupBox" name="groupBox">
    <property name="geometry">
     <rect>
-     <x>620</x>
-     <y>350</y>
-     <width>411</width>
-     <height>131</height>
+     <x>10</x>
+     <y>670</y>
+     <width>641</width>
+     <height>211</height>
     </rect>
    </property>
    <property name="title">
     <string>Control</string>
    </property>
-   <widget class="QPushButton" name="btn_w4">
-    <property name="geometry">
-     <rect>
-      <x>110</x>
-      <y>140</y>
-      <width>31</width>
-      <height>21</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>w4</string>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="btn_w1">
-    <property name="geometry">
-     <rect>
-      <x>20</x>
-      <y>140</y>
-      <width>31</width>
-      <height>21</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>w1</string>
-    </property>
-   </widget>
    <widget class="QPushButton" name="btn_pinkla_socket">
     <property name="geometry">
      <rect>
-      <x>10</x>
+      <x>260</x>
       <y>30</y>
-      <width>141</width>
-      <height>91</height>
+      <width>151</width>
+      <height>171</height>
      </rect>
     </property>
     <property name="styleSheet">
-     <string notr="true">background-color: rgb(220, 138, 221);</string>
+     <string notr="true">
+background-color: rgb(250, 139, 206);</string>
     </property>
     <property name="text">
      <string>PINKLA
 CONNECT</string>
     </property>
    </widget>
-   <widget class="QPushButton" name="btn_w2">
-    <property name="geometry">
-     <rect>
-      <x>50</x>
-      <y>140</y>
-      <width>31</width>
-      <height>21</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>w2</string>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="btn_w3">
-    <property name="geometry">
-     <rect>
-      <x>80</x>
-      <y>140</y>
-      <width>31</width>
-      <height>21</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>w3</string>
-    </property>
-   </widget>
    <widget class="QPushButton" name="btn_ems">
     <property name="geometry">
      <rect>
-      <x>170</x>
+      <x>420</x>
       <y>30</y>
-      <width>231</width>
-      <height>91</height>
+      <width>211</width>
+      <height>171</height>
      </rect>
     </property>
     <property name="styleSheet">
@@ -133,37 +82,65 @@ CONNECT</string>
 STOP</string>
     </property>
    </widget>
-  </widget>
-  <widget class="QLabel" name="label_pixmap_2">
-   <property name="geometry">
-    <rect>
-     <x>10</x>
-     <y>10</y>
-     <width>600</width>
-     <height>440</height>
-    </rect>
-   </property>
-   <property name="styleSheet">
-    <string notr="true">background-color: rgb(255, 255, 255);</string>
-   </property>
-   <property name="frameShape">
-    <enum>QFrame::StyledPanel</enum>
-   </property>
-   <property name="text">
-    <string/>
-   </property>
+   <widget class="QPushButton" name="btn_auto_2">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>30</y>
+      <width>241</width>
+      <height>61</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background-color: rgb(87, 227, 137);</string>
+    </property>
+    <property name="text">
+     <string>Object Detection
+START</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="btn_auto">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>100</y>
+      <width>241</width>
+      <height>61</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background-color: rgb(154, 153, 150);</string>
+    </property>
+    <property name="text">
+     <string>Auto Driving
+START</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="btn_auto_loop">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>170</y>
+      <width>241</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Auto Loop ON</string>
+    </property>
+   </widget>
   </widget>
   <widget class="QGroupBox" name="groupBox_2">
    <property name="geometry">
     <rect>
-     <x>620</x>
-     <y>10</y>
+     <x>660</x>
+     <y>290</y>
      <width>401</width>
      <height>101</height>
     </rect>
    </property>
    <property name="title">
-    <string>Front Camera (Front)</string>
+    <string>Front Camera (Observe)</string>
    </property>
    <widget class="QPushButton" name="btn_cam_socket_2">
     <property name="geometry">
@@ -211,14 +188,14 @@ START</string>
   <widget class="QGroupBox" name="groupBox_3">
    <property name="geometry">
     <rect>
-     <x>620</x>
-     <y>140</y>
+     <x>660</x>
+     <y>390</y>
      <width>401</width>
-     <height>171</height>
+     <height>101</height>
     </rect>
    </property>
    <property name="title">
-    <string>Lane Segmentation / Object Detection (Bottom)</string>
+    <string>Bottom Camera (Lane Segmentation / Object Detection)</string>
    </property>
    <widget class="QPushButton" name="btn_cam_socket">
     <property name="geometry">
@@ -262,62 +239,14 @@ OPEN</string>
 START</string>
     </property>
    </widget>
-   <widget class="QPushButton" name="btn_auto">
-    <property name="geometry">
-     <rect>
-      <x>160</x>
-      <y>100</y>
-      <width>141</width>
-      <height>61</height>
-     </rect>
-    </property>
-    <property name="styleSheet">
-     <string notr="true">background-color: rgb(154, 153, 150);</string>
-    </property>
-    <property name="text">
-     <string>Auto Driving
-START</string>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="btn_auto_loop">
-    <property name="geometry">
-     <rect>
-      <x>310</x>
-      <y>100</y>
-      <width>81</width>
-      <height>61</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Auto Loop
-ON</string>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="btn_auto_2">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>100</y>
-      <width>141</width>
-      <height>61</height>
-     </rect>
-    </property>
-    <property name="styleSheet">
-     <string notr="true">background-color: rgb(87, 227, 137);</string>
-    </property>
-    <property name="text">
-     <string>Object Detection
-START</string>
-    </property>
-   </widget>
   </widget>
   <widget class="QGroupBox" name="groupBox_4">
    <property name="geometry">
     <rect>
-     <x>620</x>
-     <y>740</y>
-     <width>411</width>
-     <height>161</height>
+     <x>430</x>
+     <y>490</y>
+     <width>221</width>
+     <height>181</height>
     </rect>
    </property>
    <property name="title">
@@ -326,10 +255,10 @@ START</string>
    <widget class="QPushButton" name="useDBButton">
     <property name="geometry">
      <rect>
-      <x>220</x>
-      <y>30</y>
-      <width>181</width>
-      <height>51</height>
+      <x>10</x>
+      <y>80</y>
+      <width>201</width>
+      <height>41</height>
      </rect>
     </property>
     <property name="text">
@@ -339,10 +268,10 @@ START</string>
    <widget class="QPushButton" name="logButton">
     <property name="geometry">
      <rect>
-      <x>220</x>
-      <y>100</y>
-      <width>181</width>
-      <height>51</height>
+      <x>10</x>
+      <y>130</y>
+      <width>201</width>
+      <height>41</height>
      </rect>
     </property>
     <property name="text">
@@ -352,20 +281,20 @@ START</string>
    <widget class="QLineEdit" name="dbPassword">
     <property name="geometry">
      <rect>
-      <x>104</x>
-      <y>42</y>
-      <width>91</width>
-      <height>31</height>
+      <x>90</x>
+      <y>30</y>
+      <width>121</width>
+      <height>21</height>
      </rect>
     </property>
    </widget>
    <widget class="QLabel" name="label_2">
     <property name="geometry">
      <rect>
-      <x>20</x>
-      <y>50</y>
+      <x>10</x>
+      <y>30</y>
       <width>81</width>
-      <height>17</height>
+      <height>20</height>
      </rect>
     </property>
     <property name="text">
@@ -375,8 +304,8 @@ START</string>
    <widget class="QLabel" name="checkPW">
     <property name="geometry">
      <rect>
-      <x>20</x>
-      <y>100</y>
+      <x>10</x>
+      <y>60</y>
       <width>141</width>
       <height>17</height>
      </rect>
@@ -389,10 +318,10 @@ START</string>
   <widget class="QGroupBox" name="groupBox_5">
    <property name="geometry">
     <rect>
-     <x>620</x>
+     <x>10</x>
      <y>490</y>
-     <width>411</width>
-     <height>251</height>
+     <width>401</width>
+     <height>181</height>
     </rect>
    </property>
    <property name="title">
@@ -441,7 +370,7 @@ START</string>
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>220</y>
+      <y>150</y>
       <width>161</width>
       <height>17</height>
      </rect>
@@ -474,7 +403,7 @@ START</string>
     <property name="geometry">
      <rect>
       <x>170</x>
-      <y>220</y>
+      <y>140</y>
       <width>113</width>
       <height>25</height>
      </rect>
@@ -490,6 +419,25 @@ START</string>
      </rect>
     </property>
    </widget>
+  </widget>
+  <widget class="QLabel" name="label_pixmap_2">
+   <property name="geometry">
+    <rect>
+     <x>660</x>
+     <y>10</y>
+     <width>400</width>
+     <height>280</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">background-color: rgb(255, 255, 255);</string>
+   </property>
+   <property name="frameShape">
+    <enum>QFrame::StyledPanel</enum>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
   </widget>
  </widget>
  <resources/>

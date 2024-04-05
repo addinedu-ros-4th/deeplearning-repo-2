@@ -161,11 +161,11 @@ class WindowClass(QMainWindow, from_class):
     def click_auto_loop(self):
         if not self.isLoopAutoOn:
             self.isLoopAutoOn = True
-            self.btn_auto_loop.setText('Auto Loop\nOFF')
+            self.btn_auto_loop.setText('Auto Loop OFF')
             self.cal_cmd.loop = True
         else:
             self.isLoopAutoOn = False
-            self.btn_auto_loop.setText('Auto Loop\nON')
+            self.btn_auto_loop.setText('Auto Loop ON')
             self.cal_cmd.loop = False
 
     def click_ems(self):
