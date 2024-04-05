@@ -1,11 +1,13 @@
 import sys, os
-import pandas as pd
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(current_dir + "/..")
-# print(f'current_dir : {current_dir}')
-from pinkla_qt.comm_module import *
-from pinkla_database.pinkla_db import *
+
+from pinkla_qt.module.common import *
+from pinkla_qt.module.commun import *
+from pinkla_qt.module.control import *
+from pinkla_qt.module.db import *
+from pinkla_qt.module.detector import *
 
 ui_path = "./gui.ui"
 from_class = uic.loadUiType(ui_path)[0]
@@ -41,7 +43,7 @@ class WindowClass(QMainWindow, from_class):
         self.sender = None
         self.controller = None
         self.check_password = 0
-
+        
     def flag_init(self):
         self.isCamSocketOpened, self.isCamSocketOpened2 = [False], [False]
         self.isCameraOn, self.isCameraOn2 = [False], [False]
@@ -69,14 +71,14 @@ class WindowClass(QMainWindow, from_class):
         self.label_pixmap_2.setPixmap(self.pixmap2)
 
     def socket_module_init(self):
-        self.cam_socket = Socket(self.server_ip, self.cam_port1)
+        self.cam_socket = Socket_Camera(self.server_ip, self.cam_port1)
         self.cam_socket.daemon = True
         self.cam_socket.update.connect(lambda conn: self.check_connect_cam(conn, 
                                                                            self.conn, 
                                                                            self.cam_socket, 
                                                                            self.isCamSocketOpened))
 
-        self.cam_socket2 = Socket(self.server_ip, self.cam_port2)
+        self.cam_socket2 = Socket_Camera(self.server_ip, self.cam_port2)
         self.cam_socket2.daemon = True
         self.cam_socket2.update.connect(lambda conn: self.check_connect_cam(conn, 
                                                                            self.conn2, 
@@ -88,7 +90,7 @@ class WindowClass(QMainWindow, from_class):
         self.pinkla_socket.update.connect(self.check_connect_pink)
 
     def camera_module_init(self):
-        self.camera_server = SERVER(self.server_ip, self.cam_port1)
+        self.camera_server = CAMERA_SERVER(self.server_ip, self.cam_port1)
         self.camera_th = Camera_Th(self, port=self.cam_port1)
         self.camera_th.daemon = True
         self.camera_th.update.connect(lambda image, result : self.update_image(image, result,
@@ -97,7 +99,7 @@ class WindowClass(QMainWindow, from_class):
         self.camera_th.update.connect(lambda image, result : self.update_record(image, result,
                                                                         self.camera_server))
 
-        self.camera_server2 = SERVER(self.server_ip, self.cam_port2)
+        self.camera_server2 = CAMERA_SERVER(self.server_ip, self.cam_port2)
         self.camera_th2 = Camera_Th(self, port=self.cam_port2)
         self.camera_th2.daemon = True
         self.camera_th2.update.connect(lambda image, result : self.update_image(image, result,
@@ -107,6 +109,8 @@ class WindowClass(QMainWindow, from_class):
                                                                         self.camera_server2))
 
     def btn_init(self):
+        self.btn_ems.clicked.connect(self.click_ems)
+
         self.mysql = None
         self.logButton.hide()
         self.logButton.clicked.connect(self.createLogWindow)
@@ -152,7 +156,13 @@ class WindowClass(QMainWindow, from_class):
         self.btn_auto.clicked.connect(lambda: self.yolo_seg_lane_start(self.camera_th))
         self.btn_auto_2.clicked.connect(lambda: self.yolo_object_detect_start(self.camera_th2))
 
-        
+    def click_ems(self):
+        try:
+            print("click_ems")
+            if self.sender is not None:
+                self.sender.cmd = [0, 100, 5, 0, 0, 0, 0]
+        except Exception as e:
+            pass
 
     def yolo_seg_lane_start(self, thread):
         if not self.isLaneDetectionOn:
@@ -457,55 +467,6 @@ class WindowClass(QMainWindow, from_class):
             self.mysql.close_mysql() 
         event.accept()
         
-
-class logClass(QDialog):
-    def __init__(self, WindowClass):
-        super().__init__()
-        self.ui = uic.loadUi("db.ui", self)
-        self.main_window = WindowClass
-        self.show()
-        self.log_in(WindowClass)
-        
-        
-    def set_window(self):
-        table_name = self.mysql.get_table_name()
-        for name in table_name:
-            if name == "object_class":
-                pass
-            else:
-                self.tableList.addItem(name)
-                
-    def log_in(self, class_instance):
-        self.info = class_instance.mysql_info
-        self.mysql = pinkla_mysql(self.info)
-        self.tableList.addItem(" ")
-        self.set_window()
-        
-        self.tableList.currentIndexChanged.connect(self.select_table)
-            
-    def select_table(self):
-        current_select = self.tableList.currentText()
-        table = self.mysql.select_data(current_select)
-        rows, cols = table.shape
-        
-        self.tableWidget.setRowCount(rows)
-        self.tableWidget.setColumnCount(cols)
-        self.tableWidget.setHorizontalHeaderLabels(table.columns)
-        self.tableWidget.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
-        
-        for i in range(rows):
-            for j in range(cols):
-                item = QTableWidgetItem(str(table.iloc[i, j]))
-                self.tableWidget.setItem(i, j, item)
-        
-        
-    def closeEvent(self, event):
-        if self.mysql:
-            self.mysql.close_mysql() 
-        event.accept()
-
-
-
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     myWindows = WindowClass()
