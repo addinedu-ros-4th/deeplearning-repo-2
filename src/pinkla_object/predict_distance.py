@@ -4,7 +4,7 @@ import numpy as np
 
 # from pinkla_qt.comm_module import cmtx1, dist1
 
-class find_object():
+class Find_Object():
     def __init__(self):
         self.model = YOLO('../../data/best_yolos_object.pt')
         self.names = self.model.model.names
