@@ -401,14 +401,14 @@ class WindowClass(QMainWindow, from_class):
                 border = coordinate[0]
                 intersection = coordinate[1]
                 middle = coordinate[2]
-                target = [self.cal_cmd.cen_x, self.cal_cmd.cen_y]
+                target = [int(self.cal_cmd.cen_x), int(self.cal_cmd.cen_y)]
                 
                 lane_data.append(current_time)
-                lane_data.append(len(border))
+                lane_data.append(len(border)/2)
                 lane_data.append(border)
-                lane_data.append(len(intersection))
+                lane_data.append(len(intersection)/2)
                 lane_data.append(intersection)
-                lane_data.append(len(middle))
+                lane_data.append(len(middle)/2)
                 lane_data.append(middle)
                 lane_data.append(target)
                 # print(type(current_time))
