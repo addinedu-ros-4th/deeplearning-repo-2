@@ -195,5 +195,9 @@ class pinkla_mysql():
     
     
     def close_mysql(self):
-        self.cur.close()
-        self.remote.close()
+        try:
+            self.cur.close()
+            self.remote.close()
+            return True
+        except Exception as e:
+            return False
