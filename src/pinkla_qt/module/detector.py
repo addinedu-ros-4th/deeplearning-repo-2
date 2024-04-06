@@ -15,7 +15,7 @@ class Camera_Th(QThread):
 
         self.object_generator = Find_Object()
         self.seg_generator = Find_Road_Center()
-        self.recog_generator = situation_recognition()
+        self.recog_generator = Situation_Recognition()
 
         self.yolo_lane = False
         self.yolo_object = False

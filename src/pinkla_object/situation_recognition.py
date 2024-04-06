@@ -1,7 +1,7 @@
 from pinkla_object.predict_distance import Find_Object
 import xml.etree.ElementTree as ET
 
-class situation_recognition():
+class Situation_Recognition():
     def __init__(self):
         self.xml_path = "../pinkla_object/situation_control.xml" 
 
