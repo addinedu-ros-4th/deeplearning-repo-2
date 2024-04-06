@@ -92,6 +92,35 @@ class Cal_Cmd():
         self.param_z = 11.1
         self.loop = False
 
+        self.direction = ""
+        self.speed = 0.0
+        self.cnt_stop = 0
+
+    def status(self):
+        speed = math.sqrt(self.lx**2 + self.ly**2)
+        direction = math.atan2(self.ly, self.lx)
+
+        self.speed = speed
+        
+        if self.lx > 0:
+            self.direction = "FORWARD "
+        elif self.lx < 0:
+            self.direction = "BACKWARD "
+        else:
+            self.direction = ""
+
+        if self.az > 2.0 or self.ly < -2.0:
+            self.direction += " TURN LEFT"
+        elif self.az < -2.0 or self.ly > 2.0:
+            self.direction += " TURN RIGHT"
+        elif self.loop and self.az == 25. and self.cnt_stop > 20:
+            self.direction = " U-TURN"
+        else:
+            pass
+
+        if self.lx == 0 and self.ly == 0 and self.az == 0 :
+            self.direction = "STOP"
+
     def cal(self):
         self.w1 = (1/self.r) * (self.lx-self.ly-self.b*self.az)
         self.w2 = (1/self.r) * (self.lx+self.ly-self.b*self.az)
@@ -99,14 +128,15 @@ class Cal_Cmd():
         self.w4 = (1/self.r) * (self.lx+self.ly+self.b*self.az)
         # value = [self.w1, self.w2, self.w3, self.w4]
         value = [self.w4, self.w3, self.w2, self.w1]
+        self.status()
         return value
-
+    
     def move_to_lane_center(self, seg_result):
         # print(seg_result)
         line_center_x = seg_result[0]
         line_center_y = seg_result[1]
         self.seg_center_border = seg_result[2]
-        cnt_stop = seg_result[3]
+        self.cnt_stop = seg_result[3]
 
         self.x = self.lpf_x.filter(line_center_x)
         self.y = self.lpf_y.filter(line_center_y)
@@ -122,6 +152,8 @@ class Cal_Cmd():
         delta_y = self.lpf_dy.filter(delta_y_t)
         self.angle = np.arctan2(delta_x, delta_y)
 
+        deg = np.rad2deg(self.angle)
+
         # target_pos = np.array([int(cen_x), int(cen_y)])
         # robot_pos = np.array([self.img_center_x, int(self.roi_rect_end[1])])
         # distance = np.sqrt(delta_x**2 + delta_y**2)
@@ -133,22 +165,28 @@ class Cal_Cmd():
 
         self.hor_dist = delta_x / 10 * -1
         self.ver_dist = (delta_y / self.ver_pixel_per_deg)  + (self.cam_shift * 100 * -1)
-        self.angle2 = np.arctan2(self.hor_dist, self.ver_dist)
+        # self.angle2 = np.arctan2(self.hor_dist, self.ver_dist)
         # print(self.angle, self.angle2)
 
         self.dist = math.sqrt(self.hor_dist**2 + self.ver_dist**2 + self.cam_height **2)
 
         mx = abs(self.ver_dist / self.rate) * self.param_x
         my = abs(self.hor_dist / self.rate / self.param_y1) * self.param_y2
-            
+        mz = self.param_z
+
+        if -2.5 <= deg <= 28.5:
+            mx = mx * 1.1
+            my = my * 1.8
+            mz = mz - 1.5
+
         vx = (self.ver_dist / (abs(self.ver_dist) + abs(self.hor_dist)) * mx) * -1
         vy = (self.hor_dist / (abs(self.ver_dist) + abs(self.hor_dist)) * my) * -1
-        vz = self.angle * self.param_z
+        vz = self.angle * mz
 
         self.r = 0.025
         self.b = 0.11
 
-        if cnt_stop > 20:
+        if self.cnt_stop > 20:
             self.lx = 0.
             self.ly = 0.
             self.dist = 0.
@@ -162,11 +200,10 @@ class Cal_Cmd():
             self.az = vz
 
         velo = self.cal()
-        # print(velo)
         return velo
 
     def print_vels(self, linear_x_velocity, linear_y_velocity, angular_velocity):
-        print('linear x velocity {0:.3} | linear y velocity {1:.3} | angular velocity {2:.3}'.format(
+        print('linear x {0:.3}\tlinear y {1:.3}\tangular {2:.3}'.format(
             linear_x_velocity, linear_y_velocity, angular_velocity))
 
 
@@ -273,9 +310,8 @@ class KeyboardTeleopController(object):
         if not shift_flag:
             self.cal_cmd.print_vels(self.cal_cmd.lx, self.cal_cmd.ly, self.cal_cmd.az)
             value = self.cal_cmd.cal()
-
         try:
             self.sender.cmd = [1, 100, 5, int(value[0]), int(value[1]), int(value[2]), int(value[3])]
         except Exception as e:
-            print("KeyboardTeleopController: ", e)
+            # print("KeyboardTeleopController: ", e)
             pass
