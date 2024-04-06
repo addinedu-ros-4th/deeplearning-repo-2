@@ -5,7 +5,7 @@
     </situation>
     <situation>
         <description>Detect a human crossing the roadway</description>
-        <status>slam on the brake</status>
+        <status>stop</status>
     </situation>    
     <situation>
         <description>Detect a red_light and a stop_line/crosswalk</description>
@@ -45,7 +45,7 @@
     </situation>      
     <situation>
         <description>Detect a stopped car on the roadway</description>
-        <status>slam on the brake</status>
+        <status>stop</status>
     </situation>
     <situation>
         <description>Detect a start_line</description>
