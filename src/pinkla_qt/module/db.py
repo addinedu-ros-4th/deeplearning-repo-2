@@ -110,9 +110,20 @@ class logClass(QDialog):
         for col in data_columns:
             
             for point_str in self.table[col]:
+                if point_str[-1] != "]":
+                    point_str +="]"
+                if point_str[0] == "(":
+                    point_str = point_str.replace("(", "[")
+                    point_str = point_str.replace(")", "")
+                if point_str[-1] == ")":
+                    point_str = point_str.replace(")", "")
+
                 coord = eval(point_str)
                 x.append(coord[0])
-                y.append(coord[1])
+                try:
+                    y.append(coord[1])
+                except Exception as e:
+                    y.append(0)
                             
 
             if col == "border_line_centroid":
