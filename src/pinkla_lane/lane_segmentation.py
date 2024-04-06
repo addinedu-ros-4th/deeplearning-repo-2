@@ -1,4 +1,5 @@
-from ultralytics import YOLO
+# from ultralytics import YOLO
+from pinkla_lane.yolo_seg.custom_seg.custom import *
 import cv2
 import numpy as np
 import math 
@@ -39,8 +40,8 @@ class Centroid():
 
 class Find_Road_Center():
     def __init__(self):
-        self.model = YOLO("../../data/bestyolov8n.pt", task="segment")
-        # self.model = YOLO("../../data/bestyolov8m.pt", task="segment")
+        self.model = PINKLA_YOLO("../../data/bestyolov8n.pt", task="segment")
+        # self.model = PINKLA_YOLO("../../data/bestyolov8m.pt", task="segment")
         self.image = None
         self.img_center_x = int(640/2)
         self.img_center_y = int(480/2)
@@ -86,8 +87,8 @@ class Find_Road_Center():
         masked = self.result.plot(boxes=False, labels=False)
         self.image[self.roi_rect_start[1]:self.roi_rect_end[1], self.roi_rect_start[0]:self.roi_rect_end[0]] = masked[self.roi_rect_start[1]:self.roi_rect_end[1], self.roi_rect_start[0]:self.roi_rect_end[0]]
         
+
         try:
-            # print(self.result[0].plot())
             for mask, box in zip(self.segmentation, self.classes):
                 # border_line
                 try:
