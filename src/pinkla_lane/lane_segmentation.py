@@ -50,16 +50,16 @@ class Find_Road_Center():
         self.zeros_image = np.zeros((480, 640, 3)).astype(np.uint8)
         self.zeros_image[:, :] = [0, 0, 255]
 
-        self.line_center = (0,0)
-        self.seg_center_middle = (0,0)
-        self.seg_center_border = (0,0)
-        self.seg_center_inter = (0,0)
+        self.line_center = [0,0]
+        self.seg_center_middle = [0,0]
+        self.seg_center_border = [0,0]
+        self.seg_center_inter = [0,0]
         self.seg_center_middle_list = []
         self.seg_center_border_list = []
         self.seg_center_inter_list = []
         self.coordinate = []
 
-        self.temp_border = (0,0)
+        self.temp_border = [0,0]
         self.temp_line_center_x = 0
         self.temp_line_center_y = 0
 
@@ -80,7 +80,7 @@ class Find_Road_Center():
         ROI = self.image[self.roi_rect_start[1]:self.roi_rect_end[1], self.roi_rect_start[0]:self.roi_rect_end[0]]
         self.zeros_image[self.roi_rect_start[1]:self.roi_rect_end[1], self.roi_rect_start[0]:self.roi_rect_end[0]] = ROI
         
-        self.result = self.model.predict(source = self.zeros_image, conf=0.5, imgsz=(480,640), retina_masks=True, verbose=False, vid_stride=10)[0]
+        self.result = self.model.predict(source = self.zeros_image, conf=0.5, imgsz=(480,640), vid_stride=10, verbose=False)[0]
         self.classes = self.result.boxes
         self.segmentation = self.result.masks
         masked = self.result.plot(boxes=False, labels=False)
@@ -143,7 +143,8 @@ class Find_Road_Center():
             if abs(delta) <= 10:
                 avg_x = int((self.seg_center_inter_list[0][0] + self.seg_center_inter_list[-1][0])/2)
                 avg_y = int((self.seg_center_inter_list[0][1] + self.seg_center_inter_list[-1][1])/2)
-                self.seg_center_inter = (avg_x, avg_y)
+                self.seg_center_inter[0] = avg_x
+                self.seg_center_inter[1] = avg_y
             else:
                 if self.seg_center_inter_list[0][0] > self.seg_center_inter_list[-1][0]:
                     self.seg_center_inter = self.seg_center_inter_list[0]
@@ -163,8 +164,12 @@ class Find_Road_Center():
             line_center_y = int((self.seg_center_middle[1] + self.seg_center_inter[1])/2)
             
         elif len(self.seg_center_middle_list) == 0:
-            line_center_x = self.seg_center_inter[0]
-            line_center_y = self.seg_center_inter[1]
+            if len(self.seg_center_inter_list) > 0:
+                line_center_x = self.seg_center_inter[0]
+                line_center_y = self.seg_center_inter[1]
+            else:
+                line_center_x = self.temp_line_center_x
+                line_center_y = self.temp_line_center_y
             
         else:
             line_center_x = self.seg_center_middle[0]
@@ -196,7 +201,6 @@ class Find_Road_Center():
             self.coordinate.append(self.seg_center_border)
             self.coordinate.append(self.seg_center_inter)
             self.coordinate.append(self.seg_center_middle)
-
             seg_result = [line_center_x, line_center_y, self.seg_center_border, self.cnt_stop, self.coordinate]
             return self.image, seg_result
 
@@ -206,7 +210,7 @@ class Find_Road_Center():
             line_center_y = self.temp_line_center_y
             self.seg_center_border = self.temp_border
             self.cnt_stop = 20
-            self.coordinate = [0,0,0]
+            self.coordinate = [self.seg_center_border,[line_center_x, line_center_y],[line_center_x, line_center_y]]
             seg_result = [line_center_x, line_center_y, self.seg_center_border, self.cnt_stop, self.coordinate]
         
             return self.image, seg_result
