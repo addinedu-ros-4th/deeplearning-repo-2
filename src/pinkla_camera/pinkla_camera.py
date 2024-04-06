@@ -5,6 +5,7 @@ import time
 import threading
 import sys
 import copy
+import netifaces
 
 hard_cam_index = ["0", "1", "2", "3"]
 
@@ -63,9 +64,12 @@ class CameraStreamer:
         print("release and close ")
 
 def main():
-    server_address = '192.168.0.197'
     port1 = 8485
     port2 = 8584
+    interfaces = netifaces.interfaces()
+    add = netifaces.ifaddresses('wlo1') # wifi
+    server_ip = add[netifaces.AF_INET][0]['addr']
+    server_address = server_ip
 
     # Check the number of arguments
     if len(sys.argv) == 2:

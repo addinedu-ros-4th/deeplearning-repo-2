@@ -132,7 +132,6 @@ class Cal_Cmd():
         return value
     
     def move_to_lane_center(self, seg_result):
-        # print(seg_result)
         line_center_x = seg_result[0]
         line_center_y = seg_result[1]
         self.seg_center_border = seg_result[2]
@@ -166,7 +165,6 @@ class Cal_Cmd():
         self.hor_dist = delta_x / 10 * -1
         self.ver_dist = (delta_y / self.ver_pixel_per_deg)  + (self.cam_shift * 100 * -1)
         # self.angle2 = np.arctan2(self.hor_dist, self.ver_dist)
-        # print(self.angle, self.angle2)
 
         self.dist = math.sqrt(self.hor_dist**2 + self.ver_dist**2 + self.cam_height **2)
 

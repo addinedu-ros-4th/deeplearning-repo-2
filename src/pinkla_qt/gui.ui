@@ -330,8 +330,65 @@ START</string>
     </rect>
    </property>
    <property name="title">
-    <string>Status Log</string>
+    <string>Status Plot</string>
    </property>
+   <widget class="PlotWidget" name="linearXPlot" native="true">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>20</y>
+      <width>201</width>
+      <height>161</height>
+     </rect>
+    </property>
+    <property name="autoFillBackground">
+     <bool>false</bool>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background-color: rgb(255, 255, 255);
+border-color: rgb(10,10, 10);
+border-style: solid;
+border-width: 1px; border-radius: 0px;</string>
+    </property>
+   </widget>
+   <widget class="PlotWidget" name="linearYPlot" native="true">
+    <property name="geometry">
+     <rect>
+      <x>220</x>
+      <y>20</y>
+      <width>201</width>
+      <height>161</height>
+     </rect>
+    </property>
+    <property name="autoFillBackground">
+     <bool>false</bool>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background-color: rgb(255, 255, 255);
+border-color: rgb(10,10, 10);
+border-style: solid;
+border-width: 1px; border-radius: 0px;</string>
+    </property>
+   </widget>
+   <widget class="PlotWidget" name="angularZPlot" native="true">
+    <property name="geometry">
+     <rect>
+      <x>430</x>
+      <y>20</y>
+      <width>201</width>
+      <height>161</height>
+     </rect>
+    </property>
+    <property name="autoFillBackground">
+     <bool>false</bool>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background-color: rgb(255, 255, 255);
+border-color: rgb(10,10, 10);
+border-style: solid;
+border-width: 1px; border-radius: 0px;</string>
+    </property>
+   </widget>
   </widget>
   <widget class="QLabel" name="label_pixmap_2">
    <property name="geometry">
@@ -598,6 +655,14 @@ STOP</string>
    </widget>
   </widget>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>PlotWidget</class>
+   <extends>QWidget</extends>
+   <header location="global">pyqtgraph</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

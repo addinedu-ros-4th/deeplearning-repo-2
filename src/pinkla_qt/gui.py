@@ -39,7 +39,8 @@ class WindowClass(QMainWindow, from_class):
 
         self.show_logo(self.label_pixmap, self.pixmap)
         self.show_logo(self.label_pixmap_2, self.pixmap2)
-
+        
+        
     def flag_init(self):
         self.isCamSocketOpened, self.isCamSocketOpened2 = [False], [False]
         self.isCameraOn, self.isCameraOn2 = [False], [False]
@@ -49,6 +50,8 @@ class WindowClass(QMainWindow, from_class):
         self.isObjectDetectionOn = False
         self.isLoopAutoOn = False
         self.isEmsOn = False
+        self.user_mode = False
+        self.isDBconnect = False
 
     def ui_init(self):
         self.setFocusPolicy(Qt.StrongFocus)
@@ -71,23 +74,39 @@ class WindowClass(QMainWindow, from_class):
         self.speed_bar = roundProgressBar()
         self.speed_bar.setValue(0)
         self.statusLayout.addWidget(self.speed_bar)
+                          
+        self.pen_r = pg.mkPen(color='r', width=2)
+        self.pen_g = pg.mkPen(color='g', width=2)
+        self.pen_b = pg.mkPen(color='b', width=2)
+        self.linearXPlot.setTitle("linear X")
+        self.linearXPlot.setBackground('w')
+        self.linearXPlot.setXRange(0,100)
+        self.linearXPlot.setYRange(-4,4)
+
+        self.linearYPlot.setTitle("linear Y")
+        self.linearYPlot.setBackground('w')
+        self.linearYPlot.setXRange(0,100)
+        self.linearYPlot.setYRange(-4,4)
+
+        self.angularZPlot.setTitle("angular Z")
+        self.angularZPlot.setBackground('w')
+        self.angularZPlot.setXRange(0,100)
+        self.angularZPlot.setYRange(-13,13)
         
+        self.linear_x_list = []
+        self.linear_y_list = []
+        self.angular_z_list = []
 
         self.cal_cmd = Cal_Cmd()
         self.sender = None
         self.controller = None
-        self.check_password = 0
         self.drive_mode = ""
-        self.user_mode = False
-
         self.lineEdit_mode.setText(self.drive_mode)
 
     def update_status(self):
         self.lineEdit_dir.setText(str(self.cal_cmd.direction))
-        # self.lineEdit_speed.setText(str(f"{self.cal_cmd.speed:.2f}"))
 
         self.speed_bar.setValue(self.cal_cmd.speed)
-
 
         if self.camera_th:
             self.label_fps.setText(str(f"{self.camera_th.fps:.2f}"))
@@ -438,13 +457,14 @@ class WindowClass(QMainWindow, from_class):
             label.setAlignment(Qt.AlignCenter)
 
             self.update_status()
+            self.plot_velocity()
             
             if thread.yolo_lane and self.isLaneDetectionOn and not self.isEmsOn:
                 vel = self.cal_cmd.move_to_lane_center(thread.result[0])
-                # print(seg_result)
-                if self.check_password == 1:
+                if self.isDBconnect:
                     self.save_data(thread.result[0])
                 else:
+                    # use local data
                     pass
 
                 try:
@@ -458,6 +478,26 @@ class WindowClass(QMainWindow, from_class):
             self.show_logo(label, pix)
             pass
         
+    def plot_velocity(self):
+        if self.cal_cmd:
+            self.linear_x_list.append(self.cal_cmd.lx)
+            self.linear_y_list.append(self.cal_cmd.ly)
+            self.angular_z_list.append(self.cal_cmd.az)
+            
+            if len(self.linear_x_list) > 100:
+                self.linear_x_list.pop(0)
+                self.linearXPlot.clear()
+            if len(self.linear_y_list) > 100:
+                self.linear_y_list.pop(0)
+                self.linearYPlot.clear()
+            if len(self.angular_z_list) > 100:
+                self.angular_z_list.pop(0)
+                self.angularZPlot.clear()
+
+            self.linearXPlot.plot(x = None, y = self.linear_x_list, pen = self.pen_r)
+            self.linearYPlot.plot(x = None, y = self.linear_y_list, pen = self.pen_g)
+            self.angularZPlot.plot(x = None, y = self.angular_z_list, pen = self.pen_b)
+
     def save_data(self, seg_result):
         coordinate = seg_result[-1]
         try:
@@ -549,20 +589,31 @@ class WindowClass(QMainWindow, from_class):
             pass
     
     def init_db(self):
-        try:
-            self.mysql_info = ["database-2.czo0g0uict7o.ap-northeast-2.rds.amazonaws.com", "pinkla"]
-            password = self.dbPassword.text()
-            self.mysql_info.append(password)
-            self.mysql = pinkla_mysql(self.mysql_info)
-            self.mysql.init_db()
-            self.check_password = 1
-            
-        except Exception as e:
-            self.checkPW.setText("Wrong Password!!!")
-            pass
-        
-        if self.check_password == 1:
-            self.logButton.show()
+        if not self.isDBconnect:
+            try:
+                self.mysql_info = ["database-2.czo0g0uict7o.ap-northeast-2.rds.amazonaws.com", "pinkla"]
+                password = self.dbPassword.text()
+                self.mysql_info.append(password)
+                self.mysql = pinkla_mysql(self.mysql_info)
+                self.mysql.init_db()
+                self.useDBButton.setText("DISCONNECT DB")
+                self.dbPassword.setText("Login Success.")
+                self.checkPW.setText("Login Success.")
+                self.logButton.show()
+                self.isDBconnect = True
+            except Exception as e:
+                self.checkPW.setText("Wrong Password!!!")
+                self.isDBconnect = False
+                pass
+        else:
+            self.isDBconnect = False
+            self.useDBButton.setText("CONNECT DB")
+            self.logButton.hide()
+            try:
+                if self.mysql.close_mysql():
+                    self.checkPW.setText("Logout Success.")
+            except Exception as e:
+                pass
     
     def createLogWindow(self):
         if self.mysql is not None :
@@ -572,7 +623,7 @@ class WindowClass(QMainWindow, from_class):
         
     def closeEvent(self, event):
         if self.mysql:
-            self.mysql.close_mysql() 
+            self.mysql.close_mysql()
         event.accept()
         
 if __name__ == "__main__":
