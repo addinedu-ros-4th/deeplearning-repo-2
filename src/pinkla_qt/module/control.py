@@ -109,9 +109,9 @@ class Cal_Cmd():
         else:
             self.direction = ""
 
-        if self.az > 2.0 or self.ly < -2.0:
+        if self.az > 2.5 or self.ly < -2.3:
             self.direction += " TURN LEFT"
-        elif self.az < -2.0 or self.ly > 2.0:
+        elif self.az < -2.5 or self.ly > 2.3:
             self.direction += " TURN RIGHT"
         elif self.loop and self.az == 25. and self.cnt_stop > 20:
             self.direction = " U-TURN"
