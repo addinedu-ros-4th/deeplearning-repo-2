@@ -49,6 +49,6 @@
     </situation>
     <situation>
         <description>Detect a start_line</description>
-        <status>slam on the brake</status>
+        <status>slow down</status>
     </situation>    
 </scenario>
