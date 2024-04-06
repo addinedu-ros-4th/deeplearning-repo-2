@@ -1,6 +1,6 @@
 from pinkla_qt.module.common import *
 from pinkla_qt.module.commun import *
-
+from pinkla_object.situation_recognition import *
 
 class Camera_Th(QThread):
     update = pyqtSignal(np.ndarray, list)
@@ -12,9 +12,11 @@ class Camera_Th(QThread):
         self.cam_server = CAMERA_SERVER(port=port)
         self.conn = None
         self.source, self.image, self.pixmap = None, None, None
+        self.previous_result = None
 
         self.object_generator = Find_Object()
         self.seg_generator = Find_Road_Center()
+        self.recog_generator = situation_recognition()
 
         self.yolo_lane = False
         self.yolo_object = False
@@ -37,12 +39,24 @@ class Camera_Th(QThread):
                 if self.yolo_lane and self.yolo_object:
                     self.image, self.seg_result = self.seg_generator.get_road_center(self.source.copy())
                     self.obj_result = self.object_generator.calculate_depth(self.source.copy())
+                    obj_result = self.recog_generator.only_name_distance(self.obj_result)
+                    objects_status = self.recog_generator.recognition(obj_result)
+                    description = self.recog_generator.find_scenario(objects_status)
+                    if description != self.previous_result:
+                        print(description)
+                        self.previous_result = description
                 else:
                     if self.yolo_lane :
                         self.image, self.seg_result = self.seg_generator.get_road_center(self.source.copy())
                         self.obj_result = [[None]]
                     elif self.yolo_object :
                         self.obj_result = self.object_generator.calculate_depth(self.source.copy())
+                        obj_result = self.recog_generator.only_name_distance(self.obj_result)
+                        objects_status = self.recog_generator.recognition(obj_result)
+                        description = self.recog_generator.find_scenario(objects_status)
+                        if description != self.previous_result:
+                            print(description)
+                            self.previous_result = description
                         self.seg_result = [[None]]
                         self.image = self.source.copy()
                     else:

@@ -2,55 +2,53 @@
     <situation>
         <description>Detect a human crossing the crosswalk</description>
         <status>stop</status>
-        <speed_control>
-            <lx>0.0</lx>
-            <ly>0.0</ly>
-            <az>0.0</az>
-        </speed_control>
     </situation>
     <situation>
         <description>Detect a human crossing the roadway</description>
         <status>slam on the brake</status>
-        <speed_control>
-            <lx>0.0</lx>
-            <ly>0.0</ly>
-            <az>0.0</az>
-        </speed_control>
     </situation>    
     <situation>
-        <description>Stop upon detecting a red_light and a stop_line/crosswalk</description>
+        <description>Detect a red_light and a stop_line/crosswalk</description>
         <status>stop</status>
-        <speed_control>
-            <lx>0.0</lx>
-            <ly>0.0</ly>
-            <az>0.0</az>
-        </speed_control>
-    </situation>    
+    </situation>   
+    <situation>
+        <description>Detect a yellow_light and a stop_line/crosswalk</description>
+        <status>slow down</status>
+    </situation> 
+    <situation>
+        <description>Detect a green_light and a stop_line/crosswalk</description>
+        <status>slow down</status>
+    </situation>  
+    <situation>
+        <description>Detect a only_right_turn signal at a red_light</description>
+        <status>stop</status>
+    </situation>
+    <situation>
+        <description>Detect a only_straight signal at a red_light</description>
+        <status>stop</status>
+    </situation>  
+    <situation>
+        <description>Detect a only_right_turn signal at a yellow_light</description>
+        <status>slow down</status>
+    </situation>
+    <situation>
+        <description>Detect a only_straight signal at a yellow_light</description>
+        <status>slow down</status>
+    </situation>  
     <situation>
         <description>Detect a only_right_turn signal at a green_light</description>
         <status>turn right</status>
-        <speed_control>
-            <lx>0.0</lx>
-            <ly>0.0</ly>
-            <az>0.0</az>
-        </speed_control>
     </situation>
     <situation>
         <description>Detect a only_straight signal at a green_light</description>
         <status>go straight</status>
-        <speed_control>
-            <lx>0.0</lx>
-            <ly>0.0</ly>
-            <az>0.0</az>
-        </speed_control>
-    </situation>  
+    </situation>      
     <situation>
-        <description>Detecting a car stopped on the roadway</description>
-        <status>stop</status>
-        <speed_control>
-            <lx>0.0</lx>
-            <ly>0.0</ly>
-            <az>0.0</az>
-        </speed_control>
+        <description>Detect a stopped car on the roadway</description>
+        <status>slam on the brake</status>
     </situation>
+    <situation>
+        <description>Detect a start_line</description>
+        <status>slam on the brake</status>
+    </situation>    
 </scenario>
