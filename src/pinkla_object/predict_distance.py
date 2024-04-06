@@ -71,7 +71,7 @@ class Find_Object():
         self.image = image.copy()
         object_boxes, cls_indices, confidences = [], [], []
 
-        results = self.model.predict(self.image, conf=0.6, vid_stride=30, max_det = 5, verbose=False)
+        results = self.model.predict(self.image, conf=0.6, vid_stride=30, max_det = 10, verbose=False, imgsz=(480,640))
 
         obj_result = []
         obj_info = []
