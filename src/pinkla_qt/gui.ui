@@ -497,12 +497,12 @@ START</string>
      <rect>
       <x>340</x>
       <y>30</y>
-      <width>161</width>
+      <width>121</width>
       <height>17</height>
      </rect>
     </property>
     <property name="text">
-     <string>Stream Speed(FPS)</string>
+     <string>STREAMING FPS</string>
     </property>
    </widget>
    <widget class="QLineEdit" name="lineEdit_dir">
@@ -558,12 +558,12 @@ START</string>
      <rect>
       <x>340</x>
       <y>60</y>
-      <width>131</width>
+      <width>151</width>
       <height>17</height>
      </rect>
     </property>
     <property name="text">
-     <string>Traffic Situation</string>
+     <string>TRAFFIC SITUATION</string>
     </property>
    </widget>
    <widget class="QPushButton" name="btn_ems">
