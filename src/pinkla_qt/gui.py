@@ -8,6 +8,7 @@ from pinkla_qt.module.commun import *
 from pinkla_qt.module.control import *
 from pinkla_qt.module.db import *
 from pinkla_qt.module.detector import *
+from design.round_progress import *
 
 ui_path = "./gui.ui"
 from_class = uic.loadUiType(ui_path)[0]
@@ -66,6 +67,11 @@ class WindowClass(QMainWindow, from_class):
         self.label_pixmap.setPixmap(self.pixmap)
         self.label_pixmap_2.setAlignment(Qt.AlignCenter)
         self.label_pixmap_2.setPixmap(self.pixmap2)
+        
+        self.speed_bar = roundProgressBar()
+        self.speed_bar.setValue(0)
+        self.statusLayout.addWidget(self.speed_bar)
+        
 
         self.cal_cmd = Cal_Cmd()
         self.sender = None
@@ -78,10 +84,13 @@ class WindowClass(QMainWindow, from_class):
 
     def update_status(self):
         self.lineEdit_dir.setText(str(self.cal_cmd.direction))
-        self.lineEdit_speed.setText(str(f"{self.cal_cmd.speed:.2f}"))
+        # self.lineEdit_speed.setText(str(f"{self.cal_cmd.speed:.2f}"))
+
+        self.speed_bar.setValue(self.cal_cmd.speed)
+
 
         if self.camera_th:
-            self.lineEdit_fps.setText(str(f"{self.camera_th.fps:.2f}"))
+            self.label_fps.setText(str(f"{self.camera_th.fps:.2f}"))
 
         if self.isLaneDetectionOn :
             lane_mode = "Lane "
