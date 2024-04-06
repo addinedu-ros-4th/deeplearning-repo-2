@@ -33,30 +33,9 @@ class Centroid():
             self.centroid_x, self.centroid_y = self.temp_x, self.temp_y
             return [int(self.centroid_x), int(self.centroid_y)]
         except Exception as e:
-            print("get_centroid Exc Error : ", e)
-            return [0, 0]
+            self.centroid_x, self.centroid_y = self.temp_x, self.temp_y
+            return [int(self.centroid_x), int(self.centroid_y)]
 
-def check_right_lane(arr):
-    x_values = arr[:, 0]
-    indices = []
-    indices = np.where(x_values > 200)[0]
-    
-    if len(indices) == 0:
-        result = False
-    else:
-        result = True
-    return result
-
-def check_left_lane(arr):
-    x_values = arr[:, 0]
-    indices = []
-    indices = np.where(x_values < 200)[0]
-    
-    if len(indices) == 0:
-        result = False
-    else:
-        result = True
-    return result
 
 class Find_Road_Center():
     def __init__(self):
@@ -101,12 +80,10 @@ class Find_Road_Center():
         ROI = self.image[self.roi_rect_start[1]:self.roi_rect_end[1], self.roi_rect_start[0]:self.roi_rect_end[0]]
         self.zeros_image[self.roi_rect_start[1]:self.roi_rect_end[1], self.roi_rect_start[0]:self.roi_rect_end[0]] = ROI
         
-        self.result = self.model.predict(source = self.zeros_image, conf=0.5, imgsz=(480,640),device=0,half=True,verbose=False, retina_masks=True)[0]
+        self.result = self.model.predict(source = self.zeros_image, conf=0.5, imgsz=(480,640), retina_masks=True, verbose=False, vid_stride=10)[0]
         self.classes = self.result.boxes
         self.segmentation = self.result.masks
-        # self.image = self.result[0].plot(boxes=False, labels=False)
         masked = self.result.plot(boxes=False, labels=False)
-
         self.image[self.roi_rect_start[1]:self.roi_rect_end[1], self.roi_rect_start[0]:self.roi_rect_end[0]] = masked[self.roi_rect_start[1]:self.roi_rect_end[1], self.roi_rect_start[0]:self.roi_rect_end[0]]
         
         try:
@@ -116,17 +93,16 @@ class Find_Road_Center():
                 try:
                     if box.cls.item() == 0:
                         xy = mask.xy[0].astype("int")
-                        if check_right_lane(xy):
-                            self.seg_center_border = self.get_border_cen.get_centroid(xy, "border")
+                        self.seg_center_border = self.get_border_cen.get_centroid(xy, "border")
+                        if self.seg_center_border[0] >= 300:
                             self.seg_center_border_list.append(self.seg_center_border)
                             # cv2.polylines(self.image,[xy],isClosed=True,color=(255,255,255),thickness=1)
-                            cv2.circle(self.image, (int(self.seg_center_border[0]), int(self.seg_center_border[1])), radius=3, color=(255,255,255),thickness=-1)
-                            cv2.putText(self.image, text="border", org=(self.seg_center_border[0]-20, self.seg_center_border[1]-20), fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=0.5, color=(255,255,255), thickness=2)
-
-                            if self.seg_center_border[0] >= 300:
-                                self.temp_border = self.seg_center_border
+                            cv2.circle(self.image, (int(self.seg_center_border[0]), int(self.seg_center_border[1])), radius=4, color=(255,255,255),thickness=-1)
+                            cv2.putText(self.image, text="border line", org=(self.seg_center_border[0]-20, self.seg_center_border[1]-20), fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=0.6, color=(255,255,255), thickness=2)
+                            self.temp_border = self.seg_center_border
+                        else:
+                            self.seg_center_border = self.temp_border
                     else:
-                        # self.seg_center_border = (640, 240)
                         self.seg_center_border = self.temp_border
                 except Exception as e:
                     print("border_line : ",e)
@@ -138,9 +114,9 @@ class Find_Road_Center():
                         xy = mask.xy[0].astype("int") 
                         self.seg_center_inter = self.get_inter_cen.get_centroid(xy, "inter")
                         self.seg_center_inter_list.append(self.seg_center_inter)
-                        # cv2.polylines(self.image,[xy],isClosed=True,color=(150,150,150),thickness=1)
-                        cv2.circle(self.image, (int(self.seg_center_inter[0]), int(self.seg_center_inter[1])), radius=3, color=(150,150,150),thickness=-1)
-                        cv2.putText(self.image, text="intersection", org=(self.seg_center_inter[0]-20, self.seg_center_inter[1]-20), fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=0.5, color=(150,150,150), thickness=2)
+                        # cv2.polylines(self.image,[xy],isClosed=True,color=(221,213,124),thickness=1)
+                        cv2.circle(self.image, (int(self.seg_center_inter[0]), int(self.seg_center_inter[1])), radius=4, color=(221,213,124),thickness=-1)
+                        cv2.putText(self.image, text="intersection", org=(self.seg_center_inter[0]-20, self.seg_center_inter[1]-20), fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=0.6, color=(221,213,124), thickness=2)
                 except Exception as e:
                     print("intersection : ",e)
                     pass
@@ -152,8 +128,8 @@ class Find_Road_Center():
                         self.seg_center_middle = self.get_middle_cen.get_centroid(xy, "middle")
                         self.seg_center_middle_list.append(self.seg_center_middle)
                         # cv2.polylines(self.image,[xy],isClosed=True,color=(0,255,255),thickness=1)
-                        cv2.circle(self.image, (int(self.seg_center_middle[0]), int(self.seg_center_middle[1])), radius=3, color=(0,255,255),thickness=-1)
-                        cv2.putText(self.image, text="middle", org=(int(self.seg_center_middle[0])-20, int(self.seg_center_middle[1])-20), fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=0.5, color=(0,255,255), thickness=2)
+                        cv2.circle(self.image, (int(self.seg_center_middle[0]), int(self.seg_center_middle[1])), radius=4, color=(0,255,255),thickness=-1)
+                        cv2.putText(self.image, text="middle line", org=(int(self.seg_center_middle[0])-20, int(self.seg_center_middle[1])-20), fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=0.6, color=(0,255,255), thickness=2)
                 except Exception as e:
                     print("middle_line : ",e)
                     pass
