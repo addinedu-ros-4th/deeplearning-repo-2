@@ -3,7 +3,6 @@ from PyQt5.QtGui import *
 from PyQt5 import uic
 from PyQt5.QtCore import *
 
-
 import sys, os
 import pandas as pd
 import cv2, imutils
@@ -21,7 +20,7 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(current_dir + "/..")
 
 from pinkla_database.pinkla_db import *
-from pinkla_lane.lane_detection import *
+from pinkla_lane.lane_segmentation import *
 from pinkla_object.predict_distance import *
 
 
@@ -37,7 +36,7 @@ cmtx2 = np.array([[470.86256773, 0., 322.79554974],
 dist2 = np.array([[0.00727918, -0.09059939, -0.00224102, -0.00040328, 0.06114216]])
 
 def center_ui(object):
-        screen_geometry = QApplication.desktop().screenGeometry()
-        x = (screen_geometry.width() - object.width()) // 2
-        y = (screen_geometry.height() - object.height()) // 2
-        object.move(x, y)
+    screen_geometry = QApplication.desktop().screenGeometry()
+    x = (screen_geometry.width() - object.width()) // 2
+    y = (screen_geometry.height() - object.height()) // 2
+    object.move(x, y)
