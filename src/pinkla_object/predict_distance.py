@@ -24,7 +24,7 @@ class Find_Object():
 
         self.colors = {
             'car': (0, 111, 0), 
-            'crosswalk': (140, 140, 140), 
+            'crosswalk': (165, 165, 165), 
             'green_light': (29, 219, 22),
             'human': (255, 228, 0), 
             'only_right_turn': (0, 216, 255),
@@ -36,6 +36,7 @@ class Find_Object():
         }
 
         self.focalLength = (470.86256773 + 470.89842857) / 2.0
+        self.dist_const = 2.278
 
     def get_bounding_boxes(self, results):
         # yolo 모델의 예측 결과에서 객체 boundary box와 클래스 명을 반환
@@ -88,7 +89,7 @@ class Find_Object():
                     perwidth = object_box[2] - object_box[0] # (x2 - x1)
                     # 객체와 카메라 사이의 거리 계산
                     distance = self.distance_to_camera(known_width, self.focalLength, perwidth)
-                    distance = distance*2.278
+                    distance = distance*self.dist_const
                     # 바운딩 박스와 거리 정보 영상에 표시
 
                     obj_info = [class_name, object_box, distance, confidence, color]
