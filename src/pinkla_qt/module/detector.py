@@ -21,17 +21,19 @@ class Camera_Th(QThread):
         self.result = []
         self.seg_result = [[None]]
         self.obj_result = [[None]]
+        self.fps = 0.0
 
     def run(self):
         while self.conn is None:
             QThread.msleep(10)
         self.cam_server.conn = self.conn
 
+        frame_cnt = 0
+        start_time = time.time()
         while self.running == True:
             self.source = self.cam_server.show_video()
             
             if self.source is not None:
-
                 if self.yolo_lane and self.yolo_object:
                     self.image, self.seg_result = self.seg_generator.get_road_center(self.source.copy())
                     self.obj_result = self.object_generator.calculate_depth(self.source.copy())
@@ -57,7 +59,21 @@ class Camera_Th(QThread):
                     self.result = [[[]],[[]]]
                     self.update.emit(self.source, self.result)
                     pass
-            QThread.msleep(3)
+
+            frame_cnt += 1
+            if frame_cnt >= 10:
+                end_time = time.time()
+                elapsed_time = end_time - start_time
+                self.fps = frame_cnt / elapsed_time
+                start_time = time.time()
+                frame_cnt = 0
+                
+            if self.yolo_lane and self.yolo_object:
+                QThread.msleep(2)
+            elif self.yolo_lane or self.yolo_object:
+                QThread.msleep(3)
+            else:
+                QThread.msleep(8)
 
     def stop(self):
         self.running = False
