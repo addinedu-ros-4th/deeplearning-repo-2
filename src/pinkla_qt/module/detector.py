@@ -39,24 +39,14 @@ class Camera_Th(QThread):
                 if self.yolo_lane and self.yolo_object:
                     self.image, self.seg_result = self.seg_generator.get_road_center(self.source.copy())
                     self.obj_result = self.object_generator.calculate_depth(self.source.copy())
-                    obj_result = self.recog_generator.only_name_distance(self.obj_result)
-                    objects_status = self.recog_generator.recognition(obj_result)
-                    description = self.recog_generator.find_scenario(objects_status)
-                    if description != self.previous_result:
-                        print(description)
-                        self.previous_result = description
+                    self.check_situation()
                 else:
                     if self.yolo_lane :
                         self.image, self.seg_result = self.seg_generator.get_road_center(self.source.copy())
                         self.obj_result = [[None]]
                     elif self.yolo_object :
                         self.obj_result = self.object_generator.calculate_depth(self.source.copy())
-                        obj_result = self.recog_generator.only_name_distance(self.obj_result)
-                        objects_status = self.recog_generator.recognition(obj_result)
-                        description = self.recog_generator.find_scenario(objects_status)
-                        if description != self.previous_result:
-                            print(description)
-                            self.previous_result = description
+                        self.check_situation()
                         self.seg_result = [[None]]
                         self.image = self.source.copy()
                     else:
@@ -88,6 +78,15 @@ class Camera_Th(QThread):
                 QThread.msleep(3)
             else:
                 QThread.msleep(8)
+
+    def check_situation(self):
+        obj_result = self.recog_generator.only_name_distance(self.obj_result)
+        objects_status = self.recog_generator.recognition(obj_result)
+        description = self.recog_generator.find_scenario(objects_status)
+
+        if description != self.previous_result:
+            print(description)
+            self.previous_result = description
 
     def stop(self):
         self.running = False
