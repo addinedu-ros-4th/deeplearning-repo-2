@@ -1,6 +1,5 @@
 from pinkla_qt.module.common import *
 from pinkla_qt.module.commun import *
-from pinkla_object.situation_recognition import *
 
 class Camera_Th(QThread):
     update = pyqtSignal(np.ndarray, list)

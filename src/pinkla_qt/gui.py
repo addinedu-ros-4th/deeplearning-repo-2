@@ -8,7 +8,6 @@ from pinkla_qt.module.commun import *
 from pinkla_qt.module.control import *
 from pinkla_qt.module.db import *
 from pinkla_qt.module.detector import *
-from design.round_progress import *
 
 ui_path = "./gui.ui"
 from_class = uic.loadUiType(ui_path)[0]
