@@ -22,7 +22,7 @@
      <x>10</x>
      <y>10</y>
      <width>640</width>
-     <height>480</height>
+     <height>421</height>
     </rect>
    </property>
    <property name="styleSheet">
@@ -38,10 +38,10 @@
   <widget class="QGroupBox" name="groupBox">
    <property name="geometry">
     <rect>
-     <x>10</x>
-     <y>670</y>
-     <width>641</width>
-     <height>211</height>
+     <x>660</x>
+     <y>440</y>
+     <width>391</width>
+     <height>301</height>
     </rect>
    </property>
    <property name="title">
@@ -50,10 +50,10 @@
    <widget class="QPushButton" name="btn_pinkla_socket">
     <property name="geometry">
      <rect>
-      <x>260</x>
-      <y>30</y>
+      <x>10</x>
+      <y>190</y>
       <width>151</width>
-      <height>171</height>
+      <height>101</height>
      </rect>
     </property>
     <property name="styleSheet">
@@ -68,10 +68,10 @@ CONNECT</string>
    <widget class="QPushButton" name="btn_ems">
     <property name="geometry">
      <rect>
-      <x>420</x>
-      <y>30</y>
+      <x>170</x>
+      <y>190</y>
       <width>211</width>
-      <height>171</height>
+      <height>101</height>
      </rect>
     </property>
     <property name="styleSheet">
@@ -87,8 +87,8 @@ STOP</string>
      <rect>
       <x>10</x>
       <y>30</y>
-      <width>241</width>
-      <height>61</height>
+      <width>371</width>
+      <height>51</height>
      </rect>
     </property>
     <property name="styleSheet">
@@ -103,9 +103,9 @@ START</string>
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>100</y>
-      <width>241</width>
-      <height>61</height>
+      <y>90</y>
+      <width>371</width>
+      <height>51</height>
      </rect>
     </property>
     <property name="styleSheet">
@@ -120,8 +120,8 @@ START</string>
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>170</y>
-      <width>241</width>
+      <y>150</y>
+      <width>371</width>
       <height>31</height>
      </rect>
     </property>
@@ -134,7 +134,7 @@ START</string>
    <property name="geometry">
     <rect>
      <x>660</x>
-     <y>290</y>
+     <y>230</y>
      <width>401</width>
      <height>101</height>
     </rect>
@@ -189,7 +189,7 @@ START</string>
    <property name="geometry">
     <rect>
      <x>660</x>
-     <y>390</y>
+     <y>330</y>
      <width>401</width>
      <height>101</height>
     </rect>
@@ -243,10 +243,10 @@ START</string>
   <widget class="QGroupBox" name="groupBox_4">
    <property name="geometry">
     <rect>
-     <x>430</x>
-     <y>490</y>
-     <width>221</width>
-     <height>181</height>
+     <x>660</x>
+     <y>750</y>
+     <width>391</width>
+     <height>131</height>
     </rect>
    </property>
    <property name="title">
@@ -255,9 +255,9 @@ START</string>
    <widget class="QPushButton" name="useDBButton">
     <property name="geometry">
      <rect>
-      <x>10</x>
-      <y>80</y>
-      <width>201</width>
+      <x>230</x>
+      <y>30</y>
+      <width>151</width>
       <height>41</height>
      </rect>
     </property>
@@ -268,9 +268,9 @@ START</string>
    <widget class="QPushButton" name="logButton">
     <property name="geometry">
      <rect>
-      <x>10</x>
-      <y>130</y>
-      <width>201</width>
+      <x>230</x>
+      <y>80</y>
+      <width>151</width>
       <height>41</height>
      </rect>
     </property>
@@ -319,106 +319,14 @@ START</string>
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>490</y>
-     <width>401</width>
+     <y>700</y>
+     <width>641</width>
      <height>181</height>
     </rect>
    </property>
    <property name="title">
-    <string>Status</string>
+    <string>Status Log</string>
    </property>
-   <widget class="QLabel" name="label_3">
-    <property name="geometry">
-     <rect>
-      <x>20</x>
-      <y>110</y>
-      <width>101</width>
-      <height>17</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Speed</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_4">
-    <property name="geometry">
-     <rect>
-      <x>20</x>
-      <y>70</y>
-      <width>121</width>
-      <height>17</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Driving Direction</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_5">
-    <property name="geometry">
-     <rect>
-      <x>20</x>
-      <y>40</y>
-      <width>101</width>
-      <height>17</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Situation</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_6">
-    <property name="geometry">
-     <rect>
-      <x>20</x>
-      <y>150</y>
-      <width>161</width>
-      <height>17</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Communication FPS</string>
-    </property>
-   </widget>
-   <widget class="QLineEdit" name="lineEdit">
-    <property name="geometry">
-     <rect>
-      <x>170</x>
-      <y>30</y>
-      <width>113</width>
-      <height>25</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="QLineEdit" name="lineEdit_2">
-    <property name="geometry">
-     <rect>
-      <x>170</x>
-      <y>70</y>
-      <width>113</width>
-      <height>25</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="QLineEdit" name="lineEdit_3">
-    <property name="geometry">
-     <rect>
-      <x>170</x>
-      <y>140</y>
-      <width>113</width>
-      <height>25</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="QLineEdit" name="lineEdit_4">
-    <property name="geometry">
-     <rect>
-      <x>170</x>
-      <y>110</y>
-      <width>113</width>
-      <height>25</height>
-     </rect>
-    </property>
-   </widget>
   </widget>
   <widget class="QLabel" name="label_pixmap_2">
    <property name="geometry">
@@ -426,7 +334,7 @@ START</string>
      <x>660</x>
      <y>10</y>
      <width>400</width>
-     <height>280</height>
+     <height>221</height>
     </rect>
    </property>
    <property name="styleSheet">
@@ -438,6 +346,173 @@ START</string>
    <property name="text">
     <string/>
    </property>
+  </widget>
+  <widget class="QGroupBox" name="groupBox_6">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>440</y>
+     <width>641</width>
+     <height>251</height>
+    </rect>
+   </property>
+   <property name="title">
+    <string>Status</string>
+   </property>
+   <widget class="QWidget" name="horizontalLayoutWidget">
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>60</y>
+      <width>641</width>
+      <height>191</height>
+     </rect>
+    </property>
+    <layout class="QHBoxLayout" name="statusLayout"/>
+   </widget>
+   <widget class="QLineEdit" name="lineEdit_5">
+    <property name="geometry">
+     <rect>
+      <x>170</x>
+      <y>40</y>
+      <width>31</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background-color: rgb(249, 240, 107);</string>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="lineEdit_6">
+    <property name="geometry">
+     <rect>
+      <x>210</x>
+      <y>40</y>
+      <width>31</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background-color: rgb(237, 51, 59);</string>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="lineEdit_7">
+    <property name="geometry">
+     <rect>
+      <x>390</x>
+      <y>40</y>
+      <width>31</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background-color: rgb(237, 51, 59);</string>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="lineEdit_8">
+    <property name="geometry">
+     <rect>
+      <x>430</x>
+      <y>40</y>
+      <width>31</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background-color: rgb(249, 240, 107);</string>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="lineEdit_9">
+    <property name="geometry">
+     <rect>
+      <x>170</x>
+      <y>40</y>
+      <width>31</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background-color: rgb(154, 153, 150);</string>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="lineEdit_10">
+    <property name="geometry">
+     <rect>
+      <x>210</x>
+      <y>40</y>
+      <width>31</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background-color: rgb(154, 153, 150);</string>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="lineEdit_11">
+    <property name="geometry">
+     <rect>
+      <x>430</x>
+      <y>40</y>
+      <width>31</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background-color: rgb(154, 153, 150);</string>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="lineEdit_12">
+    <property name="geometry">
+     <rect>
+      <x>390</x>
+      <y>40</y>
+      <width>31</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background-color: rgb(154, 153, 150);</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_7">
+    <property name="geometry">
+     <rect>
+      <x>500</x>
+      <y>30</y>
+      <width>41</width>
+      <height>17</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>FPS : </string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="FPS">
+    <property name="geometry">
+     <rect>
+      <x>550</x>
+      <y>30</y>
+      <width>81</width>
+      <height>17</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="lineEdit_13">
+    <property name="geometry">
+     <rect>
+      <x>260</x>
+      <y>40</y>
+      <width>113</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
+    </property>
+   </widget>
   </widget>
  </widget>
  <resources/>

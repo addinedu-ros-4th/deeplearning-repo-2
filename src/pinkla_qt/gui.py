@@ -8,6 +8,7 @@ from pinkla_qt.module.commun import *
 from pinkla_qt.module.control import *
 from pinkla_qt.module.db import *
 from pinkla_qt.module.detector import *
+from design.round_progress import *
 
 ui_path = "./gui.ui"
 from_class = uic.loadUiType(ui_path)[0]
@@ -70,6 +71,20 @@ class WindowClass(QMainWindow, from_class):
         self.label_pixmap.setPixmap(self.pixmap)
         self.label_pixmap_2.setAlignment(Qt.AlignCenter)
         self.label_pixmap_2.setPixmap(self.pixmap2)
+        
+        self.linear_x_bar = roundProgressBar()
+        self.linear_y_bar = roundProgressBar()
+        self.angular_z_bar = roundProgressBar()
+        
+        self.linear_x_bar.setValue(0)
+        self.linear_y_bar.setValue(0)
+        self.angular_z_bar.setValue(0)
+        
+        
+        self.statusLayout.addWidget(self.linear_x_bar)
+        self.statusLayout.addWidget(self.linear_y_bar)
+        self.statusLayout.addWidget(self.angular_z_bar)
+        
 
     def socket_module_init(self):
         self.cam_socket = Socket_Camera(self.server_ip, self.cam_port1)
