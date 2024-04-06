@@ -39,11 +39,6 @@ class WindowClass(QMainWindow, from_class):
         self.show_logo(self.label_pixmap, self.pixmap)
         self.show_logo(self.label_pixmap_2, self.pixmap2)
 
-        self.cal_cmd = Cal_Cmd()
-        self.sender = None
-        self.controller = None
-        self.check_password = 0
-        
     def flag_init(self):
         self.isCamSocketOpened, self.isCamSocketOpened2 = [False], [False]
         self.isCameraOn, self.isCameraOn2 = [False], [False]
@@ -52,6 +47,7 @@ class WindowClass(QMainWindow, from_class):
         self.isLaneDetectionOn = False
         self.isObjectDetectionOn = False
         self.isLoopAutoOn = False
+        self.isEmsOn = False
 
     def ui_init(self):
         self.setFocusPolicy(Qt.StrongFocus)
@@ -70,6 +66,46 @@ class WindowClass(QMainWindow, from_class):
         self.label_pixmap.setPixmap(self.pixmap)
         self.label_pixmap_2.setAlignment(Qt.AlignCenter)
         self.label_pixmap_2.setPixmap(self.pixmap2)
+
+        self.cal_cmd = Cal_Cmd()
+        self.sender = None
+        self.controller = None
+        self.check_password = 0
+        self.drive_mode = ""
+        self.user_mode = False
+
+        self.lineEdit_mode.setText(self.drive_mode)
+
+    def update_status(self):
+        self.lineEdit_dir.setText(str(self.cal_cmd.direction))
+        self.lineEdit_speed.setText(str(f"{self.cal_cmd.speed:.2f}"))
+
+        if self.camera_th:
+            self.lineEdit_fps.setText(str(f"{self.camera_th.fps:.2f}"))
+
+        if self.isLaneDetectionOn :
+            lane_mode = "Lane "
+        else: 
+            lane_mode = ""
+        if self.isObjectDetectionOn :
+            object_mode = "Object "
+        else: 
+            object_mode = ""
+
+        if self.user_mode :
+            user_mode = "User Control "
+        else:
+            user_mode = ""
+        if self.isEmsOn:
+            ems = "E-STOP "
+        else:
+            ems = ""
+
+        self.drive_mode = lane_mode + object_mode + user_mode + ems + "Mode"
+        self.lineEdit_mode.setText(self.drive_mode)
+
+        traffic_situation = "empty"
+        self.lineEdit_situation.setText(traffic_situation)
 
     def socket_module_init(self):
         self.cam_socket = Socket_Camera(self.server_ip, self.cam_port1)
@@ -153,10 +189,20 @@ class WindowClass(QMainWindow, from_class):
 
 
         self.btn_pinkla_socket.clicked.connect(self.click_pinkla_socket)
-        # self.btn_for.clicked.connect(self.click_forward)
-        # self.btn_st.clicked.connect(self.click_stop)
         self.btn_auto.clicked.connect(lambda: self.yolo_seg_lane_start(self.camera_th))
         self.btn_auto_2.clicked.connect(lambda: self.yolo_object_detect_start(self.camera_th))
+
+    def static_stop(self):
+        try:
+            self.cal_cmd.lx = 0.
+            self.cal_cmd.ly = 0.
+            self.cal_cmd.az = 0.
+            self.cal_cmd.cal()
+            if self.sender is not None:
+                self.sender.cmd = [0, 100, 5, 0, 0, 0, 0]
+            
+        except Exception as e:
+            pass
 
     def click_auto_loop(self):
         if not self.isLoopAutoOn:
@@ -170,49 +216,63 @@ class WindowClass(QMainWindow, from_class):
 
     def click_ems(self):
         try:
-            print("click_ems")
-            if self.sender is not None:
+            if not self.isEmsOn:
+                self.isEmsOn = True
+                self.btn_ems.setText("EMERGENCY\nRELEASE")
                 self.cal_cmd.lx = 0.
                 self.cal_cmd.ly = 0.
                 self.cal_cmd.az = 0.
-                self.sender.cmd = [0, 100, 5, 0, 0, 0, 0]
                 self.btn_auto.setText('Auto Driving\nSTART')
+                self.btn_auto_2.setText('Object Detection\nSTART')
                 self.isLaneDetectionOn = False
-                self.camera_th.yolo_lane = False
+                self.isObjectDetectionOn = False
+                self.user_mode = False
+                self.static_stop()
+            else:
+                self.isEmsOn = False
+                self.btn_ems.setText("EMERGENCY\nSTOP")
         except Exception as e:
             pass
 
     def yolo_seg_lane_start(self, thread):
-        if not self.isLaneDetectionOn:
-            self.btn_auto.setText('Auto Driving\nSTOP')
-            self.isLaneDetectionOn = True
-            thread.yolo_lane = True
+        if not self.isEmsOn:
+            if not self.isLaneDetectionOn:
+                self.btn_auto.setText('Auto Driving\nSTOP')
+                self.isLaneDetectionOn = True
+                thread.yolo_lane = True
+                self.user_mode = False
+            else:
+                self.btn_auto.setText('Auto Driving\nSTART')
+                self.isLaneDetectionOn = False
+                thread.yolo_lane = False
+                try:
+                    self.static_stop()
+                except Exception as e:
+                    print("yolo_seg_lane_start: ",e)
+                    pass
         else:
-            self.btn_auto.setText('Auto Driving\nSTART')
             self.isLaneDetectionOn = False
-            thread.yolo_lane = False
-            try:
-                if self.sender is not None:
-                    self.sender.cmd = [0, 100, 5, 0, 0, 0, 0]
-            except Exception as e:
-                print("yolo_seg_lane_start: ",e)
-                pass
+            pass
     
     def yolo_object_detect_start(self, thread):
-        if not self.isObjectDetectionOn:
-            self.btn_auto_2.setText('Object Detection\nSTOP')
-            self.isObjectDetectionOn = True
-            thread.yolo_object = True
+        if not self.isEmsOn:
+            if not self.isObjectDetectionOn:
+                self.btn_auto_2.setText('Object Detection\nSTOP')
+                self.isObjectDetectionOn = True
+                thread.yolo_object = True
+                self.user_mode = False
+            else:
+                self.btn_auto_2.setText('Object Detection\nSTART')
+                self.isObjectDetectionOn = False
+                thread.yolo_object = False
+                try:
+                    self.static_stop()
+                except Exception as e:
+                    print("yolo_object_detect_start: ",e)
+                    pass
         else:
-            self.btn_auto_2.setText('Object Detection\nSTART')
-            self.isObjectDetectionOn = False
-            thread.yolo_object = False
-            try:
-                if self.sender is not None:
-                    self.sender.cmd = [0, 100, 5, 0, 0, 0, 0]
-            except Exception as e:
-                print("yolo_object_detect_start: ",e)
-                pass
+            self.isLaneDetectionOn = False
+            pass
 
     def click_cam_socket(self, flag_soc, flag_cam, flag_rec, socket, btn_soc, btn_cam, btn_rec, label, pix, thread):
         flag_cam[0] = False
@@ -278,18 +338,12 @@ class WindowClass(QMainWindow, from_class):
         
 
     def control(self, flag):
-        # self.sender.cmd = [0, 100, 5, 0, 0, 0, 0]
         if not flag:
             print("server's disconnect ")
             self.btn_pinkla_socket.setText('PINKLA\nCONNECT')
             self.sender.s.close()
             self.sender.running = False
             self.isPinkSocketOpened = False
-
-    def click_forward(self):
-        self.sender.cmd = [0,100,8,0,0,0,0]
-    def click_stop(self):
-        self.sender.cmd = [0,100,5,0,0,0,0]
 
 
     def check_connect_pink(self, conn):
@@ -333,15 +387,15 @@ class WindowClass(QMainWindow, from_class):
 
     def cv2_info_drawing(self, image, thread):
 
-        if thread.yolo_lane and thread.result[0][0] is not None:
+        if thread.yolo_lane and thread.result[0][0] is not None and self.isLaneDetectionOn:
             # cv2.rectangle(image, (0, int(self.cal_cmd.img_height/2 - 100)), (self.cal_cmd.img_width, self.cal_cmd.img_height), color=(0,0,255), thickness = 5)
             # cv2.putText(image, text=f"delta_x: {self.cal_cmd.hor_dist:.2f}, delta_y: {self.cal_cmd.ver_dist:.2f}, angle: {self.cal_cmd.angle:.2f}", org=(50, 80), fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=0.6, color=(255,255,255), thickness=2)
             # cv2.putText(image, text=f"distance: {self.cal_cmd.dist:.2f}", org=(50, 110), fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=0.6, color=(255,255,255), thickness=2)
-            # cv2.putText(image, text="target", org=(int(self.cal_cmd.cen_x-20), int(self.cal_cmd.cen_y-20)), fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=1, color=(255,0,0), thickness=2)
-            cv2.line(image, (int(self.cal_cmd.x)+5, int(self.cal_cmd.y)), (int(self.cal_cmd.seg_center_border[0])-5, int(self.cal_cmd.seg_center_border[1])), color=(128,128,128), thickness=5 )
-            cv2.circle(image, (int(self.cal_cmd.cen_x), int(self.cal_cmd.cen_y)), radius=10, color=(255,0,0), thickness=-1)
-            cv2.arrowedLine(image, (int(self.cal_cmd.img_width/2), int(self.cal_cmd.img_height)+5), (int(self.cal_cmd.cen_x), int(self.cal_cmd.cen_y)), color=(0,100,170), thickness=5, tipLength=0.2)
-            cv2.circle(image, (int(self.cal_cmd.img_width/2), int(self.cal_cmd.img_height)), radius = 10, color = (255, 255, 255), thickness = -1)
+            cv2.putText(image, text="target", org=(int(self.cal_cmd.cen_x-20), int(self.cal_cmd.cen_y-20)), fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=0.6, color=(238,164,198), thickness=2)
+            cv2.line(image, (int(self.cal_cmd.x)+5, int(self.cal_cmd.y)), (int(self.cal_cmd.seg_center_border[0])-5, int(self.cal_cmd.seg_center_border[1])), color=(128,128,128), thickness=3 )
+            cv2.circle(image, (int(self.cal_cmd.cen_x), int(self.cal_cmd.cen_y)), radius=7, color=(238,164,198), thickness=-1)
+            cv2.arrowedLine(image, (int(self.cal_cmd.img_width/2), int(self.cal_cmd.img_height)+5), (int(self.cal_cmd.cen_x), int(self.cal_cmd.cen_y)), color=(88,111,180), thickness=3, tipLength=0.2)
+            cv2.circle(image, (int(self.cal_cmd.img_width/2), int(self.cal_cmd.img_height)), radius = 7, color = (255, 255, 255), thickness = -1)
         
         if thread.yolo_object and len(thread.result[1]) > 0:
             for class_name, object_box, distance, confidence, color in thread.result[1]:
@@ -371,8 +425,10 @@ class WindowClass(QMainWindow, from_class):
             pix = pixmap.scaled(label.width(), label.height())
             label.setPixmap(pix)
             label.setAlignment(Qt.AlignCenter)
+
+            self.update_status()
             
-            if thread.yolo_lane:
+            if thread.yolo_lane and self.isLaneDetectionOn and not self.isEmsOn:
                 vel = self.cal_cmd.move_to_lane_center(thread.result[0])
                 # print(seg_result)
                 if self.check_password == 1:
@@ -464,8 +520,21 @@ class WindowClass(QMainWindow, from_class):
         try:
             # if self.controller is None:
             self.controller = KeyboardTeleopController(self.cal_cmd, self.sender)
-            self.controller.press_key_control(event)
+
+            if (self.isLaneDetectionOn or self.isObjectDetectionOn):
+                self.cal_cmd.lx = 0.
+                self.cal_cmd.ly = 0.
+                self.cal_cmd.az = 0.
+                self.btn_auto.setText('Auto Driving\nSTART')
+                self.btn_auto_2.setText('Object Detection\nSTART')
+                self.isLaneDetectionOn = False
+                self.isObjectDetectionOn = False
+
+            if not self.isEmsOn:
+                self.user_mode = True
+                self.controller.press_key_control(event)
         except Exception as e: 
+            print(e)
             pass
     
     def init_db(self):
