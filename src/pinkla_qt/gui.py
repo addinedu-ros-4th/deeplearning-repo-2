@@ -45,6 +45,10 @@ class WindowClass(QMainWindow, from_class):
         self.controller = None
         self.check_password = 0
         
+        self.linear_x_list = []
+        self.linear_y_list = []
+        self.angular_z_list = []
+        
     def flag_init(self):
         self.isCamSocketOpened, self.isCamSocketOpened2 = [False], [False]
         self.isCameraOn, self.isCameraOn2 = [False], [False]
@@ -80,10 +84,14 @@ class WindowClass(QMainWindow, from_class):
         self.linear_y_bar.setValue(0)
         self.angular_z_bar.setValue(0)
         
-        
         self.statusLayout.addWidget(self.linear_x_bar)
         self.statusLayout.addWidget(self.linear_y_bar)
         self.statusLayout.addWidget(self.angular_z_bar)
+        
+        self.linearXPlot.setBackground('w')
+        self.linearYPlot.setBackground('w')
+        self.angularZPlot.setBackground('w')
+
         
 
     def socket_module_init(self):
@@ -388,7 +396,7 @@ class WindowClass(QMainWindow, from_class):
             label.setAlignment(Qt.AlignCenter)
             
             if thread.yolo_lane:
-                vel = self.cal_cmd.move_to_lane_center(thread.result[0])
+                vel, self.vehicle_status = self.cal_cmd.move_to_lane_center(thread.result[0])
                 # print(seg_result)
                 if self.check_password == 1:
                     self.save_data(thread.result[0])
@@ -400,11 +408,39 @@ class WindowClass(QMainWindow, from_class):
                 except Exception as e:
                     # print(e)
                     pass
+                self.plot_velocity()
 
         except Exception as e:
             print("update_image: ", e)
             self.show_logo(label, pix)
             pass
+        
+    def plot_velocity(self):
+        self.linear_x_list.append(self.vehicle_status[0])
+        self.linear_y_list.append(self.vehicle_status[1])
+        self.angular_z_list.append(self.vehicle_status[2])
+        
+        if len(self.linear_x_list) > 100:
+            self.linear_x_list.pop(0)
+            self.linear_y_list.pop(0)
+            self.angular_z_list.pop(0)
+            self.linearXPlot.clear()
+            self.linearYPlot.clear()
+            self.angularZPlot.clear()
+        else:
+            pass
+        
+        self.linearXPlot.plot(x = None, y = self.linear_x_list, pen = "r")
+        self.linearXPlot.setTitle("linear X")
+        self.linearXPlot.setXRange(0, 100)
+        
+        self.linearYPlot.plot(x = None, y = self.linear_y_list, pen = "g")
+        self.linearYPlot.setTitle("linear Y")
+        self.linearYPlot.setXRange(0, 100)
+        
+        self.angularZPlot.plot(x = None, y = self.angular_z_list, pen = "b")
+        self.angularZPlot.setTitle("angular Z")
+        self.angularZPlot.setXRange(0, 100)
         
     def save_data(self, seg_result):
         coordinate = seg_result[-1]

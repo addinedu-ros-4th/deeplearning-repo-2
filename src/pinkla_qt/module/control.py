@@ -163,7 +163,7 @@ class Cal_Cmd():
 
         velo = self.cal()
         # print(velo)
-        return velo
+        return velo, [self.lx, self.ly, self.az]
 
     def print_vels(self, linear_x_velocity, linear_y_velocity, angular_velocity):
         print('linear x velocity {0:.3} | linear y velocity {1:.3} | angular velocity {2:.3}'.format(

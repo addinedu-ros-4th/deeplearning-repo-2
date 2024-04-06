@@ -63,7 +63,7 @@ class CameraStreamer:
         print("release and close ")
 
 def main():
-    server_address = '192.168.0.197'
+    server_address = '192.168.123.151'
     port1 = 8485
     port2 = 8584
 
@@ -71,7 +71,8 @@ def main():
     if len(sys.argv) == 2:
         # Only one argument, run a single thread for the specified camera index
         try:
-            cam_index = sys.argv[1]
+            # cam_index = sys.argv[1]
+            cam_index = "../../data/Untitled.avi"
         except ValueError:
             cam_index = str(sys.argv[1])
 
