@@ -10,7 +10,7 @@
     <x>0</x>
     <y>0</y>
     <width>1067</width>
-    <height>890</height>
+    <height>949</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -22,7 +22,7 @@
      <x>10</x>
      <y>10</y>
      <width>640</width>
-     <height>421</height>
+     <height>480</height>
     </rect>
    </property>
    <property name="styleSheet">
@@ -39,7 +39,7 @@
    <property name="geometry">
     <rect>
      <x>660</x>
-     <y>490</y>
+     <y>540</y>
      <width>401</width>
      <height>261</height>
     </rect>
@@ -126,7 +126,7 @@ START</string>
    <property name="geometry">
     <rect>
      <x>660</x>
-     <y>290</y>
+     <y>320</y>
      <width>401</width>
      <height>101</height>
     </rect>
@@ -181,7 +181,7 @@ START</string>
    <property name="geometry">
     <rect>
      <x>660</x>
-     <y>390</y>
+     <y>430</y>
      <width>401</width>
      <height>101</height>
     </rect>
@@ -236,7 +236,7 @@ START</string>
    <property name="geometry">
     <rect>
      <x>660</x>
-     <y>750</y>
+     <y>810</y>
      <width>401</width>
      <height>131</height>
     </rect>
@@ -324,7 +324,7 @@ START</string>
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>690</y>
+     <y>750</y>
      <width>641</width>
      <height>191</height>
     </rect>
@@ -336,7 +336,7 @@ START</string>
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>20</y>
+      <y>25</y>
       <width>201</width>
       <height>161</height>
      </rect>
@@ -355,7 +355,7 @@ border-width: 1px; border-radius: 0px;</string>
     <property name="geometry">
      <rect>
       <x>220</x>
-      <y>20</y>
+      <y>25</y>
       <width>201</width>
       <height>161</height>
      </rect>
@@ -374,7 +374,7 @@ border-width: 1px; border-radius: 0px;</string>
     <property name="geometry">
      <rect>
       <x>430</x>
-      <y>20</y>
+      <y>25</y>
       <width>201</width>
       <height>161</height>
      </rect>
@@ -396,7 +396,7 @@ border-width: 1px; border-radius: 0px;</string>
      <x>660</x>
      <y>10</y>
      <width>400</width>
-     <height>280</height>
+     <height>300</height>
     </rect>
    </property>
    <property name="styleSheet">
@@ -413,7 +413,7 @@ border-width: 1px; border-radius: 0px;</string>
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>430</y>
+     <y>490</y>
      <width>641</width>
      <height>261</height>
     </rect>
