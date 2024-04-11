@@ -46,35 +46,19 @@ class SERVER():
 
     def disconnect(self):
         try:
-            # self.conn.close()
-            # self.s.close()
-            # del self.s
             pass
         except Exception as e:
             pass
 
     def undistorted_frame(self, frame):
-        cam = ""
         cmtx = None
         dist = None
         if self.port == 8485:
-            # cmtx = cmtx1
-            # dist = dist1
-            cmtx = cmtx2
-            dist = dist2
-            cam = "Lane"
-        else:
             cmtx = cmtx1
             dist = dist1
-            # cmtx = cmtx2
-            # dist = dist2
-            cam = "Object"
-
-        if not self.show:
-            self.show =True
-            print(f"Connected {cam} Camera.")
-            print(cmtx)
-            print(dist)
+        else:
+            cmtx = cmtx2
+            dist = dist2
 
         undist = cv2.undistort(frame, cmtx, dist)
         return undist
@@ -96,16 +80,14 @@ class SERVER():
             frame = cv2.imdecode(data, cv2.IMREAD_COLOR)
             undist = self.undistorted_frame(frame)
             return undist
-            # return frame
         except Exception as e:
-            # print(e)
             return None
 
     def record_start(self, width=640, height=480, fps=30):
         try:
             current_time = datetime.now().strftime("%Y%m%d_%H%M%S")
             video_filename = f'../../data/{current_time}.avi'
-            fourcc = cv2.VideoWriter_fourcc(*'XVID')
+            fourcc = cv2.VideoWriter_fourcc(*'VXID')
             self.writer = cv2.VideoWriter(video_filename, fourcc, fps, (width, height))
         except Exception as e:
             print(e)
@@ -115,7 +97,6 @@ class SERVER():
         try:
             self.writer.release()
         except Exception as e:
-            # print(e)
             pass
 
 
@@ -163,8 +144,6 @@ class Socket(QThread):
             self.conn.close()
             self.server.s.close()
             self.update.emit(False)
-            # del self.conn
-            # del self.server.s
             QThread.msleep(100)
         except Exception as e:
             pass
@@ -200,18 +179,14 @@ class Camera_Th(QThread):
         while self.running == True:
             self.source = self.cam_server.show_video()
             if self.source is not None:
-
                 if not self.yolo_lane:
                     self.image = self.source.copy()
-                    self.seg_result = [None]
                 else:
                     self.image, self.seg_result = self.generator.get_road_center(self.source.copy())
-
                 try:
                     image = cv2.cvtColor(self.image, cv2.COLOR_BGR2RGB)
                     self.update.emit(image, self.seg_result)
                 except Exception as e:
-                    # print(e)
                     pass
             QThread.msleep(8)
 
@@ -309,9 +284,6 @@ class Control_Pinkla(QThread):
 
 class LowPassFilter(object):
     def __init__(self, cut_off_freqency, ts):
-    	# cut_off_freqency: 차단 주파수
-        # ts: 주기
-        
         self.ts = ts
         self.cut_off_freqency = cut_off_freqency
         self.tau = self.get_tau()
@@ -331,24 +303,13 @@ class Cal_Cmd():
         self.lx = 0.0
         self.ly = 0.0
         self.az = 0.0
-        self.r = 0.025
-        # self.b = 0.11
-        self.b = 0.08
+        self.r = 0.01
+        self.b = 0.05
 
         self.img_width = 640
         self.img_height = 480
 
-        self.cam_h = 0.08
-        self.cam_shift = 0.06
-        self.hor_ang = math.radians(1)
-        self.ver_ang = math.radians(-18)
-        self.hor_pixel_per_deg = self.img_width / math.degrees(self.hor_ang)
-        self.ver_pixel_per_deg = self.img_height / math.degrees(self.ver_ang)
-
         self.angle = 0.0
-        self.hor_dist = 0
-        self.ver_dist = 0
-        self.dist = 0
         self.cen_x, self.cen_y = 0., 0.
         self.x, self.y = 0., 0.
         self.seg_center_border = (0,0)
@@ -362,37 +323,15 @@ class Cal_Cmd():
         self.lpf_dx = LowPassFilter(0.1, 0.5)
         self.lpf_dy = LowPassFilter(0.1, 0.5)
 
-
     def cal(self):
         self.w1 = (1/self.r) * (self.lx-self.ly-self.b*self.az)
         self.w2 = (1/self.r) * (self.lx+self.ly-self.b*self.az)
         self.w3 = (1/self.r) * (self.lx-self.ly+self.b*self.az)
         self.w4 = (1/self.r) * (self.lx+self.ly+self.b*self.az)
-
-        # value = [self.w1, self.w2, self.w3, self.w4]
         value = [self.w4, self.w3, self.w2, self.w1]
         return value
-
-    def moveTo(self, delta):
-        angle = math.atan2(delta, 418)
-
-        self.lx = 2.2
-        self.ly = 0.0
-        self.az = angle * -30.0
-
-        self.w1 = (1/self.r) * (self.lx-self.ly-self.b*self.az)
-        self.w2 = (1/self.r) * (self.lx+self.ly-self.b*self.az)
-        self.w3 = (1/self.r) * (self.lx-self.ly+self.b*self.az)
-        self.w4 = (1/self.r) * (self.lx+self.ly+self.b*self.az)
-        value = [self.w4, self.w3, self.w2, self.w1]
-        return value
-        
-    def moveTo2(self, value):
-        return value
-
 
     def move_to_lane_center(self, seg_result):
-        # print(seg_result)
         line_center_x = seg_result[0]
         line_center_y = seg_result[1]
         self.seg_center_border = seg_result[2]
@@ -404,7 +343,6 @@ class Cal_Cmd():
         self.cen_x = (self.x + self.seg_center_border[0]) / 2
         self.cen_y = (self.y + self.seg_center_border[1]) / 2
 
-        # target_pos - robot_pos
         delta_x_t = (self.img_width/2) - self.cen_x
         delta_y_t = (self.img_height) - self.cen_y
 
@@ -412,29 +350,15 @@ class Cal_Cmd():
         delta_y = self.lpf_dy.filter(delta_y_t)
         self.angle = np.arctan2(delta_x, delta_y)
 
-        # target_pos = np.array([int(cen_x), int(cen_y)])
-        # robot_pos = np.array([self.img_center_x, int(self.roi_rect_end[1])])
-        # distance = np.sqrt(delta_x**2 + delta_y**2)
-
-        # robot_pos = np.array([self.img_center_x, int(self.roi_rect_end[1] - 50)])
-        # distance = np.linalg.norm(robot_pos - target_pos)
-        # test_x = robot_pos[0] - distance * np.sin(angle)
-        # test_y = robot_pos[1] - distance * np.cos(angle)
-
-        self.hor_dist = delta_x / 10 * -1
-        self.ver_dist = (delta_y / self.ver_pixel_per_deg)  + (self.cam_shift * 100 * -1)
-        self.angle2 = np.arctan2(self.hor_dist, self.ver_dist)
-        # print(self.angle, self.angle2)
-
-        self.dist = math.sqrt(self.hor_dist**2 + self.ver_dist**2 + self.cam_h **2)
+        self.dist = math.sqrt(delta_x**2 + delta_y**2)
 
 
-        max_lin_x = abs(self.ver_dist / self.max_distance) * 3.2
-        max_lin_y = abs(self.hor_dist / self.max_distance / 1.54) * 2.7
+        mx = abs(delta_y/ self.max_distance) 
+        my = abs(delta_x / self.max_distance)
             
-        vx = (self.ver_dist / (abs(self.ver_dist) + abs(self.hor_dist)) * max_lin_x) * -1
-        vy = (self.hor_dist / (abs(self.ver_dist) + abs(self.hor_dist)) * max_lin_y) * -1
-        vz = self.angle * 11.1
+        vx = (delta_x * mx) * -1
+        vy = (delta_y * my) * -1
+        vz = self.angle
 
         self.r = 0.025
         self.b = 0.11
@@ -450,7 +374,6 @@ class Cal_Cmd():
             self.az = vz
 
         velo = self.cal()
-        # print(velo)
         return velo
 
     def print_vels(self, linear_x_velocity, linear_y_velocity, angular_velocity):
@@ -555,17 +478,3 @@ class KeyboardTeleopController():
         if not shift_flag:
             self.cal_cmd.print_vels(self.cal_cmd.lx, self.cal_cmd.ly, self.cal_cmd.az)
             value = self.cal_cmd.cal()
-            # print(value)
-
-        try:
-            self.sender.cmd = [1, 100, 5, int(value[0]), int(value[1]), int(value[2]), int(value[3])]
-        except Exception as e:
-            # print(e)
-            pass
-
-
-def center_ui(object):
-        screen_geometry = QApplication.desktop().screenGeometry()
-        x = (screen_geometry.width() - object.width()) // 2
-        y = (screen_geometry.height() - object.height()) // 2
-        object.move(x, y)

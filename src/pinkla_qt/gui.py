@@ -15,8 +15,6 @@ class WindowClass(QMainWindow, from_class):
         super().__init__()
         self.setupUi(self)
         self.setWindowTitle('Pinkla.b')
-        center_ui(self)
-        print(server_ip, client_ip)
         self.server_ip = server_ip
         self.client_ip = client_ip
         self.cam_port1 = int(port1)
@@ -140,8 +138,6 @@ class WindowClass(QMainWindow, from_class):
 
 
         self.btn_pinkla_socket.clicked.connect(self.click_pinkla_socket)
-        # self.btn_for.clicked.connect(self.click_forward)
-        # self.btn_st.clicked.connect(self.click_stop)
         self.btn_auto.clicked.connect(lambda: self.yolo_seg_lane_start(self.camera_th, self.camera_th2))
 
         self.logButton.hide()
@@ -156,14 +152,11 @@ class WindowClass(QMainWindow, from_class):
             self.btn_auto.setText('Auto Driving\nSTOP')
             self.isLaneDetectionOn = True
             thread.yolo_lane = True
-            # thread2.yolo_lane = True
             
         else:
             self.btn_auto.setText('Auto Driving\nSTART')
             self.isLaneDetectionOn = False
             thread.yolo_lane = False
-            # thread2.yolo_lane = False
-
             try:
                 if self.sender is not None:
                     self.sender.cmd = [0, 100, 5, 0, 0, 0, 0]
@@ -198,7 +191,6 @@ class WindowClass(QMainWindow, from_class):
                 socket.stop()
                 self.show_logo(label, pix)
             except Exception as e:
-                # print(e)
                 pass
 
     def check_connect_cam(self, conn, self_conn, self_cam_soc, self_cam_flag):
@@ -235,19 +227,12 @@ class WindowClass(QMainWindow, from_class):
         
 
     def control(self, flag):
-        # self.sender.cmd = [0, 100, 5, 0, 0, 0, 0]
         if not flag:
             print("server's disconnect ")
             self.btn_pinkla_socket.setText('PINKLA\nCONNECT')
             self.sender.s.close()
             self.sender.running = False
             self.isPinkSocketOpened = False
-
-    def click_forward(self):
-        self.sender.cmd = [0,100,8,0,0,0,0]
-    def click_stop(self):
-        self.sender.cmd = [0,100,5,0,0,0,0]
-
 
     def check_connect_pink(self, conn):
         if conn:
@@ -291,10 +276,9 @@ class WindowClass(QMainWindow, from_class):
 
         if thread.yolo_lane and thread.seg_result[0] is not None:
             cv2.rectangle(image, (0, int(self.cal_cmd.img_height/2 - 100)), (self.cal_cmd.img_width, self.cal_cmd.img_height), color=(0,0,255), thickness = 5)
-            cv2.putText(image, text=f"delta_x: {self.cal_cmd.hor_dist:.2f}, delta_y: {self.cal_cmd.ver_dist:.2f}, angle: {self.cal_cmd.angle:.2f}", org=(50, 100), fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=0.6, color=(255,255,255), thickness=2)
+            cv2.putText(image, text=f"delta_x: {self.cal_cmd.delta_x:.2f}, delta_y: {self.cal_cmd.delta_y:.2f}, angle: {self.cal_cmd.angle:.2f}", org=(50, 100), fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=0.6, color=(255,255,255), thickness=2)
             cv2.putText(image, text=f"distance: {self.cal_cmd.dist:.2f}", org=(50, 130), fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=0.6, color=(255,255,255), thickness=2)
             cv2.putText(image, text="target", org=(int(self.cal_cmd.cen_x-20), int(self.cal_cmd.cen_y-20)), fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=1, color=(255,0,0), thickness=2)
-
             cv2.line(image, (int(self.cal_cmd.x)+5, int(self.cal_cmd.y)), (int(self.cal_cmd.seg_center_border[0])-5, int(self.cal_cmd.seg_center_border[1])), color=(128,128,128), thickness=5 )
             cv2.circle(image, (int(self.cal_cmd.cen_x), int(self.cal_cmd.cen_y)), radius=10, color=(255,0,0), thickness=-1)
             cv2.arrowedLine(image, (int(self.cal_cmd.img_width/2), int(self.cal_cmd.img_height)+5), (int(self.cal_cmd.cen_x), int(self.cal_cmd.cen_y)), color=(50,50,50), thickness=5, tipLength=0.2)
@@ -304,9 +288,6 @@ class WindowClass(QMainWindow, from_class):
 
     def update_image(self, image, seg_result, label, pix, thread):
         try:
-            cv2.putText(image, text=f"{self.cal_cmd.w4:.2f}, {self.cal_cmd.w3:.2f}, {self.cal_cmd.w2:.2f}, {self.cal_cmd.w1:.2f}", org=(50, 40), fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=0.6, color=(255,255,255), thickness=2)
-            cv2.putText(image, text=f"linear_x: {self.cal_cmd.lx:.2f}, linear_y: {self.cal_cmd.ly:.2f}, angular_z: {self.cal_cmd.az:.2f}", org=(50, 70), fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=0.6, color=(255,255,255), thickness=2)
-
             if len(thread.seg_result) > 1:
                 image = self.cv2_info_drawing(image, thread, seg_result)
 
@@ -329,11 +310,9 @@ class WindowClass(QMainWindow, from_class):
                 try:
                     self.sender.cmd = [1, 100, 5, int(vel[0]), int(vel[1]), int(vel[2]), int(vel[3])]
                 except Exception as e:
-                    # print(e)
                     pass
 
         except Exception as e:
-            # print(e)
             self.show_logo(label, pix)
             pass
         
@@ -357,15 +336,10 @@ class WindowClass(QMainWindow, from_class):
             lane_data.append(len(middle))
             lane_data.append(middle)
             lane_data.append(target)
-            # print(type(current_time))
-            # print(lane_data)
             
             self.mysql.save_lane_data(lane_data)
         else:
             pass
-        # except Exception as e:
-        #     print(e)
-        #     pass
 
     def click_record(self, flag_rec, recorder, btn):
         if not flag_rec[0]:
@@ -411,16 +385,12 @@ class WindowClass(QMainWindow, from_class):
     
     def init_db(self):
         try:
-            self.mysql_info = ["database-2.czo0g0uict7o.ap-northeast-2.rds.amazonaws.com", "pinkla"]
+            self.mysql_info = ["", ""]
             password = self.dbPassword.text()
             self.mysql_info.append(password)
             self.mysql = pinkla_mysql(self.mysql_info)
             self.mysql.init_db()
-            
             self.check_password = 1
-            
-           
-            
         except Exception as e:
             self.checkPW.setText("Wrong Password!!!")
             pass
