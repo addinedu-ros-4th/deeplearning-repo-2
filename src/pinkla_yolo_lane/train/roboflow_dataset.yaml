@@ -1,5 +1,0 @@
-train: /home/subin/amr_ws/project/deeplearning-Unit-test/data/dataset/0325_dataset/images/train/
-val: /home/subin/amr_ws/project/deeplearning-Unit-test/data/dataset/0325_dataset/images/val/
-
-nc: 7
-names: ["border_line", "crosswalk", "intersection", "middle_line", "none", "road", "start"]
