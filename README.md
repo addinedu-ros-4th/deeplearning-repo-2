@@ -6,7 +6,7 @@
 
 <div align="center">
   <a href="https://www.youtube.com/watch?v=h8wTT3QrS3Q">
-    <img src="https://github.com/addinedu-ros-4th/deeplearning-repo-2/assets/103230856/65c96e64-1418-44d9-922d-a8f26018ec68" alt="pinkla b" width="100%" height="100%">
+    <img src="https://github.com/addinedu-ros-4th/deeplearning-repo-2/assets/103230856/65c96e64-1418-44d9-922d-a8f26018ec68" alt="pinkla b" width="80%" height="80%">
   </a>
 </div>
 
@@ -32,27 +32,21 @@
     - 교통 상황 판단 : 객체별 거리 계산 및 조합을 통한 **교통 상황 판단**
     - 모바일 로봇 제어 : 상황별 로봇의 주행, 서행, 정지 **제어**
 
-## 2. 기능 리스트
-
-
-
-## 3. 시스템 구성
-### 3.1. 구성도
+## 2. 시스템 구성
+### 2.1. 기능 리스트
+### 2.2. 시스템 구성도
 ![image](https://github.com/addinedu-ros-4th/deeplearning-repo-2/assets/87963649/f1946a1b-1d22-4cfe-859f-3b090325ab0c)
-### 3.2. 차선 인식 시퀀스
-![image](https://github.com/addinedu-ros-4th/deeplearning-repo-2/assets/87963649/bd57ab97-7c6c-417f-ae5d-debcfb95e523)
-### 3.3. 객체 인식 시퀀스
-![image](https://github.com/addinedu-ros-4th/deeplearning-repo-2/assets/87963649/a6495878-6c6e-4300-9af0-02dccfd3f230)
-### 3.4. 전체 시나리오 시퀀스
-![image](https://github.com/addinedu-ros-4th/deeplearning-repo-2/assets/87963649/3a0919bc-4a1e-466b-8e79-826b8b6f4e82)
+### 2.3. 차선 및 객체 인식 시퀀스
+![image](https://github.com/addinedu-ros-4th/deeplearning-repo-2/assets/87963649/8cfed7b2-a4de-42e4-8d43-1c9b61576567)
+### 2.4. 전체 시나리오 시퀀스
+![image](https://github.com/addinedu-ros-4th/deeplearning-repo-2/assets/87963649/607ae812-97ec-411b-a857-460f75c40c4f)
 
 
-## 4. 개발 일정 및 역할 분담
-### 4.1. 이슈별 일정 관리
-> 진행 기간 : 2024.03.15 ~ 2024.04.11
-
+## 3. 개발 일정 및 역할 분담
+### 3.1. 이슈별 일정 관리
+> 진행 기간 : 2024.03.15 ~ 2024.04.11<br>
 ![image](https://github.com/addinedu-ros-4th/deeplearning-repo-2/assets/87963649/d096d41f-d745-400c-a2c2-63dd7c08e481)
-### 4.2. 팀 구성원별 담당 사항
+### 3.2. 팀 구성원별 담당 사항
 | 구분 | 이름 | 업무 |
 |------|--------|-------------------------------------------------------------------------------------------|
 | 팀장 | 김태형 [📧](mailto:gudxok911@gmail.com)| - 이슈 및 일정 관리, Github 및 Notion 관리<br>- GUI 전체 구성, 관제 ↔ 로봇 소켓 통신 구현<br>- 차선 검출 성능 개선 및 타겟 포인트 도출 구현<br>- 차선 주행 제어 및 교통 상황 별 동작 제어 구현 |
@@ -61,6 +55,6 @@
 | 팀원 | 유동규 [📧](mailto:rdk5607@gmail.com)| - 차선 검출 모델 테스트<br>- 교통 객체 검출 및 거리 측정 테스트<br>- YOLOv8 학습 |
 | 팀원 | 임수빈 [📧](mailto:lsv2620@gmail.com)| - 차선 검출 모델 테스트<br>- 교통 객체 검출 및 거리 측정 구현<br>- 교통 상황 인지 및 판단 구현<br>- YOLOv8 학습 |
 
-## 5. 결과
-### 5.1. 구현 결과
-### 5.2. 개선 사항
+## 4. 결과
+### 4.1. 구현 결과
+### 4.2. 개선 사항
