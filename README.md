@@ -6,7 +6,12 @@
 ## 0. 최종 시연 영상
 > **자율주행 및 실시간 GUI 관제**
 
-[![Video](https://img.youtube.com/vi/h8wTT3QrS3Q/maxresdefault.jpg)](https://www.youtube.com/watch?v=h8wTT3QrS3Q)
+<div align="center">
+  <a href="https://www.youtube.com/watch?v=h8wTT3QrS3Q">
+    <img src="https://github.com/addinedu-ros-4th/deeplearning-repo-2/assets/103230856/65c96e64-1418-44d9-922d-a8f26018ec68" alt="pinkla b" width="100%" height="100%">
+  </a>
+</div>
+
 ## 1. 프로젝트 개요
 ### 1.1. 활용 기술
 | 구분 | 상세 |
