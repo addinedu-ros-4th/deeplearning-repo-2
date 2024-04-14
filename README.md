@@ -1,9 +1,7 @@
 # 경로 주행 및 상황 판단이 가능한 자율주행 모바일 로봇
 > **부제 : Segmentation 및 Object Detection 기반 자율주행**<br>**팀명 : Pinkla**(핑클라 : 핑크랩과 테슬라를 모티브로 함😄)
-
 ## 0. 최종 시연 영상
 > **자율주행 및 실시간 GUI 관제**<br>(이미지 클릭 시, Youtube 전체 영상 재생)
-
 <div align="center">
   <a href="https://www.youtube.com/watch?v=h8wTT3QrS3Q">
     <img src="https://github.com/addinedu-ros-4th/deeplearning-repo-2/assets/103230856/65c96e64-1418-44d9-922d-a8f26018ec68" alt="pinkla b" width="80%" height="80%">
@@ -23,25 +21,31 @@
 | 형상관리 및 협업| <img src="https://img.shields.io/badge/github-181717?style=for-the-badge&logo=github&logoColor=white"> <img src="https://img.shields.io/badge/notion-000000?style=for-the-badge&logo=notion&logoColor=white"> <img src="https://img.shields.io/badge/slack-4A154B?style=for-the-badge&logo=slack&logoColor=white">|
 
 ### 1.2. 프로젝트 목표
-- **Segmentation 기반 차선 검출 및 주행**
-    - 주행 차선 인식 : 외곽선, 중앙선, 교차로에 대한 **차선 정보 검출**
-    - 주행 경로 판단 : 주행 목표 위치 **판단 및 계산**
+- **차선 인식을 통한 주행 경로 유지 제어**(Segmentation)
+    - 주행 차선 인식 : 주행 중 양측 차선(외곽선, 중앙선, 교차로) 정보 **실시간 인지**
+    - 주행 경로 판단 : 차선 정보를 활용한 **이동 위치 판단**
     - 모바일 로봇 제어 : 목표 위치 이동을 위한 메카넘 휠 **제어**
-- **Object Detection 기반 교통 상황 판단**
-    - 교통 객체 인식 : 신호등, 방향 지시, 정지선/횡단보도, 차량, 보행자에 대한 **객체 인식**
-    - 교통 상황 판단 : 객체별 거리 계산 및 조합을 통한 **교통 상황 판단**
-    - 모바일 로봇 제어 : 상황별 로봇의 주행, 서행, 정지 **제어**
+- **교통 객체 인식을 통한 상황 판단**(Object Detection)
+    - 교통 객체 인식 : 주행 중 신호등, 방향 지시, 정지선/횡단보도, 차량, 보행자 객체 **실시간 인지**
+    - 교통 상황 판단 : 객체별 거리 추청 및 조합을 통한 **교통 상황 판단**
+    - 모바일 로봇 제어 : 교통 상황별 로봇의 주행, 서행, 정지 **제어**
 
 ## 2. 시스템 구성
 ### 2.1. 기능 리스트
+  | 기능 | 상세 |
+  | --- | --- |
+  | 차선 인식 및 경로 주행 |  |
+  | 교통 상황 인식 및 대처 |  |
+  | 모바일 로봇 상태 표시 |  |
+  | 실시간 모니터링 GUI |  |
+  | 데이터 기록 조회 및 시각 |  |
+  | 수동 제어 |  |
 ### 2.2. 시스템 구성도
   ![image](https://github.com/addinedu-ros-4th/deeplearning-repo-2/assets/87963649/f1946a1b-1d22-4cfe-859f-3b090325ab0c)
 ### 2.3. 차선 및 객체 인식 시퀀스
-  ![image](https://github.com/addinedu-ros-4th/deeplearning-repo-2/assets/87963649/1b6785e4-27c3-46ca-8898-0dc752cfb28e)
-
+  ![image](https://github.com/addinedu-ros-4th/deeplearning-repo-2/assets/87963649/eea71d5a-cd1e-4c75-98a6-b2ab027f9b4e)
 ### 2.4. 전체 시나리오 시퀀스
   ![image](https://github.com/addinedu-ros-4th/deeplearning-repo-2/assets/87963649/9ddc0add-cf41-47e5-917a-3da9ae49e8a2)
-
 
 ## 3. 개발 일정 및 역할 분담
 ### 3.1. 이슈별 일정 관리
@@ -57,5 +61,6 @@
 | 팀원 | 임수빈 [📧](mailto:lsv2620@gmail.com)| - 차선 검출 모델 테스트<br>- 교통 객체 검출 및 거리 측정 구현<br>- 교통 상황 인지 및 판단 구현<br>- YOLOv8 학습 |
 
 ## 4. 결과
-### 4.1. 구현 결과
-### 4.2. 개선 사항
+### 4.1. 상세 구현 결과
+### 4.2. 구현 중 발생한 이슈 및 해결 과정
+### 4.3. 개선 사항
