@@ -1,11 +1,8 @@
 # 경로 주행 및 상황 판단이 가능한 자율주행 모바일 로봇
-> **부제 : Segmentation 및 Object Detection 기반 자율주행**
-> 
-> **팀명 : Pinkla👍(딥러닝 프로젝트 2조)**
+> **부제 : Segmentation 및 Object Detection 기반 자율주행**<br>**팀명 : Pinkla**(핑클라 : 핑크랩과 테슬라를 모티브로 함😄)
 
 ## 0. 최종 시연 영상
-> **자율주행 및 실시간 GUI 관제**
-> (이미지 클릭 시, Youtube 전체 영상 재생)
+> **자율주행 및 실시간 GUI 관제**<br>(이미지 클릭 시, Youtube 전체 영상 재생)
 
 <div align="center">
   <a href="https://www.youtube.com/watch?v=h8wTT3QrS3Q">
@@ -20,9 +17,9 @@
 | 개발 환경| <img src="https://img.shields.io/badge/ubuntu-E95420?style=for-the-badge&logo=ubuntu&logoColor=white"> <img src="https://img.shields.io/badge/python-3776AB?style=for-the-badge&logo=python&logoColor=white">|
 | 딥러닝 및 영상처리 | ![image](https://github.com/addinedu-ros-4th/deeplearning-repo-2/assets/87963649/4b5eb6a3-0777-41c9-b498-2ea8e5a8daf5) <img src="https://img.shields.io/badge/opencv-5C3EE8?style=for-the-badge&logo=opencv&logoColor=white"> <img src="https://img.shields.io/badge/pytorch-EE4C2C?style=for-the-badge&logo=pytorch&logoColor=white">|
 | 데이터베이스| <img src="https://img.shields.io/badge/aws rds-527FFF?style=for-the-badge&logo=amazonaws&logoColor=white"> <img src="https://img.shields.io/badge/mysql-4479A1?style=for-the-badge&logo=mysql&logoColor=white">|
-| GUI| <img src="https://img.shields.io/badge/qt-41CD52?style=for-the-badge&logo=qt&logoColor=white">|
+| GUI| <img src="https://img.shields.io/badge/pyqt5-41CD52?style=for-the-badge&logo=qt&logoColor=white">|
 | 통신| ![image](https://github.com/addinedu-ros-4th/deeplearning-repo-2/assets/87963649/9d587f25-a595-453d-baee-f5f034e5a1cf)|
-| 하드웨어| <img src="https://img.shields.io/badge/raspberry pi 5-A22846?style=for-the-badge&logo=raspberrypi&logoColor=white"> <img src="https://img.shields.io/badge/arduino-00878F?style=for-the-badge&logo=arduino&logoColor=white">|
+| 하드웨어| <img src="https://img.shields.io/badge/raspberry pi 5-A22846?style=for-the-badge&logo=raspberrypi&logoColor=white"> <img src="https://img.shields.io/badge/arduino uno-00878F?style=for-the-badge&logo=arduino&logoColor=white">|
 | 형상관리 및 협업| <img src="https://img.shields.io/badge/github-181717?style=for-the-badge&logo=github&logoColor=white"> <img src="https://img.shields.io/badge/notion-000000?style=for-the-badge&logo=notion&logoColor=white"> <img src="https://img.shields.io/badge/slack-4A154B?style=for-the-badge&logo=slack&logoColor=white">|
 
 ### 1.2. 프로젝트 목표
@@ -43,8 +40,11 @@
 ### 3.1. 구성도
 ![image](https://github.com/addinedu-ros-4th/deeplearning-repo-2/assets/87963649/f1946a1b-1d22-4cfe-859f-3b090325ab0c)
 ### 3.2. 차선 인식 시퀀스
+![image](https://github.com/addinedu-ros-4th/deeplearning-repo-2/assets/87963649/bd57ab97-7c6c-417f-ae5d-debcfb95e523)
 ### 3.3. 객체 인식 시퀀스
+![image](https://github.com/addinedu-ros-4th/deeplearning-repo-2/assets/87963649/a6495878-6c6e-4300-9af0-02dccfd3f230)
 ### 3.4. 전체 시나리오 시퀀스
+![image](https://github.com/addinedu-ros-4th/deeplearning-repo-2/assets/87963649/3a0919bc-4a1e-466b-8e79-826b8b6f4e82)
 
 
 ## 4. 개발 일정 및 역할 분담
