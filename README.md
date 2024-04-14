@@ -35,11 +35,12 @@
 ## 2. 시스템 구성
 ### 2.1. 기능 리스트
 ### 2.2. 시스템 구성도
-![image](https://github.com/addinedu-ros-4th/deeplearning-repo-2/assets/87963649/f1946a1b-1d22-4cfe-859f-3b090325ab0c)
+  ![image](https://github.com/addinedu-ros-4th/deeplearning-repo-2/assets/87963649/f1946a1b-1d22-4cfe-859f-3b090325ab0c)
 ### 2.3. 차선 및 객체 인식 시퀀스
-![image](https://github.com/addinedu-ros-4th/deeplearning-repo-2/assets/87963649/8cfed7b2-a4de-42e4-8d43-1c9b61576567)
+  ![image](https://github.com/addinedu-ros-4th/deeplearning-repo-2/assets/87963649/1b6785e4-27c3-46ca-8898-0dc752cfb28e)
+
 ### 2.4. 전체 시나리오 시퀀스
-![image](https://github.com/addinedu-ros-4th/deeplearning-repo-2/assets/87963649/607ae812-97ec-411b-a857-460f75c40c4f)
+  ![image](https://github.com/addinedu-ros-4th/deeplearning-repo-2/assets/87963649/9ddc0add-cf41-47e5-917a-3da9ae49e8a2)
 
 
 ## 3. 개발 일정 및 역할 분담
