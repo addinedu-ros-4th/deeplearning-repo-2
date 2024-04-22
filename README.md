@@ -41,7 +41,11 @@
   | 데이터 기록 조회 및 시각 |  |
   | 수동 제어 |  |
 ### 2.2. 시스템 구성도
-  ![image](https://github.com/addinedu-ros-4th/deeplearning-repo-2/assets/87963649/f1946a1b-1d22-4cfe-859f-3b090325ab0c)
+  <div align="center">
+    <img src="https://github.com/addinedu-ros-4th/deeplearning-repo-2/assets/103230856/92437b0f-b977-4f63-b2a9-abae813aaae4" style="width:80%">
+  </div>
+
+
 ### 2.3. 차선 및 객체 인식 시퀀스
   ![image](https://github.com/addinedu-ros-4th/deeplearning-repo-2/assets/87963649/eea71d5a-cd1e-4c75-98a6-b2ab027f9b4e)
 ### 2.4. 전체 시나리오 시퀀스
